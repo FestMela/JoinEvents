@@ -1,0 +1,117 @@
+<div class="page-header">
+  <h1>Vendors & Moderation</h1>
+  <p>Manage registered vendors, review verification status, and handle platform moderation.</p>
+</div>
+
+<div class="d-flex flex-column flex-md-row gap-3 mb-4 justify-content-between align-items-md-center">
+  <div class="d-flex flex-wrap gap-2">
+    <button class="filter-chip" [class.active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">All</button>
+    <button class="filter-chip chip-success" [class.active]="statusFilter() === 'active'" (click)="statusFilter.set('active')">Active</button>
+    <button class="filter-chip chip-info" [class.active]="statusFilter() === 'pending'" (click)="statusFilter.set('pending')">Pending KYC</button>
+    <button class="filter-chip chip-warning" [class.active]="statusFilter() === 'suspended'" (click)="statusFilter.set('suspended')">Suspended</button>
+    <button class="filter-chip chip-danger" [class.active]="statusFilter() === 'banned'" (click)="statusFilter.set('banned')">Banned</button>
+  </div>
+  
+  <div class="search-box admin-search-box px-3 py-1 rounded-pill d-flex align-items-center border shadow-sm admin-search-wrapper">
+    <i class="bi bi-search text-muted"></i>
+    <input type="text" #searchInput [value]="searchQuery()" (input)="searchQuery.set(searchInput.value)" placeholder="Search vendors..." class="form-control border-0 shadow-none bg-transparent ms-2" style="font-size: 0.85rem; box-shadow: none !important; outline: none !important; width: 100%;">
+  </div>
+</div>
+
+<div class="row g-4">
+  @for (v of filteredVendors(); track v.id) {
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="vendor-admin-card ee-card position-relative overflow-hidden" [class.is-suspended]="v.accountStatus === 'suspended'" [class.is-banned]="v.accountStatus === 'banned'">
+        
+        @if (v.accountStatus === 'suspended') {
+          <div class="status-overlay suspended">SUSPENDED</div>
+        } @else if (v.accountStatus === 'banned') {
+          <div class="status-overlay banned">BANNED</div>
+        }
+
+        <div class="vac-header position-relative z-1">
+          <div class="vac-avatar">{{ v.businessName[0] }}</div>
+          <div class="flex-1">
+            <div class="vac-business">{{ v.businessName }}</div>
+            <div class="vac-owner">{{ v.name }}</div>
+          </div>
+          <span class="ee-badge {{ statusColor(v.verificationStatus) }}">{{ statusLabel(v.verificationStatus) }}</span>
+        </div>
+        <div class="vac-body">
+          <div class="vac-info"><i class="bi bi-envelope me-1"></i>{{ v.email }}</div>
+          <div class="vac-info"><i class="bi bi-telephone me-1"></i>{{ v.phone }}</div>
+          <div class="vac-info"><i class="bi bi-geo-alt me-1"></i>{{ v.city }}</div>
+          <div class="vac-services">
+            @for (svc of v.services; track svc) { <span class="ee-badge ee-badge-secondary">{{ svc | titlecase }}</span> }
+          </div>
+          @if (v.rating > 0) { <div class="vac-rating">⭐ {{ v.rating }} <span>({{ v.totalReviews }} reviews)</span> · ₹{{ (v.totalEarnings / 100000).toFixed(1) }}L earned</div> }
+          @if (v.rating === 0) { <div class="vac-new">🆕 New vendor — no reviews yet</div> }
+          
+          @if (v.accountStatus === 'suspended' && v.suspensionReason) {
+            <div class="mt-3 p-2 rounded small border border-warning bg-warning bg-opacity-10 text-dark position-relative z-1">
+              <strong>Suspension Reason:</strong> {{ v.suspensionReason }}<br>
+              <strong>Duration:</strong> {{ v.suspensionDuration === '1_week' ? '1 Week' : v.suspensionDuration === '1_month' ? '1 Month' : 'Indefinite' }}
+            </div>
+          }
+          
+          <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2 position-relative z-1">
+            @if (isAdmin()) {
+              @if (v.accountStatus === 'active' || !v.accountStatus) {
+                <button class="mod-action-btn suspend-btn" (click)="openSuspendForm(v)">
+                  <i class="bi bi-pause-circle me-1"></i> Suspend
+                </button>
+                <button class="mod-action-btn ban-btn" (click)="banVendor(v.id, v.businessName)">
+                  <i class="bi bi-slash-circle me-1"></i> Ban
+                </button>
+              } @else {
+                <button class="mod-action-btn reactivate-btn" (click)="reactivateVendor(v.id, v.businessName)">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i> Reactivate Account
+                </button>
+              }
+            } @else {
+              <div class="text-muted extra-small"><i class="bi bi-info-circle me-1"></i> View Only Mode</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="col-12 py-5 text-center">
+      <i class="bi bi-search text-muted opacity-50" style="font-size: 3.5rem;"></i>
+      <h5 class="mt-4 fw-bold text-dark">No vendors found</h5>
+      <p class="text-muted small">We couldn't find any vendors matching your current filters or search query.</p>
+      <button class="btn btn-outline-secondary mt-2 rounded-pill px-4" (click)="searchQuery.set(''); statusFilter.set('all')">
+        Clear All Filters
+      </button>
+    </div>
+  }
+</div>
+
+@if (suspendingVendor(); as v) {
+  <div class="modal-backdrop" (click)="cancelSuspend()"></div>
+  <div class="custom-modal suspension-modal">
+    <div class="modal-header d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 fw-bold text-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i> Suspend {{ v.businessName }}</h5>
+      <button class="btn-close shadow-none" (click)="cancelSuspend()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-muted">Reason for Suspension <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [value]="suspendReason()" (input)="suspendReason.set($any($event.target).value)" placeholder="Explain why this vendor is being suspended (e.g. fraudulent reviews, poor service)..."></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="form-label small fw-bold text-muted">Suspension Duration</label>
+        <select class="form-select" [value]="suspendDuration()" (change)="suspendDuration.set($any($event.target).value)">
+          <option value="3_days">3 Days</option>
+          <option value="1_week">1 Week</option>
+          <option value="1_month">1 Month</option>
+          <option value="indefinite">Indefinite (Manual Reactivation Required)</option>
+        </select>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button class="btn btn-light" (click)="cancelSuspend()">Cancel</button>
+        <button class="btn btn-warning fw-bold text-dark" [disabled]="!suspendReason().trim()" (click)="confirmSuspend()">Confirm Suspension</button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,97 @@
+<div class="app-shell">
+  @if (sidebarOpen()) { <div class="sidebar-overlay" (click)="toggleSidebar()"></div> }
+  <aside class="sidebar vendor-sidebar" [class.open]="sidebarOpen()">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+        <i class="bi bi-stars" style="display:none"></i>
+      </div>
+      <div>
+        <div class="brand-name">
+          <span class="brand-join">Join</span><span class="brand-events">Events</span>
+        </div>
+        <div class="brand-tagline">Vendor Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Vendor Menu</div>
+      @for (item of navItems; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="active" class="sidebar-link" (click)="sidebarOpen.set(false)">
+          <i class="bi {{ item.icon }}"></i><span>{{ item.label }}</span>
+          @if (item.badge) { <span class="badge-count">{{ item.badge }}</span> }
+        </a>
+      }
+    </nav>
+
+  </aside>
+  <header class="topbar">
+    <button class="topbar-icon-btn d-lg-none" (click)="toggleSidebar()"><i class="bi bi-list"></i></button>
+    <div class="topbar-actions">
+      <!-- Theme Switcher -->
+      <button class="topbar-icon-btn theme-switcher" (click)="theme.toggleTheme()" [title]="theme.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        <i class="bi" [class.bi-sun-fill]="theme.isDarkMode()" [class.bi-moon-stars-fill]="!theme.isDarkMode()"></i>
+      </button>
+
+      <div class="topbar-icon-btn position-relative" (click)="toggleNotifications()">
+        <i class="bi bi-bell"></i>
+        @if (notifications().length > 0) { <span class="notif-dot"></span> }
+        
+        @if (showNotifications()) {
+          <div class="notif-dropdown" (click)="$event.stopPropagation()">
+            <div class="notif-header">
+              <h6>Notifications</h6>
+              <span class="badge bg-secondary-ee text-white">{{ notifications().length }} New</span>
+            </div>
+            <div class="notif-list">
+              @for (n of notifications(); track n.id) {
+                <div class="notif-item" [class.unread]="!n.isRead">
+                  <div class="notif-icon" [style.background]="n.color + '20'" [style.color]="n.color">
+                    <i class="bi {{ n.icon }}"></i>
+                  </div>
+                  <div class="notif-body">
+                    <div class="notif-title">{{ n.title }}</div>
+                    <div class="notif-msg">{{ n.message }}</div>
+                    <div class="notif-time">{{ n.time }}</div>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="notif-footer">
+              <a routerLink="/vendor/notifications" (click)="showNotifications.set(false)" class="text-secondary-ee small fw-bold">View All Notifications</a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="position-relative">
+        <div class="topbar-avatar vendor-avatar" (click)="toggleProfileDropdown()" title="Account">
+          {{ getInitials(user()?.name||'') }}
+        </div>
+
+        @if (showProfileDropdown()) {
+          <div class="profile-dropdown" (click)="$event.stopPropagation()">
+            <div class="profile-dropdown-header">
+              <div class="avatar-small" style="background:var(--gradient-secondary)">{{ getInitials(user()?.name||'') }}</div>
+              <div class="user-meta">
+                <span class="user-name">{{ user()?.name }}</span>
+                <span class="user-role">Vendor</span>
+              </div>
+            </div>
+            <div class="profile-dropdown-body">
+              <a routerLink="/vendor/profile" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
+                <i class="bi bi-shop"></i> Business Profile
+              </a>
+              <a routerLink="/vendor/bookings" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
+                <i class="bi bi-calendar-check"></i> My Bookings
+              </a>
+              <a class="profile-dropdown-item logout-item" (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i> Logout
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </header>
+  <main class="main-content"><router-outlet /></main>
+</div>

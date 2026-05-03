@@ -1,0 +1,236 @@
+<div class="finance-wrapper fade-in">
+  <!-- Header with Actions -->
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div class="header-main">
+      <h1 class="h2 fw-900 color-navy mb-1">Financial Management</h1>
+      <p class="text-muted mb-0">Control your payouts, manage banking, and track every invoice.</p>
+    </div>
+    <button class="btn-payout-request">
+      <i class="bi bi-lightning-charge-fill me-2"></i> Request Instant Payout
+    </button>
+  </div>
+
+  <!-- Financial Overview KPIs (Always Visible) -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="kpi-card-glass total">
+        <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+        <div class="kpi-data">
+          <span class="kpi-label">Available Balance</span>
+          <h3 class="kpi-value">₹45,280.00</h3>
+        </div>
+        <div class="kpi-trend positive"><i class="bi bi-arrow-up-short"></i> 12%</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card-glass pending">
+        <div class="kpi-icon"><i class="bi bi-clock-history"></i></div>
+        <div class="kpi-data">
+          <span class="kpi-label">Pending Payouts</span>
+          <h3 class="kpi-value">₹12,400.00</h3>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="kpi-card-glass total-earned">
+        <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        <div class="kpi-data">
+          <span class="kpi-label">Lifetime Earnings</span>
+          <h3 class="kpi-value">₹8,52,000.00</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="finance-nav-tabs mb-5">
+    <button class="finance-tab-link" [class.active]="activeTab() === 'payout'" (click)="activeTab.set('payout')">
+      <i class="bi bi-credit-card-2-front-fill"></i>
+      <span>Payout & Business Settings</span>
+    </button>
+    <button class="finance-tab-link" [class.active]="activeTab() === 'history'" (click)="activeTab.set('history')">
+      <i class="bi bi-receipt-cutoff"></i>
+      <span>Invoice & Transaction History</span>
+    </button>
+  </div>
+
+  <div class="tab-view-container">
+    <!-- Payout Tab -->
+    @if (activeTab() === 'payout') {
+      <div class="row g-4 slide-in-bottom">
+        <div class="col-12 col-xl-5">
+          <div class="digital-bank-card mb-4 sticky-card">
+            <div class="card-chip"></div>
+            <div class="card-bank-name">{{ bankingInfo.bankName || 'Your Bank' }}</div>
+            <div class="card-number">•••• •••• •••• {{ bankingInfo.accountNumber.slice(-4) || '0000' }}</div>
+            <div class="card-footer">
+              <div class="card-holder">
+                <span class="label">ACCOUNT HOLDER</span>
+                <span class="val">{{ bankingInfo.accountHolder || 'VENDOR NAME' }}</span>
+              </div>
+              <div class="card-ifsc">
+                <span class="label">IFSC CODE</span>
+                <span class="val">{{ bankingInfo.ifscCode || 'IFSCXXXX' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="ee-alert ee-alert-info mb-4">
+            <div class="ee-alert-icon"><i class="bi bi-info-circle-fill"></i></div>
+            <div class="ee-alert-content">
+              <div class="ee-alert-title">Billing Verification</div>
+              <div class="ee-alert-message">Ensure all details match your legal documents to avoid payout delays and ensure compliance.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-xl-7">
+          <div class="ee-card-modern p-0">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+              <h5 class="fw-800 m-0"><i class="bi bi-shield-lock-fill text-primary me-2"></i> Payout Configuration</h5>
+              @if (!isEditing()) {
+                <button class="btn btn-primary-ee btn-sm rounded-pill px-4 py-2" (click)="isEditing.set(true)">
+                  <i class="bi bi-pencil-square me-2"></i> Edit Settings
+                </button>
+              } @else {
+                <button class="btn btn-cancel-finance btn-sm rounded-pill px-4 py-2" (click)="isEditing.set(false)">
+                  <i class="bi bi-x-circle me-2"></i> Cancel
+                </button>
+              }
+            </div>
+
+            <div class="p-5">
+              <form (ngSubmit)="saveBankingDetails()">
+                <!-- Business Section -->
+                <div class="d-flex align-items-center mb-4">
+                  <div class="section-icon-sm"><i class="bi bi-briefcase"></i></div>
+                  <h5 class="fw-800 m-0 ms-3">Business Profile</h5>
+                </div>
+                <div class="row g-3 mb-5">
+                  <div class="col-12">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.businessName" name="bizName" placeholder=" " [disabled]="!isEditing()">
+                      <label>Business Name</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.businessAddress" name="bizAddr" placeholder=" " [disabled]="!isEditing()">
+                      <label>Business Address</label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.gstNumber" name="gst" placeholder=" " [disabled]="!isEditing()">
+                      <label>GST Number</label>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.mobileNumber" name="mob" placeholder=" " [disabled]="!isEditing()">
+                      <label>Mobile Number</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Banking Section -->
+                <div class="d-flex align-items-center mb-4">
+                  <div class="section-icon-sm"><i class="bi bi-bank"></i></div>
+                  <h5 class="fw-800 m-0 ms-3">Banking Details</h5>
+                </div>
+                <div class="row g-3">
+                  <div class="col-12">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.accountHolder" name="accHolder" placeholder=" " [disabled]="!isEditing()">
+                      <label>Account Holder Name</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.bankName" name="bankName" placeholder=" " [disabled]="!isEditing()">
+                      <label>Bank Name</label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.branchName" name="branch" placeholder=" " [disabled]="!isEditing()">
+                      <label>Branch Name</label>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.ifscCode" name="ifsc" placeholder=" " [disabled]="!isEditing()">
+                      <label>IFSC Code</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.accountNumber" name="accNum" placeholder=" " [disabled]="!isEditing()">
+                      <label>Account Number</label>
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="floating-input" [class.locked]="!isEditing()">
+                      <input type="text" [(ngModel)]="bankingInfo.upiId" name="upi" placeholder=" " [disabled]="!isEditing()">
+                      <label>UPI ID (Optional)</label>
+                    </div>
+                  </div>
+                  
+                  @if (isEditing()) {
+                    <div class="col-12 mt-4 slide-in-top">
+                      <button type="submit" class="btn-update-finance" [disabled]="isSaving()">
+                        @if (isSaving()) {
+                          <span class="spinner-border spinner-border-sm me-2"></span> Saving Changes...
+                        } @else {
+                          <i class="bi bi-check2-circle me-2"></i> Save Payout Settings
+                        }
+                      </button>
+                    </div>
+                  }
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- History Tab -->
+    @if (activeTab() === 'history') {
+      <div class="ee-card-modern p-0 slide-in-bottom">
+        <div class="p-4 d-flex justify-content-between align-items-center border-bottom bg-light-soft">
+          <h5 class="fw-800 m-0"><i class="bi bi-receipt text-primary me-2"></i> All Transactions</h5>
+          <div class="d-flex gap-2">
+            <select class="form-select-sm border-0 bg-white rounded-pill px-3 shadow-xs">
+              <option>Last 30 Days</option>
+              <option>This Year</option>
+            </select>
+            <button class="btn btn-sm btn-light border rounded-pill px-3"><i class="bi bi-download me-1"></i> Export PDF</button>
+          </div>
+        </div>
+
+        <div class="invoice-list-modern">
+          @for (inv of invoices(); track inv.id) {
+            <div class="invoice-item-premium">
+              <div class="inv-status-icon" [class]="inv.status">
+                <i class="bi" [class.bi-check-circle-fill]="inv.status === 'paid'" [class.bi-clock-fill]="inv.status === 'pending'"></i>
+              </div>
+              <div class="inv-info">
+                <div class="inv-id">{{ inv.id }} <span class="inv-booking">· {{ inv.bookingId }}</span></div>
+                <div class="inv-customer">{{ inv.customer }}</div>
+              </div>
+              <div class="inv-date">{{ inv.date }}</div>
+              <div class="inv-amount">₹{{ inv.amount.toLocaleString('en-IN') }}</div>
+              <div class="inv-actions">
+                <button class="btn-inv-download" title="Download PDF"><i class="bi bi-file-pdf"></i></button>
+                <button class="btn-inv-more"><i class="bi bi-three-dots-vertical"></i></button>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="p-4 text-center border-top">
+          <p class="text-muted small mb-0">Showing 3 of 87 transactions</p>
+        </div>
+      </div>
+    }
+  </div>
+</div>

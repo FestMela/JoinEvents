@@ -1,0 +1,109 @@
+<div class="network-container fade-in-up">
+  <!-- Hero Section -->
+  <div class="network-hero mb-5">
+    <div class="hero-content text-white">
+      <h1 class="fw-900 mb-2">B2B Partner Network</h1>
+      <p class="fs-5 mb-0" style="opacity: 0.8;">Discover, connect, and collaborate with verified JoinEvents partners.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-box" [class.active]="activeTab() === 'active'" (click)="activeTab.set('active')">
+        <span class="stat-val">{{ activePartnersCount() }}</span>
+        <span class="stat-lab">Active Partners</span>
+      </div>
+      <div class="stat-box" [class.active]="activeTab() === 'pending'" (click)="activeTab.set('pending')">
+        <span class="stat-val">{{ pendingInvitesCount() }}</span>
+        <span class="stat-lab">Pending Invites</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters & Search -->
+  <div class="network-filter-bar mb-4">
+    <div class="network-filters">
+      <button class="filter-chip" [class.active]="activeTab() === 'all'" (click)="activeTab.set('all')">
+        <i class="bi bi-grid-fill me-2"></i>All
+      </button>
+      <button class="filter-chip" [class.active]="activeTab() === 'venue'" (click)="activeTab.set('venue')">
+        <i class="bi bi-building me-2"></i>Venues
+      </button>
+      <button class="filter-chip" [class.active]="activeTab() === 'catering'" (click)="activeTab.set('catering')">
+        <i class="bi bi-egg-fried me-2"></i>Caterers
+      </button>
+      <button class="filter-chip" [class.active]="activeTab() === 'decorator'" (click)="activeTab.set('decorator')">
+        <i class="bi bi-palette-fill me-2"></i>Decorators
+      </button>
+    </div>
+
+    <div class="network-search-box">
+      <i class="bi bi-search"></i>
+      <input 
+        type="text" 
+        placeholder="Search by name, city or service..." 
+        (input)="searchTerm.set($any($event.target).value)"
+        [value]="searchTerm()"
+      >
+    </div>
+  </div>
+
+  <!-- Vendor Grid -->
+  <div class="row g-4">
+    @for (v of filteredVendors; track v.id) {
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="vendor-card">
+          <div class="card-body p-4 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+              <div class="v-avatar">
+                <span class="v-initial">{{ v.businessName.charAt(0) }}</span>
+                @if (v.isVerified) {
+                  <span class="v-verified" title="Verified Partner"><i class="bi bi-check"></i></span>
+                }
+              </div>
+              <span class="ee-badge ee-badge-primary">
+                {{ (v.serviceCategory || v.services[0]) | titlecase }}
+              </span>
+            </div>
+
+            <h5 class="fw-bold mb-1">{{ v.businessName }}</h5>
+            <div class="text-muted small mb-3">
+              <i class="bi bi-geo-alt-fill me-1 text-primary"></i> {{ v.city }}{{ v.state ? ', ' + v.state : '' }}
+            </div>
+            
+            <p class="text-muted small mb-4 flex-grow-1">
+              Specializes in premium {{ v.serviceCategory || v.services[0] }} services with a focus on high-end luxury events.
+            </p>
+
+            @if (v.sustainabilityTags?.length) {
+              <div class="eco-tags mb-4">
+                @for (tag of v.sustainabilityTags; track tag) {
+                  <span class="eco-tag"><i class="bi bi-leaf-fill me-1"></i>{{ tag }}</span>
+                }
+              </div>
+            }
+
+            @let status = getConnectionStatus(v.id);
+            @if (status === 'active') {
+              <button class="btn btn-ee-outline w-100" (click)="requestCollaboration(v)">
+                <i class="bi bi-chat-dots-fill me-2"></i> Message Partner
+              </button>
+            } @else if (status === 'pending') {
+              <div class="btn-pending w-100">
+                <i class="bi bi-clock-history me-2"></i> Invite Sent
+              </div>
+            } @else {
+              <button class="btn btn-collab w-100" (click)="requestCollaboration(v)">
+                <i class="bi bi-person-plus-fill me-2"></i> Request Collaboration
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-12 text-center py-5">
+        <div class="text-muted fs-1 mb-3"><i class="bi bi-search"></i></div>
+        <h4 class="text-main fw-bold">No partners found</h4>
+        <p class="text-muted">Try adjusting your filters to find more collaborators.</p>
+        <button class="btn btn-ee-outline mt-3" (click)="activeTab.set('all')">View All Partners</button>
+      </div>
+    }
+  </div>
+</div>

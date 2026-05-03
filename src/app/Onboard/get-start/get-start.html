@@ -1,0 +1,283 @@
+<section class="hero-section" [style.background]="heroSlides[currentSlide()].bg">
+  <div class="hero-overlay"></div>
+  
+  <nav class="hero-nav">
+    <div class="nav-logo-wrap">
+      <div class="brand-logo-hero">
+        <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+      </div>
+      <span class="brand-text-hero"><span class="brand-join">Join</span>Events</span>
+    </div>
+    <div class="d-flex gap-3 align-items-center">
+      <a routerLink="/login" class="btn-hero-outline">Sign In</a>
+      <a routerLink="/register" class="btn-hero-fill">Get Started</a>
+    </div>
+  </nav>
+
+  <div class="hero-content">
+    <h1 class="hero-title">{{ heroSlides[currentSlide()].title }}</h1>
+    
+    <!-- Unified Search Bar for all devices -->
+    <div class="search-container">
+      <div class="main-search-bar">
+        <div class="search-input-wrap">
+          <i class="bi bi-search"></i>
+          <input type="text" placeholder="Search for Venues, Vendors or Packages..." [(ngModel)]="searchQuery">
+        </div>
+        <button class="btn-search">Explore Now</button>
+      </div>
+      
+      <!-- Quick Category Chips -->
+      <div class="quick-chips-container">
+        @for (cat of quickCategories; track cat.id) {
+          <a routerLink="/customer/packages" class="category-chip" [style.--cc]="cat.color">
+            <i class="bi {{ cat.icon }}"></i>
+            {{ cat.name }}
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOP VENUES DISCOVERY LOOP -->
+<section class="discovery-section">
+  <div class="container-wide">
+    <div class="discovery-header">
+      <div>
+        <span class="section-tag">Explore Top Cities</span>
+        <h2 class="discovery-title">Handpicked Premium Venues</h2>
+      </div>
+      <a routerLink="/customer/packages" class="btn-ee-primary d-none d-md-flex">View All Venues</a>
+    </div>
+    
+    <div class="discovery-loop">
+      @for (v of topVenues(); track v.id) {
+        <div class="discovery-card">
+          <div class="card-img-wrap">
+            <img [src]="v.image" [alt]="v.name">
+            <span class="card-badge">{{ v.type }}</span>
+            <span class="v-city-tag">{{ v.city }}</span>
+          </div>
+          <div class="card-info">
+            <h5>{{ v.name }}</h5>
+            <div class="card-meta">
+              <span class="meta-tag"><i class="bi bi-people-fill"></i> {{ v.capacity }}</span>
+              <span class="meta-tag"><i class="bi bi-star-fill"></i> 4.9</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- PREMIUM PACKAGES (PRODUCTIZATION) -->
+<section class="packages-section">
+  <div class="container-wide">
+    <div class="text-center mb-5">
+      <span class="section-tag">Curated Deals</span>
+      <h2 class="discovery-title">Featured All-Inclusive Packages</h2>
+      <p class="text-muted mt-2">Zero hidden costs. Full transparency. Guaranteed excellence.</p>
+    </div>
+    
+    <div class="row g-4">
+      @for (pkg of premiumPackages(); track pkg.id) {
+        <div class="col-12 col-lg-6">
+          <div class="package-card-premium">
+            <div class="pkg-validity">
+              <i class="bi bi-clock-history"></i> {{ pkg.validity }}
+            </div>
+            <div class="pkg-img">
+              <img [src]="pkg.image" [alt]="pkg.name">
+            </div>
+            <div class="pkg-body">
+              <div class="pkg-price-row">
+                <span class="pkg-starts">Starting From</span>
+                <span class="pkg-val">₹{{ (pkg.price / 100000).toFixed(1) }}L</span>
+              </div>
+              <h4 class="pkg-title">{{ pkg.name }}</h4>
+              
+              <div class="pkg-attributes">
+                <div class="attr-item"><i class="bi bi-people"></i> {{ pkg.pax }}</div>
+                <div class="attr-item"><i class="bi bi-door-open"></i> {{ pkg.rooms }}</div>
+                <div class="attr-item"><i class="bi bi-egg-fried"></i> {{ pkg.catering }}</div>
+                <div class="attr-item"><i class="bi bi-patch-check"></i> All Inclusions</div>
+              </div>
+              
+              <button class="btn-pkg-book" [routerLink]="['/customer/book', pkg.id]">Check Availability</button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- WEDDING PLAYBOOK (GUIDED SELECTION) -->
+<section class="playbook-section">
+  <div class="container-xl">
+    <div class="text-center mb-5">
+      <span class="section-tag">Planning Guide</span>
+      <h2 class="discovery-title">Your Wedding Playbook</h2>
+      <p class="text-muted mt-2">Step-by-step guidance from 'Yes' to 'I Do'</p>
+    </div>
+    
+    <div class="playbook-container">
+      <div class="playbook-grid">
+        @for (step of playbook; track step.title) {
+          <div class="playbook-step" [class.active]="step.status === 'active'" [class.completed]="step.status === 'completed'">
+            <div class="pb-icon-wrap">
+              <i class="bi {{ step.icon }}"></i>
+            </div>
+            <h6>{{ step.title }}</h6>
+            <span class="pb-status" [class.status-active]="step.status === 'active'" [class.status-completed]="step.status === 'completed'">
+              {{ step.status }}
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOP PLANNERS DISCOVERY LOOP -->
+<section class="discovery-section" style="background: white;">
+  <div class="container-wide">
+    <div class="discovery-header">
+      <div>
+        <span class="section-tag">Experts On Board</span>
+        <h2 class="discovery-title">Top Rated Event Planners</h2>
+      </div>
+      <a routerLink="/customer/packages" class="btn-ee-primary d-none d-md-flex">View All Planners</a>
+    </div>
+    
+    <div class="discovery-loop">
+      @for (p of topPlanners(); track p.id) {
+        <div class="discovery-card" style="min-width: 260px;">
+          <div class="card-img-wrap" style="height: 300px;">
+            <img [src]="p.image" [alt]="p.name">
+            <span class="card-badge" style="background: var(--gradient-primary);">{{ p.label }}</span>
+          </div>
+          <div class="card-info text-center">
+            <h5 class="mb-1">{{ p.name }}</h5>
+            <div class="d-flex justify-content-center align-items-center gap-1 text-warning">
+              <i class="bi bi-star-fill small"></i>
+              <i class="bi bi-star-fill small"></i>
+              <i class="bi bi-star-fill small"></i>
+              <i class="bi bi-star-fill small"></i>
+              <i class="bi bi-star-fill small"></i>
+              <span class="ms-1 text-muted small" style="font-weight: 700;">({{ p.rating }})</span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- INTENT-BASED QUOTATIONS -->
+<section class="quotation-section">
+  <div class="container-wide">
+    <div class="text-center mb-5">
+      <span class="section-tag">Lead Generation</span>
+      <h2 class="discovery-title">Fill Your Quotation</h2>
+      <p class="text-white-50 mt-2">Choose your intent and get a customized quote in minutes.</p>
+    </div>
+    
+    <div class="quotation-grid">
+      <div class="quotation-card">
+        <div class="q-icon" style="background: #E91E8C;"><i class="bi bi-heart-fill"></i></div>
+        <h4 class="q-title">Wedding Quotation</h4>
+        <p class="q-desc">Planning your big day? Tell us about your vision and get a bundled quote for venues and vendors.</p>
+        <a href="#" class="btn-q">Get Wedding Quote <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="quotation-card">
+        <div class="q-icon" style="background: #0EA5E9;"><i class="bi bi-briefcase-fill"></i></div>
+        <h4 class="q-title">Corporate Quotation</h4>
+        <p class="q-desc">Hosting a seminar, retreat or product launch? We offer specialized corporate event management.</p>
+        <a href="#" class="btn-q">Get Corporate Quote <i class="bi bi-arrow-right"></i></a>
+      </div>
+      <div class="quotation-card">
+        <div class="q-icon" style="background: #D97706;"><i class="bi bi-globe"></i></div>
+        <h4 class="q-title">International Wedding</h4>
+        <p class="q-desc">Dreaming of a destination wedding? We manage logistics, stay, and ceremonies across borders.</p>
+        <a href="#" class="btn-q">Get Global Quote <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MOBILE PERSISTENT BOTTOM NAV REMOVED AS REQUESTED -->
+
+<!-- AI CONCIERGE WIDGET -->
+<div class="ai-assistant-wrap">
+  <!-- Chat Window -->
+  <div class="ai-chat-window" [class.open]="isAiChatOpen()">
+    <div class="ai-chat-header-premium">
+      <div class="d-flex align-items-center gap-3">
+        <div class="ai-avatar-circle">
+          <i class="bi bi-robot"></i>
+          <span class="online-indicator"></span>
+        </div>
+        <div class="header-text">
+          <h6 class="m-0 fw-900">AI Concierge</h6>
+          <span class="sub-text">Event Expert</span>
+        </div>
+      </div>
+      <button class="btn-close-ai" (click)="toggleAiChat()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    
+    <div class="ai-chat-body" #chatBody>
+      @for (msg of chatMessages(); track msg.id) {
+        <div class="message-row" [class.user-row]="msg.isUser">
+          @if (!msg.isUser) {
+            <div class="msg-avatar">
+              <i class="bi bi-stars"></i>
+            </div>
+          }
+          <div class="chat-bubble-modern" [class.user-bubble-modern]="msg.isUser">
+            {{ msg.text }}
+          </div>
+        </div>
+      }
+    </div>
+    
+    <div class="ai-chat-footer-modern">
+      <div class="input-container-modern">
+        <input type="text" placeholder="Ask me anything..." 
+               [(ngModel)]="aiInput" (keyup.enter)="sendAiMessage()">
+        <button class="btn-send-modern" (click)="sendAiMessage()">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+      <div class="powered-by">Powered by JoinEvents AI</div>
+    </div>
+  </div>
+
+  <!-- Circular Trigger -->
+  <button class="btn-ai-trigger-circle" [class.hidden]="isAiChatOpen()" (click)="toggleAiChat()">
+    <div class="ai-glow-pulse"></div>
+    <i class="bi bi-stars"></i>
+  </button>
+</div>
+
+<footer class="landing-footer">
+  <div class="container-xl">
+    <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <div class="brand-logo-hero sm">
+          <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+        </div>
+        <span class="brand-text-hero"><span class="brand-join">Join</span>Events</span>
+      </div>
+      <p class="mb-0" style="color:rgba(255,255,255,0.4);font-size:0.8rem;">© 2025 JoinEvents. India's Expert Event Curator.</p>
+      <div class="d-flex gap-3">
+        <a routerLink="/partner-login" style="color:rgba(255,255,255,0.5);font-size:0.8rem;text-decoration:none;">Partner Login</a>
+        <a routerLink="/login" style="color:rgba(255,255,255,0.5);font-size:0.8rem;text-decoration:none;">Sign In</a>
+      </div>
+    </div>
+  </div>
+</footer>

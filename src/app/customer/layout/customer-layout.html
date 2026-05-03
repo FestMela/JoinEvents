@@ -1,0 +1,143 @@
+<div class="app-shell">
+  <!-- Sidebar Overlay (mobile) -->
+  @if (sidebarOpen()) {
+  <div class="sidebar-overlay" (click)="toggleSidebar()"></div>
+  }
+
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <div class="sidebar-brand">
+      <div class="brand-logo">
+        <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+        <i class="bi bi-stars" style="display:none"></i>
+      </div>
+      <div>
+        <div class="brand-name"><span class="brand-join">Join</span><span class="brand-events">Events</span></div>
+        <div class="brand-tagline">Customer Portal</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main Menu</div>
+      @for (item of filteredNavItems; track item.path) {
+      <a [routerLink]="item.path" routerLinkActive="active" class="sidebar-link" (click)="sidebarOpen.set(false)">
+        <i class="bi {{ item.icon }}"></i>
+        <span>{{ item.label }}</span>
+        @if (item.badge) { <span class="badge-count">{{ item.badge }}</span> }
+      </a>
+      }
+    </nav>
+
+
+  </aside>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="topbar-icon-btn d-lg-none" (click)="toggleSidebar()">
+        <i class="bi bi-list"></i>
+      </button>
+      <div class="topbar-brand-mobile d-lg-none">
+        <span style="font-family:var(--font-heading);font-weight:900;font-size:1.25rem;">
+          <span class="brand-join">Join</span><span class="brand-events">Events</span>
+        </span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <!-- Theme Switcher -->
+      <button class="topbar-icon-btn theme-switcher" (click)="theme.toggleTheme()"
+        [title]="theme.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+        <i class="bi" [class.bi-sun-fill]="theme.isDarkMode()" [class.bi-moon-stars-fill]="!theme.isDarkMode()"></i>
+      </button>
+
+      @if (user()) {
+      <a routerLink="/customer/messages" class="topbar-icon-btn">
+        <i class="bi bi-chat-dots"></i>
+        @if (notifications().length > 0) { <span class="notif-dot"></span> }
+      </a>
+
+      <div class="topbar-icon-btn position-relative" (click)="toggleNotifications()">
+        <i class="bi bi-bell"></i>
+        @if (notifications().length > 0) { <span class="notif-dot"></span> }
+
+        @if (showNotifications()) {
+        <div class="notif-dropdown" (click)="$event.stopPropagation()">
+          <div class="notif-header">
+            <h6>Notifications</h6>
+            <span class="badge bg-primary-ee text-white">{{ notifications().length }} New</span>
+          </div>
+          <div class="notif-list">
+            @for (n of notifications(); track n.id) {
+            <div class="notif-item" [class.unread]="!n.isRead">
+              <div class="notif-icon" [style.background]="n.color + '20'" [style.color]="n.color">
+                <i class="bi {{ n.icon }}"></i>
+              </div>
+              <div class="notif-body">
+                <div class="notif-title">{{ n.title }}</div>
+                <div class="notif-msg">{{ n.message }}</div>
+                <div class="notif-time">{{ n.time }}</div>
+              </div>
+            </div>
+            }
+          </div>
+          <div class="notif-footer">
+            <a routerLink="/customer/notifications" (click)="showNotifications.set(false)" class="text-primary-ee small fw-bold">View All Notifications</a>
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="position-relative">
+        <div class="topbar-avatar" (click)="toggleProfileDropdown()" title="Account">
+          <span>{{ getInitials(user()?.name || '') }}</span>
+        </div>
+
+        @if (showProfileDropdown()) {
+        <div class="profile-dropdown" (click)="$event.stopPropagation()">
+          <div class="profile-dropdown-header">
+            <div class="avatar-small">{{ getInitials(user()?.name || '') }}</div>
+            <div class="user-meta">
+              <span class="user-name">{{ user()?.name }}</span>
+              <span class="user-role">Customer</span>
+            </div>
+          </div>
+          <div class="profile-dropdown-body">
+            <a routerLink="/customer/profile" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
+              <i class="bi bi-person-circle"></i> My Profile
+            </a>
+            <a routerLink="/customer/bookings" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
+              <i class="bi bi-journal-check"></i> My Bookings
+            </a>
+            <a class="profile-dropdown-item logout-item" (click)="logout()">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+          </div>
+        </div>
+        }
+      </div>
+      } @else {
+        <!-- Guest Actions -->
+        <div class="guest-actions">
+          <a routerLink="/login" class="guest-login-btn" title="Log In">
+            <i class="bi bi-person-circle guest-icon d-sm-none"></i>
+            <span class="d-none d-sm-inline">Log In</span>
+          </a>
+          <a routerLink="/register" class="guest-signup-btn">
+            <i class="bi bi-star-fill d-sm-none" style="font-size: 0.75rem;"></i>
+            <span class="d-none d-sm-inline">Sign Up</span>
+            <span class="d-sm-none" style="font-size: 0.72rem; font-weight: 800;">Join</span>
+          </a>
+        </div>
+      }
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <main class="main-content">
+    <router-outlet />
+  </main>
+
+  <!-- AI Concierge Integration -->
+  <app-ai-planner></app-ai-planner>
+
+</div>

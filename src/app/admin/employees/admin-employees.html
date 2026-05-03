@@ -1,0 +1,267 @@
+<div class="page-header">
+  <h1><i class="bi bi-person-badge me-2"></i>Employee Management</h1>
+  <p>Manage platform staff, assign roles, and monitor performance</p>
+</div>
+
+<!-- Quick Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:linear-gradient(135deg,#0EA5E9,#6B21A8)"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-val">{{ employees().length }}</div>
+        <div class="stat-card-label">Total Staff</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:linear-gradient(135deg,#10B981,#059669)"><i class="bi bi-check-circle-fill"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-val">{{ totalActive() }}</div>
+        <div class="stat-card-label">Active</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:linear-gradient(135deg,#F59E0B,#D97706)"><i class="bi bi-calendar-x"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-val">{{ totalOnLeave() }}</div>
+        <div class="stat-card-label">On Leave</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-card-icon" style="background:linear-gradient(135deg,#EF4444,#B91C1C)"><i class="bi bi-exclamation-octagon"></i></div>
+      <div class="stat-card-body">
+        <div class="stat-card-val">{{ totalSuspended() }}</div>
+        <div class="stat-card-label">Suspended</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="d-flex flex-column flex-md-row gap-3 mb-4 justify-content-between align-items-md-center">
+  <div class="d-flex flex-wrap gap-2 align-items-center">
+    <div class="d-flex flex-wrap gap-2">
+      <button class="filter-chip" [class.active]="roleFilter() === 'all'" (click)="roleFilter.set('all')">All Roles</button>
+      <button class="filter-chip chip-primary" [class.active]="roleFilter() === 'admin'" (click)="roleFilter.set('admin')"><i class="bi bi-shield-lock me-1"></i>Admin</button>
+      <button class="filter-chip chip-warning" [class.active]="roleFilter() === 'support'" (click)="roleFilter.set('support')"><i class="bi bi-headset me-1"></i>Support</button>
+      <button class="filter-chip chip-info" [class.active]="roleFilter() === 'moderator'" (click)="roleFilter.set('moderator')"><i class="bi bi-eye me-1"></i>Moderator</button>
+      <button class="filter-chip chip-success" [class.active]="roleFilter() === 'finance'" (click)="roleFilter.set('finance')"><i class="bi bi-currency-rupee me-1"></i>Finance</button>
+    </div>
+    <span class="text-muted small">|</span>
+    <div class="d-flex flex-wrap gap-2">
+      <button class="filter-chip" [class.active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">All Status</button>
+      <button class="filter-chip chip-success" [class.active]="statusFilter() === 'active'" (click)="statusFilter.set('active')">Active</button>
+      <button class="filter-chip chip-warning" [class.active]="statusFilter() === 'on_leave'" (click)="statusFilter.set('on_leave')">On Leave</button>
+      <button class="filter-chip chip-danger" [class.active]="statusFilter() === 'suspended'" (click)="statusFilter.set('suspended')">Suspended</button>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 align-items-center">
+    <div class="search-box admin-search-box px-3 py-1 rounded-pill d-flex align-items-center border shadow-sm admin-search-wrapper">
+      <i class="bi bi-search text-muted"></i>
+      <input type="text" #searchInput [value]="searchQuery()" (input)="searchQuery.set(searchInput.value)" placeholder="Search employees..." class="form-control border-0 shadow-none bg-transparent ms-2" style="font-size: 0.85rem; box-shadow: none !important; outline: none !important; width: 100%;">
+    </div>
+    <button class="btn-add-employee" (click)="openAddForm()">
+      <i class="bi bi-plus-lg me-1"></i> Add Employee
+    </button>
+  </div>
+</div>
+
+<!-- Employee Grid -->
+<div class="row g-4">
+  @for (emp of filteredEmployees(); track emp.id) {
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="emp-card ee-card position-relative overflow-hidden" 
+           [class.is-suspended]="emp.status === 'suspended'" 
+           [class.is-terminated]="emp.status === 'terminated'">
+        
+        @if (emp.status === 'suspended') {
+          <div class="status-overlay suspended">SUSPENDED</div>
+        } @else if (emp.status === 'terminated') {
+          <div class="status-overlay terminated">TERMINATED</div>
+        }
+
+        <div class="emp-header position-relative z-1">
+          <div class="emp-avatar" [style.background]="emp.role === 'admin' ? 'linear-gradient(135deg,#0EA5E9,#6B21A8)' : emp.role === 'support' ? 'linear-gradient(135deg,#F59E0B,#D97706)' : emp.role === 'moderator' ? 'linear-gradient(135deg,#3B82F6,#1D4ED8)' : 'linear-gradient(135deg,#10B981,#059669)'">
+            {{ emp.name[0] }}
+          </div>
+          <div class="flex-1">
+            <div class="emp-name">{{ emp.name }}</div>
+            <div class="emp-designation">{{ emp.designation }}</div>
+          </div>
+          <span class="ee-badge {{ statusColor(emp.status) }}">{{ statusLabel(emp.status) }}</span>
+        </div>
+
+        <div class="emp-body position-relative z-1">
+          <div class="emp-meta-row">
+            <div class="emp-meta-item">
+              <i class="bi {{ roleIcon(emp.role) }}"></i>
+              <span class="ee-badge {{ roleColor(emp.role) }}">{{ emp.role | titlecase }}</span>
+            </div>
+            <div class="emp-id-badge">{{ emp.employeeId }}</div>
+          </div>
+
+          <div class="emp-stats-bar">
+            <div class="emp-stat-item">
+              <span class="emp-stat-val">{{ emp.ticketsResolved }}</span>
+              <span class="emp-stat-label">Resolved</span>
+            </div>
+            <div class="emp-stat-item">
+              <span class="emp-stat-val" [style.color]="perfColor(emp.performanceScore || 0)">{{ emp.performanceScore }}%</span>
+              <span class="emp-stat-label">Performance</span>
+            </div>
+            <div class="emp-stat-item">
+              <span class="emp-stat-val">{{ emp.shift.split('(')[0].trim() }}</span>
+              <span class="emp-stat-label">Shift</span>
+            </div>
+          </div>
+
+          <div class="emp-info"><i class="bi bi-envelope me-2"></i>{{ emp.email }}</div>
+          <div class="emp-info"><i class="bi bi-telephone me-2"></i>{{ emp.phone }}</div>
+          <div class="emp-info"><i class="bi bi-building me-2"></i>{{ emp.department }}</div>
+          <div class="emp-info text-muted"><i class="bi bi-clock me-2"></i>Last login: {{ emp.lastLogin || 'Never' }}</div>
+
+          @if (emp.suspensionReason) {
+            <div class="suspension-reason-box mt-3">
+              <strong>Suspension Reason:</strong> {{ emp.suspensionReason }}
+            </div>
+          }
+
+          <div class="emp-actions mt-3 pt-3 border-top">
+            @if (emp.status === 'active' || emp.status === 'on_leave') {
+              <button class="emp-action-btn edit-btn" (click)="openEditForm(emp)" title="Edit">
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button class="emp-action-btn suspend-btn" (click)="openSuspendForm(emp)" title="Suspend">
+                <i class="bi bi-pause-circle"></i>
+              </button>
+              <button class="emp-action-btn terminate-btn" (click)="terminateEmployee(emp)" title="Terminate">
+                <i class="bi bi-x-octagon"></i>
+              </button>
+            } @else if (emp.status === 'suspended') {
+              <button class="emp-action-btn reactivate-btn" (click)="reactivateEmployee(emp)">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reactivate
+              </button>
+              <button class="emp-action-btn terminate-btn" (click)="terminateEmployee(emp)" title="Terminate">
+                <i class="bi bi-x-octagon"></i>
+              </button>
+            } @else {
+              <div class="text-muted small"><i class="bi bi-info-circle me-1"></i>Account Terminated</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="col-12 py-5 text-center">
+      <i class="bi bi-person-x text-muted opacity-50" style="font-size: 3.5rem;"></i>
+      <h5 class="mt-4 fw-bold">No employees found</h5>
+      <p class="text-muted small">Try adjusting your filters or search query.</p>
+      <button class="btn btn-outline-secondary mt-2 rounded-pill px-4" (click)="searchQuery.set(''); roleFilter.set('all'); statusFilter.set('all')">
+        Clear All Filters
+      </button>
+    </div>
+  }
+</div>
+
+<!-- Add/Edit Employee Modal -->
+@if (showForm()) {
+  <div class="modal-backdrop" (click)="closeForm()"></div>
+  <div class="custom-modal emp-form-modal">
+    <div class="modal-header d-flex justify-content-between align-items-center mb-4">
+      <h5 class="m-0 fw-bold text-primary">
+        <i class="bi bi-person-plus me-2"></i>
+        {{ editingEmployee() ? 'Edit Employee' : 'Add New Employee' }}
+      </h5>
+      <button class="btn-close shadow-none" (click)="closeForm()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Full Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [class.is-invalid]="errors()['name']" [value]="formData().name" (input)="updateFormField('name', $any($event.target).value)" placeholder="e.g. Kavitha Reddy">
+          @if (errors()['name']) { <div class="invalid-feedback">{{ errors()['name'] }}</div> }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Employee ID <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [class.is-invalid]="errors()['employeeId']" [value]="formData().employeeId" (input)="updateFormField('employeeId', $any($event.target).value)" placeholder="e.g. SUP-7732">
+          @if (errors()['employeeId']) { <div class="invalid-feedback">{{ errors()['employeeId'] }}</div> }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Email <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" [class.is-invalid]="errors()['email']" [value]="formData().email" (input)="updateFormField('email', $any($event.target).value)" placeholder="name@joinevents.com">
+          @if (errors()['email']) { <div class="invalid-feedback">{{ errors()['email'] }}</div> }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Phone</label>
+          <input type="tel" class="form-control" [class.is-invalid]="errors()['phone']" [value]="formData().phone" (input)="updateFormField('phone', $any($event.target).value)" placeholder="+91 9XXXX XXXXX">
+          @if (errors()['phone']) { <div class="invalid-feedback">{{ errors()['phone'] }}</div> }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Role <span class="text-danger">*</span></label>
+          <select class="form-select" [value]="formData().role" (change)="updateFormField('role', $any($event.target).value)">
+            @for (r of roles; track r) {
+              <option [value]="r">{{ r | titlecase }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Designation</label>
+          <input type="text" class="form-control" [value]="formData().designation" (input)="updateFormField('designation', $any($event.target).value)" placeholder="e.g. Senior Support Agent">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Department</label>
+          <input type="text" class="form-control" [value]="formData().department" (input)="updateFormField('department', $any($event.target).value)" placeholder="e.g. Customer Satisfaction">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-bold text-muted">Shift</label>
+          <select class="form-select" [value]="formData().shift" (change)="updateFormField('shift', $any($event.target).value)">
+            @for (s of shifts; track s) {
+              <option [value]="s">{{ s }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
+        <button class="btn btn-light px-4" (click)="closeForm()">Cancel</button>
+        <button class="btn btn-primary fw-bold px-4" 
+                [disabled]="!formData().name?.trim() || !formData().email?.trim() || !formData().employeeId?.trim()"
+                (click)="saveEmployee()">
+          <i class="bi" [class.bi-check2-circle]="editingEmployee()" [class.bi-person-plus]="!editingEmployee()"></i>
+          {{ editingEmployee() ? 'Save Changes' : 'Add Employee' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Suspend Employee Modal -->
+@if (suspendingEmployee(); as emp) {
+  <div class="modal-backdrop" (click)="closeSuspend()"></div>
+  <div class="custom-modal suspension-modal">
+    <div class="modal-header d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Suspend {{ emp.name }}</h5>
+      <button class="btn-close shadow-none" (click)="closeSuspend()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-danger small border-0">
+        This employee will be immediately locked out of all platform tools. Their active tickets will be reassigned.
+      </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-muted">Reason for Suspension <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [value]="suspendReason()" (input)="suspendReason.set($any($event.target).value)" placeholder="Describe the reason for suspension..."></textarea>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <button class="btn btn-light" (click)="closeSuspend()">Cancel</button>
+        <button class="btn btn-danger fw-bold" [disabled]="!suspendReason().trim()" (click)="confirmSuspend()">Confirm Suspension</button>
+      </div>
+    </div>
+  </div>
+}

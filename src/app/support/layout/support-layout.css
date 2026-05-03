@@ -1,0 +1,22 @@
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;}
+
+/* Support-specific accent overrides */
+.support-sidebar .sidebar-link:hover {
+  color: #F59E0B;
+  background: rgba(245,158,11,0.04);
+}
+.support-sidebar .sidebar-link.active {
+  color: #F59E0B;
+  background: rgba(245,158,11,0.08);
+}
+.support-sidebar .sidebar-link.active i { color: #F59E0B; }
+.support-sidebar .sidebar-link.active::before {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+}
+.support-sidebar .sidebar-link .badge-count {
+  background: #F59E0B;
+}
+
+.support-avatar {
+  background: linear-gradient(135deg, #F59E0B, #D97706) !important;
+}

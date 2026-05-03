@@ -1,0 +1,94 @@
+<div class="page-header">
+  <h1><i class="bi bi-person-badge me-2 text-primary"></i>My Profile</h1>
+  <p>Manage your account settings and personal information</p>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-4">
+    <div class="ee-card text-center p-4">
+      <div class="profile-avatar-lg mx-auto mb-3">
+        {{ getInitials(user()?.name || '') }}
+      </div>
+      <h4 class="mb-1">{{ user()?.name }}</h4>
+      <div class="ee-badge ee-badge-primary mb-3">Customer</div>
+      <p class="text-muted small">Member since Oct 2025</p>
+      
+      <hr class="my-4 opacity-10">
+      
+      <div class="text-start">
+        <div class="mb-3">
+          <label class="ee-form-label text-muted">Email Address</label>
+          <div class="fw-medium">{{ user()?.email }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="ee-form-label text-muted">Phone Number</label>
+          <div class="fw-medium">+91 98765 43210</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <div class="ee-card">
+      <div class="card-header-custom d-flex align-items-center justify-content-between">
+        <h6 class="card-header-title"><i class="bi bi-card-text me-2 text-primary"></i>Account Details</h6>
+        <button class="btn btn-sm btn-ee-outline" (click)="isEditing.set(!isEditing())">
+          <i class="bi" [class.bi-pencil]="!isEditing()" [class.bi-x-lg]="isEditing()"></i>
+          {{ isEditing() ? 'Cancel' : 'Edit Profile' }}
+        </button>
+      </div>
+      
+      <div class="p-4">
+        <form (submit)="saveProfile()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="ee-form-label">Full Name</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.name" name="name">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">Email Address</label>
+              <input type="email" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.email" name="email">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">Phone Number</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.phone" name="phone">
+            </div>
+            <div class="col-12">
+              <label class="ee-form-label">Address</label>
+              <textarea class="ee-form-control" rows="3" [disabled]="!isEditing()" [(ngModel)]="profileData.address" name="address"></textarea>
+            </div>
+            <div class="col-12">
+              <label class="ee-form-label">Bio</label>
+              <textarea class="ee-form-control" rows="3" [disabled]="!isEditing()" [(ngModel)]="profileData.bio" name="bio"></textarea>
+            </div>
+            
+            @if (isEditing()) {
+              <div class="col-12 mt-4">
+                <button type="submit" class="btn-ee-primary">Save Changes</button>
+              </div>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="ee-card mt-4">
+      <div class="card-header-custom">
+        <h6 class="card-header-title"><i class="bi bi-shield-lock me-2 text-primary"></i>Security & Access</h6>
+      </div>
+      <div class="p-4">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <h6 class="fw-bold mb-1">Account Password</h6>
+            <div class="text-muted small">Update your account password regularly for better security</div>
+          </div>
+          <button class="btn btn-outline-primary fw-800 rounded-pill px-4" (click)="showPasswordModal.set(true)">Update Password</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (showPasswordModal()) {
+  <app-change-password (close)="showPasswordModal.set(false)" />
+}

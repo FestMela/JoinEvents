@@ -1,0 +1,78 @@
+<div class="page-header">
+  <h1>Browse Events</h1>
+  <p>Choose the type of event you want to plan and book</p>
+</div>
+
+<!-- Search & Filter Bar -->
+<div class="ee-card p-4 mb-5 shadow-sm border-0">
+  <div class="row g-4 align-items-center">
+    <div class="col-12 col-xl-4">
+      <div class="search-box">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" class="ee-form-control search-input" [(ngModel)]="search"
+               (ngModelChange)="filterEvents()" placeholder="Search by service or style...">
+      </div>
+    </div>
+    <div class="col-12 col-xl-8">
+      <div class="d-flex flex-wrap gap-2 justify-content-xl-end overflow-auto pb-2">
+        @for (cat of categories; track cat.id) {
+          <button class="filter-chip" [class.active]="selectedCategory === cat.id"
+                  (click)="selectedCategory = cat.id; filterEvents()">
+            {{ cat.label }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Event Cards Grid -->
+<div class="row g-4">
+  @for (event of filtered(); track event.id) {
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="event-catalog-card ee-card rounded-4">
+        <div class="event-card-banner" [style.background]="event.gradient">
+          <i class="bi {{ event.icon }} event-card-icon"></i>
+          <div class="event-card-hindi">{{ event.nameHindi }}</div>
+        </div>
+        <div class="p-4">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="event-card-title">{{ event.name }}</h5>
+            <div class="v-stat rating"><i class="bi bi-star-fill"></i> 4.9</div>
+          </div>
+          <p class="event-card-desc">{{ event.description }}</p>
+          
+          <div class="popular-services-row">
+            @for (svc of event.popularServices.slice(0,3); track svc) {
+              <span class="service-pill">{{ svc }}</span>
+            }
+          </div>
+
+          <div class="vendor-stats-row">
+            <div class="v-stat"><i class="bi bi-people-fill"></i> 24+ Vendors</div>
+            <div class="v-stat"><i class="bi bi-check-circle-fill"></i> Verified</div>
+          </div>
+
+          <div class="price-box">
+            <div class="price-tag">
+              <span class="p-label">Starting from</span>
+              <span class="p-val">₹{{ event.startingPrice.toLocaleString('en-IN') }}</span>
+            </div>
+            <a [routerLink]="['/customer/vendors', event.id]" class="btn-ee-primary rounded-pill px-4">
+              Explore <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+  @empty {
+    <div class="col-12">
+      <div class="empty-state">
+        <i class="bi bi-search" style="font-size:3rem;color:var(--slate-light)"></i>
+        <h6>No events found</h6>
+        <p>Try adjusting your search or filters</p>
+      </div>
+    </div>
+  }
+</div>

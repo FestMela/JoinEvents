@@ -1,0 +1,121 @@
+<div class="offers-wrapper fade-in">
+  <div class="d-flex justify-content-between align-items-end mb-5">
+    <div class="header-main">
+      <h1 class="h2 fw-900 color-navy mb-1">Manage Promotional Offers</h1>
+      <p class="text-muted mb-0">Boost your bookings by creating exclusive deals and discount codes.</p>
+    </div>
+    <button class="btn-create-offer" (click)="openAddForm()">
+      <i class="bi bi-plus-lg me-2"></i> Create New Offer
+    </button>
+  </div>
+
+  @if (showForm()) {
+    <div class="offer-form-overlay slide-in-bottom">
+      <div class="ee-card-modern p-5 relative overflow-visible">
+        <button class="btn-close-form" (click)="showForm.set(false)"><i class="bi bi-x-lg"></i></button>
+        
+        <h4 class="fw-800 mb-4">{{ isEditing() ? 'Edit Offer' : 'Create New Promotional Offer' }}</h4>
+        
+        <form (ngSubmit)="saveOffer()">
+          <div class="row g-4">
+            <div class="col-md-8">
+              <div class="floating-input">
+                <input type="text" [(ngModel)]="formData.title" name="title" required placeholder=" ">
+                <label>Offer Title (e.g. Festival Special)</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="floating-input">
+                <input type="text" [(ngModel)]="formData.code" name="code" required placeholder=" " style="text-transform: uppercase;">
+                <label>Promo Code</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="floating-input">
+                <input type="number" [(ngModel)]="formData.discount" name="discount" required placeholder=" ">
+                <label>Discount Value</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="floating-input">
+                <select [(ngModel)]="formData.type" name="type" required>
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount (₹)</option>
+                </select>
+                <label>Discount Type</label>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="floating-input">
+                <input type="date" [(ngModel)]="formData.validUntil" name="validUntil" required placeholder=" ">
+                <label>Valid Until</label>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="floating-input">
+                <textarea [(ngModel)]="formData.description" name="description" placeholder=" " rows="3"></textarea>
+                <label>Offer Description & Terms</label>
+              </div>
+            </div>
+            <div class="col-12 d-flex gap-3 mt-2">
+              <button type="submit" class="btn-ee-primary px-5 py-3">
+                {{ isEditing() ? 'Update Offer' : 'Launch Offer' }}
+              </button>
+              <button type="button" class="btn-ee-outline px-4" (click)="showForm.set(false)">Cancel</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  <div class="row g-4">
+    @for (offer of offers(); track offer.id) {
+      <div class="col-xl-4 col-md-6">
+        <div class="offer-card-premium" [class.expired]="offer.status === 'expired'">
+          <div class="offer-status-badge" [class]="offer.status">
+            {{ offer.status }}
+          </div>
+          
+          <div class="offer-discount-circle">
+            <span class="num">{{ offer.discount }}{{ offer.type === 'percentage' ? '%' : '₹' }}</span>
+            <span class="off">OFF</span>
+          </div>
+
+          <div class="offer-main">
+            <h5 class="offer-title">{{ offer.title }}</h5>
+            <div class="offer-code-wrap">
+              <span class="code">{{ offer.code }}</span>
+              <button class="btn-copy-code" title="Copy Code"><i class="bi bi-files"></i></button>
+            </div>
+            <p class="offer-desc">{{ offer.description }}</p>
+          </div>
+
+          <div class="offer-footer">
+            <div class="validity">
+              <i class="bi bi-calendar-check me-1"></i> Ends: {{ offer.validUntil }}
+            </div>
+            <div class="offer-actions">
+              <button class="btn-action-sm edit" (click)="editOffer(offer)" title="Edit"><i class="bi bi-pencil-fill"></i></button>
+              <button class="btn-action-sm toggle" (click)="toggleStatus(offer.id)" [title]="offer.status === 'active' ? 'Deactivate' : 'Activate'">
+                <i class="bi" [class]="offer.status === 'active' ? 'bi-pause-fill' : 'bi-play-fill'"></i>
+              </button>
+              <button class="btn-action-sm delete" (click)="deleteOffer(offer.id)" title="Delete"><i class="bi bi-trash3-fill"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (offers().length === 0) {
+      <div class="col-12">
+        <div class="empty-offers-state">
+          <div class="empty-icon"><i class="bi bi-megaphone"></i></div>
+          <h3>No active offers yet</h3>
+          <p>Create your first promotional deal to attract more customers.</p>
+          <button class="btn-ee-primary mt-3" (click)="openAddForm()">Create Offer</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

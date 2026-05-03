@@ -1,0 +1,118 @@
+<div class="vendors-page">
+  <a routerLink="/customer/events" class="back-to-events-btn">
+    <span class="back-arrow"><i class="bi bi-arrow-left"></i></span>
+    <span class="back-label">All Event Types</span>
+  </a>
+  <!-- Dynamic Title Section -->
+  <div class="d-flex align-items-center justify-content-between mb-4 mt-2">
+    <div>
+      <h1 class="fw-900 mb-0" style="font-size: 2.5rem; letter-spacing: -1.5px;">{{ eventType()?.name }} <span class="text-primary">Packages</span></h1>
+      <p class="text-muted fw-600">Discover handpicked premium experiences for your special day</p>
+    </div>
+    <div class="d-none d-md-block">
+      <span class="ee-badge ee-badge-secondary px-3 py-2 fs-6">{{ packages().length }} Results Found</span>
+    </div>
+  </div>
+
+  <!-- Integrated Search & Filter Hero -->
+  <div class="search-hero">
+    <div class="search-item">
+      <label>Location</label>
+      <input type="text" placeholder="Where in India?" [value]="filterLocation()" (input)="updateFilter('location', $any($event.target).value)">
+    </div>
+    <div class="search-item">
+      <label>Date</label>
+      <input type="date" [value]="filterDate()" (change)="updateFilter('date', $any($event.target).value)">
+    </div>
+    <div class="search-item">
+      <label>Guest Count</label>
+      <select [value]="filterPax()" (change)="updateFilter('pax', $any($event.target).value)">
+        <option value="0">Any Pax</option>
+        <option value="100">100+ Pax</option>
+        <option value="300">300+ Pax</option>
+        <option value="500">500+ Pax</option>
+        <option value="1000">1000+ Pax</option>
+      </select>
+    </div>
+    <div class="search-item">
+      <label>Food</label>
+      <select [value]="filterFoodType()" (change)="updateFilter('foodType', $any($event.target).value)">
+        <option value="all">Any Cuisine</option>
+        <option value="veg">Pure Veg</option>
+        <option value="mix">Veg & Non-Veg</option>
+      </select>
+    </div>
+    <div class="search-action">
+      <button class="btn-search-round">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Filter Chips -->
+  <div class="quick-filters">
+    <div class="q-chip" [class.active]="filterBudget() === 10000000" (click)="updateFilter('budget', 10000000)">All Prices</div>
+    <div class="q-chip" [class.active]="filterBudget() === 500000" (click)="updateFilter('budget', 500000)">Under 5 Lakhs</div>
+    <div class="q-chip" [class.active]="filterBudget() === 1000000" (click)="updateFilter('budget', 1000000)">Under 10 Lakhs</div>
+    <div class="q-chip" [class.active]="filterBudget() === 2500000" (click)="updateFilter('budget', 2500000)">Under 25 Lakhs</div>
+    <div class="q-chip" [class.active]="filterBudget() === 5000000" (click)="updateFilter('budget', 5000000)">Luxury (50L+)</div>
+    <div class="q-chip" [class.active]="filterEcoFriendly()" (click)="updateFilter('eco', !filterEcoFriendly())">🌿 Eco-Friendly Only</div>
+  </div>
+
+  @if (loading()) {
+    <div class="text-center py-5">
+      <div class="spinner-grow text-primary" role="status"></div>
+      <p class="mt-3 fw-bold">Fetching perfection...</p>
+    </div>
+  } @else if (packages().length === 0) {
+    <div class="empty-state">
+      <i class="bi bi-search-heart"></i>
+      <h3>No matching packages found</h3>
+      <p class="text-muted">Try adjusting your filters to discover more options.</p>
+      <button class="btn-ee-outline mt-3" (click)="filterLocation.set(''); filterBudget.set(10000000); applyFilters()">Clear Filters</button>
+    </div>
+  } @else {
+    <div class="row g-5">
+      @for (pkg of packages(); track pkg.id) {
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="package-card-v2" (click)="selectVendor(pkg.id)" style="cursor: pointer;">
+            <div class="card-img-wrap">
+              <img [src]="pkg.image" class="card-img" [alt]="pkg.name" loading="lazy">
+              <div class="price-badge-v2">₹{{ (pkg.price / 100000).toFixed(1) }}L</div>
+              <button class="fav-btn" (click)="$event.stopPropagation()"><i class="bi bi-heart"></i></button>
+            </div>
+
+            <div class="card-content-v2">
+              <div class="pkg-meta">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="pkg-label">{{ pkg.tier | titlecase }}</span>
+                  @if (pkg.sustainabilityTags && pkg.sustainabilityTags.length) {
+                    <span class="ee-badge ee-badge-success" style="padding: 2px 8px; font-size: 0.65rem;" title="{{ pkg.sustainabilityTags.join(', ') }}">🌿 Eco-Verified</span>
+                  }
+                </div>
+                <span class="pkg-rating"><i class="bi bi-star-fill"></i> 4.8 (120)</span>
+              </div>
+              
+              <h3 class="pkg-title-v2">{{ pkg.name }}</h3>
+              <div class="pkg-loc-v2">
+                <i class="bi bi-geo-alt"></i> {{ pkg.location }}
+              </div>
+
+              <div class="pkg-features">
+                <div class="feat-item">
+                  <i class="bi bi-people"></i> {{ pkg.maxGuests }}
+                </div>
+                <div class="feat-item">
+                  <i class="bi bi-house"></i> {{ pkg.roomCount }} Rms
+                </div>
+                <div class="feat-item">
+                  <i class="bi bi-egg"></i> {{ pkg.vegOnly ? 'Veg' : 'Mix' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

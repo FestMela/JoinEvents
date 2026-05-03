@@ -1,0 +1,70 @@
+.sidebar-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999; }
+.btn-icon-sm { width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition); }
+.btn-icon-sm:hover { background:rgba(255,255,255,0.1);color:white; }
+.topbar-avatar { width:36px;height:36px;border-radius:50%;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:0.82rem;cursor:pointer; }
+.topbar-brand-mobile { font-size:1rem; }
+
+/* ---- Guest Auth Buttons ---- */
+.guest-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.guest-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+.guest-login-btn:hover { background: var(--primary); color: white; transform: translateY(-1px); }
+.guest-icon { font-size: 1.4rem; }
+
+.guest-signup-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 20px;
+  background: var(--gradient-primary);
+  color: white;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.82rem;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(255,107,53,0.35);
+  white-space: nowrap;
+}
+.guest-signup-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,53,0.45); color: white; }
+
+/* Mobile: compact button form */
+@media (max-width: 575px) {
+  .guest-login-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  .guest-signup-btn {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 0.72rem;
+    border-radius: 14px;
+  }
+}
+

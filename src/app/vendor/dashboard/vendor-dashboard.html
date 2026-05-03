@@ -1,0 +1,227 @@
+<div class="dashboard-wrapper">
+  <!-- Premium Hero Header -->
+  <div class="vendor-hero mb-5">
+    <div class="hero-content">
+      <div class="hero-main text-white">
+        <h1 class="fw-900 mb-2">Welcome back, {{ dashboard()?.vendorName || 'Partner' }}! 🚀</h1>
+        <p class="mb-0 fs-5" style="opacity: 0.9">Your business is scaling fast. You've received <span class="fw-800">12 new enquiries</span> this week.</p>
+      </div>
+      <div class="hero-badge">
+        <div class="level-icon"><i class="bi bi-award-fill"></i></div>
+        <div class="level-info">
+          <div class="level-name">{{ vendorLevel().current }}</div>
+          <div class="level-progress">
+            <div class="progress-bar" [style.width.%]="(vendorLevel().points/vendorLevel().needed)*100"></div>
+          </div>
+          <div class="level-next">{{ vendorLevel().points }}/{{ vendorLevel().needed }} pts to next level</div>
+        </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Trust Center Alert -->
+  @if (vendorProfile() && !vendorProfile().isVerified) {
+  <div class="ee-card mb-5 p-4 text-white" style="border: none; background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h5 class="fw-900 mb-2"><i class="bi bi-shield-lock-fill me-2"></i> JoinEvents Trust Center: Get Verified</h5>
+        <p class="mb-0">Earn the Blue Checkmark and boost your bookings by up to 40%. Upload your business registration or KYC documents today to build trust with customers.</p>
+      </div>
+      <button class="btn btn-light fw-800 px-4 rounded-pill text-primary shadow-sm" routerLink="/vendor/profile">Upload KYC</button>
+    </div>
+  </div>
+  }
+
+  <!-- Pending Profile Tasks -->
+  <div class="ee-card mb-5 p-4 task-card fade-in-up">
+    <h6 class="fw-800 mb-4 color-navy">
+      <i class="bi bi-exclamation-diamond-fill me-2 text-warning"></i> Action Required: Complete Your Profile
+    </h6>
+    <div class="pending-tasks-list row g-3">
+      @for (task of pendingTasks(); track task.id) {
+      <div class="col-12 col-md-6">
+        <div class="pending-task-item">
+          <div class="task-info">
+            <span class="task-label">{{ task.title }} missing</span>
+            <div class="small text-muted">Complete this to boost your visibility. <a [routerLink]="task.link" class="task-link">Fix Now</a></div>
+          </div>
+          <div class="task-action-icon">
+            <i class="bi bi-arrow-right-short"></i>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+
+  <!-- Key Performance Stats -->
+  <div class="row g-4 mb-5">
+    @for (stat of stats; track stat.label) {
+    <div class="col-6 col-lg-3">
+      <div class="stat-card-premium">
+        <div class="stat-icon" [style.background]="stat.bg">
+          <i class="bi {{ stat.icon }}" [style.color]="stat.color"></i>
+        </div>
+        <div class="stat-data">
+          <div class="stat-val">{{ stat.value }}</div>
+          <div class="stat-lab">{{ stat.label }}</div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+
+  <div class="row g-5">
+    <!-- Left Column -->
+    <div class="col-12 col-xl-8">
+      
+      <!-- Revenue Tracking -->
+      <div class="ee-card mb-5 p-0 revenue-card overflow-hidden">
+        <div class="p-4 border-bottom ee-card-header d-flex justify-content-between align-items-center">
+          <h6 class="fw-800 m-0 color-navy"><i class="bi bi-graph-up-arrow me-2 text-primary"></i> Business Growth Tracking</h6>
+          <span class="badge bg-primary-ee px-3 py-2 rounded-pill">{{ revenueTarget().percentage }}% Target Achieved</span>
+        </div>
+        <div class="p-5">
+          <div class="revenue-viz">
+            <div class="rev-stats">
+              <div class="rev-item">
+                <span class="lab text-uppercase">Current Payouts</span>
+                <span class="val">₹{{ revenueTarget().current.toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="rev-item text-end">
+                <span class="lab text-uppercase">Monthly Goal</span>
+                <span class="val">₹{{ revenueTarget().target.toLocaleString('en-IN') }}</span>
+              </div>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" [style.width.%]="revenueTarget().percentage">
+                <div class="progress-shimmer"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Booking Requests -->
+      <div class="ee-card mb-5 p-0">
+        <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
+          <h6 class="fw-800 m-0 color-navy"><i class="bi bi-clock-history me-2 text-warning"></i> Recent Booking Requests</h6>
+          <a routerLink="/vendor/bookings" class="btn btn-outline-secondary btn-sm px-3 rounded-pill fw-700">Explore All</a>
+        </div>
+        <div class="request-list">
+          @if (dashboard()) {
+          @for (req of dashboard().recentRequests; track req.id) {
+          <div class="request-item-modern">
+            <div class="req-avatar">{{ req.customerName.charAt(0) }}</div>
+            <div class="req-details">
+              <div class="req-title">{{ req.eventName }}</div>
+              <div class="req-subtitle">{{ req.customerName }} · <span class="text-primary">{{ req.eventDate }}</span></div>
+            </div>
+            <div class="req-price">₹{{ req.amount.toLocaleString('en-IN') }}</div>
+            <div class="req-actions">
+              <button class="btn-req-accept" title="Accept"><i class="bi bi-check-circle-fill"></i></button>
+              <button class="btn-req-decline" title="Decline"><i class="bi bi-x-circle-fill"></i></button>
+            </div>
+          </div>
+          }
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-12 col-xl-4">
+      <!-- ESG Snapshot Card -->
+      <div class="ee-card mb-4 p-4 esg-snapshot-card" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-800 m-0" style="color: #166534;"><i class="bi bi-globe-americas me-2"></i> ESG Impact</h6>
+          <span class="badge bg-success px-2 py-1">{{ esgScore().score }} pts</span>
+        </div>
+        <div class="esg-stats-mini d-flex gap-3 mb-3">
+          <div class="esg-item">
+            <div class="small text-muted">CO2 Offset</div>
+            <div class="fw-bold text-success">{{ esgScore().offset }}</div>
+          </div>
+          <div class="esg-item">
+            <div class="small text-muted">Trend</div>
+            <div class="fw-bold text-success"><i class="bi bi-graph-up me-1"></i> {{ esgScore().trend }}</div>
+          </div>
+        </div>
+        <a routerLink="/vendor/impact" class="btn btn-sm btn-success w-100 rounded-pill fw-700 shadow-sm">View Full Impact Report</a>
+      </div>
+
+      <!-- Pending Collaborations Card -->
+      <div class="ee-card mb-4 p-4 collab-card" style="border-left: 4px solid var(--secondary);">
+        <h6 class="fw-800 mb-3 color-navy"><i class="bi bi-people-fill me-2 text-secondary"></i> Partner Requests</h6>
+        <div class="collab-list">
+          @for (collab of pendingCollaborations(); track collab.id) {
+          <div class="collab-item d-flex align-items-center gap-3 mb-3 pb-3 border-bottom-dashed">
+            <div class="collab-avatar">{{ collab.partner.charAt(0) }}</div>
+            <div class="collab-info flex-grow-1">
+              <div class="fw-bold small">{{ collab.partner }}</div>
+              <div class="text-muted" style="font-size: 0.7rem;">{{ collab.category }} · {{ collab.time }}</div>
+            </div>
+            <div class="collab-actions">
+              <button class="btn btn-sm btn-outline-secondary rounded-circle p-1"><i class="bi bi-check-lg"></i></button>
+            </div>
+          </div>
+          }
+        </div>
+        <a routerLink="/vendor/network" class="text-secondary small fw-bold text-decoration-none">Explore B2B Network <i class="bi bi-arrow-right"></i></a>
+      </div>
+
+      <!-- Share Profile Card -->
+      <div class="ee-card mb-4 p-4 share-profile-card premium-share">
+        <h6 class="fw-800 mb-3 color-navy"><i class="bi bi-megaphone-fill me-2 text-primary"></i> Market Your Business</h6>
+        <div class="share-box-modern mb-3">
+          <div class="link-display">joinevents.com/v/spice-garden...</div>
+          <button class="btn-copy-link" (click)="copyProfileLink()">Copy</button>
+        </div>
+        <div class="social-share-grid">
+          <button class="btn-social wa" (click)="shareVia('whatsapp')"><i class="bi bi-whatsapp"></i></button>
+          <button class="btn-social fb" (click)="shareVia('facebook')"><i class="bi bi-facebook"></i></button>
+          <button class="btn-social tw" (click)="shareVia('twitter')"><i class="bi bi-twitter-x"></i></button>
+          <button class="btn-social li" (click)="shareVia('linkedin')"><i class="bi bi-linkedin"></i></button>
+        </div>
+      </div>
+
+      <!-- Recent Enquiries -->
+      <div class="ee-card mb-4 p-4">
+        <h6 class="fw-800 mb-4 color-navy"><i class="bi bi-chat-left-text-fill me-2 text-info"></i> Customer Enquiries</h6>
+        <div class="enquiry-list">
+          @for (enq of recentEnquiries(); track enq.id) {
+          <div class="enquiry-item">
+            <div class="enq-header">
+              <span class="enq-name">{{ enq.customer }}</span>
+              <span class="enq-time text-muted small">{{ enq.time }}</span>
+            </div>
+            <div class="enq-service">{{ enq.service }}</div>
+            <div class="enq-msg">"{{ enq.msg }}"</div>
+            <div class="enq-actions-row">
+              <button class="btn-quick-reply" (click)="sendQuickReply(enq.customer, 'Available')">Available</button>
+              <button class="btn-quick-reply" (click)="sendQuickReply(enq.customer, 'Call Me')">Call Me</button>
+              <button class="btn-quick-reply" (click)="sendQuickReply(enq.customer, 'Send Quote')">Send Quote</button>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="row g-3">
+        <div class="col-6">
+          <a routerLink="/vendor/add-service" class="quick-action-btn primary">
+            <i class="bi bi-plus-square-dotted"></i>
+            <span>Add Deal</span>
+          </a>
+        </div>
+        <div class="col-6">
+          <a routerLink="/vendor/calendar" class="quick-action-btn secondary">
+            <i class="bi bi-calendar-event"></i>
+            <span>Schedule</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

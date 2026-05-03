@@ -1,0 +1,5 @@
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;}
+.btn-icon-sm{width:28px;height:28px;border-radius:6px;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition);}
+.btn-icon-sm:hover{background:rgba(255,255,255,0.1);color:white;}
+.topbar-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;font-size:0.82rem;cursor:pointer;}
+.admin-avatar{background:linear-gradient(135deg,#0EA5E9,#6B21A8);}

@@ -1,0 +1,255 @@
+<div class="staff-wrapper">
+    <!-- Header & KPIs -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-900 color-navy mb-1">Staff Management</h2>
+            <p class="text-muted mb-0">Manage your team, roles, and payroll seamlessly.</p>
+        </div>
+        <button class="btn-create-staff" (click)="openAddForm()">
+            <i class="bi bi-person-plus-fill me-2"></i> Add New Staff
+        </button>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="kpi-glass-card total">
+                <div class="kpi-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="kpi-data">
+                    <span class="lab">Total Team</span>
+                    <span class="val">{{ staffList().length }} Members</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="kpi-glass-card active">
+                <div class="kpi-icon"><i class="bi bi-person-check-fill"></i></div>
+                <div class="kpi-data">
+                    <span class="lab">Active Now</span>
+                    <span class="val">{{ activeStaffCount() }} On Duty</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="kpi-glass-card salary">
+                <div class="kpi-icon"><i class="bi bi-currency-rupee"></i></div>
+                <div class="kpi-data">
+                    <span class="lab">Monthly Payroll</span>
+                    <span class="val">₹{{ totalMonthlySalary().toLocaleString('en-IN') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <!-- Staff List (Left) -->
+        <div class="col-xl-8">
+            <div class="ee-card overflow-hidden">
+                <div class="p-4 border-bottom ee-card-header d-flex justify-content-between align-items-center">
+                    <h6 class="fw-800 m-0 color-navy"><i class="bi bi-list-task me-2 text-primary"></i> Team Directory</h6>
+                    <div class="badge bg-primary-ee px-3 py-2 rounded-pill">Top Performing Team</div>
+                </div>
+                
+                <div class="staff-list">
+                    @for (staff of staffList(); track staff.id) {
+                    <div class="staff-item-premium" [class.on-leave]="staff.status === 'On Leave'">
+                        <div class="staff-avatar">
+                            {{ getInitials(staff.name) }}
+                        </div>
+                        <div class="staff-info">
+                            <div class="staff-name-row">
+                                <span class="staff-name">{{ staff.name }}</span>
+                                <span class="staff-badge" [class.active]="staff.status === 'Active'">{{ staff.status }}</span>
+                            </div>
+                            <div class="staff-role">{{ staff.role }}</div>
+                            <div class="staff-meta">
+                                <span><i class="bi bi-telephone me-1"></i> {{ staff.phone }}</span>
+                                <span class="ms-3"><i class="bi bi-calendar-event me-1"></i> Joined {{ staff.joinedDate }}</span>
+                            </div>
+                        </div>
+                        <div class="staff-salary-box">
+                            <div class="salary-amt">₹{{ staff.salary.toLocaleString('en-IN') }}</div>
+                            <div class="salary-lab">{{ staff.salaryType }} · Day {{ staff.salaryCalculationDate }}</div>
+                        </div>
+                        <div class="staff-actions">
+                            <button class="btn-staff-act pay" (click)="openSalaryModal(staff)" title="Process Salary">
+                                <i class="bi bi-cash-stack"></i>
+                            </button>
+                            <button class="btn-staff-act edit" (click)="editStaff(staff)" title="Edit">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn-staff-act delete" (click)="deleteStaff(staff.id)" title="Delete">
+                                <i class="bi bi-trash3"></i>
+                            </button>
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Payroll History (Right) -->
+        <div class="col-xl-4">
+            <div class="ee-card p-4 mb-4">
+                <h6 class="fw-800 mb-4 color-navy"><i class="bi bi-receipt me-2 text-primary"></i> Recent Payouts</h6>
+                <div class="payment-history">
+                    @for (p of payments(); track p.id) {
+                    <div class="payout-item">
+                        <div class="payout-icon"><i class="bi bi-check-circle-fill"></i></div>
+                        <div class="payout-details">
+                            <div class="p-staff">{{ p.staffName }}</div>
+                            <div class="p-date">{{ p.date }}</div>
+                        </div>
+                        <div class="p-amount">₹{{ p.amount.toLocaleString('en-IN') }}</div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Tips -->
+            <div class="ee-card p-4 bg-primary-ee text-white">
+                <h6 class="fw-800 mb-3"><i class="bi bi-lightbulb me-2"></i> Payroll Tip</h6>
+                <p class="small mb-0 opacity-90">Processing salaries before the 5th of every month increases staff satisfaction and retention rate by 25%.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Staff Form Overlay -->
+    @if (showForm()) {
+    <div class="staff-form-overlay" (click)="showForm.set(false)">
+        <div class="ee-card-modern glass-modal slide-in-bottom" (click)="$event.stopPropagation()">
+            <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-900 m-0 color-navy">{{ isEditing() ? 'Update Staff Member' : 'Add New Team Member' }}</h5>
+                <button class="btn-close-modal" (click)="showForm.set(false)"><i class="bi bi-x-lg"></i></button>
+            </div>
+            
+            <div class="p-5">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <input type="text" [(ngModel)]="currentStaff().name" placeholder=" " required>
+                            <label>Full Name</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <select [(ngModel)]="currentStaff().role">
+                                <option value="Employee">Employee</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Labour">Labour</option>
+                            </select>
+                            <label>Staff Role</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <select [(ngModel)]="currentStaff().salaryType">
+                                <option value="Monthly">Monthly</option>
+                                <option value="Daily">Daily</option>
+                                <option value="Hourly">Hourly</option>
+                            </select>
+                            <label>Salary Type</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <input type="number" [(ngModel)]="currentStaff().salary" placeholder=" " required>
+                            <label>Salary Amount (₹)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <input type="number" [(ngModel)]="currentStaff().salaryCalculationDate" min="1" max="31" placeholder=" ">
+                            <label>Salary Calculation Date (Day of Month)</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <select [(ngModel)]="currentStaff().status">
+                                <option value="Active">Active</option>
+                                <option value="On Leave">On Leave</option>
+                            </select>
+                            <label>Current Status</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <input type="tel" [(ngModel)]="currentStaff().phone" placeholder=" ">
+                            <label>Phone Number</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="floating-input">
+                            <input type="email" [(ngModel)]="currentStaff().email" placeholder=" ">
+                            <label>Email Address</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5 d-flex gap-3">
+                    <button class="btn-save-staff flex-grow-1" (click)="saveStaff()">
+                        {{ isEditing() ? 'Update Details' : 'Confirm & Add Staff' }}
+                    </button>
+                    <button class="btn-cancel-modal px-4" (click)="showForm.set(false)">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Salary Process Modal -->
+    @if (showSalaryForm()) {
+    <div class="staff-form-overlay" (click)="showSalaryForm.set(false)">
+        <div class="ee-card-modern salary-modal slide-in-bottom" (click)="$event.stopPropagation()">
+            <div class="salary-header p-4 text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="fw-900 m-0">Process Payout</h4>
+                        <span class="opacity-80">Cycle: {{ payoutMonth() }} 2024</span>
+                    </div>
+                    <button class="btn-close-salary" (click)="showSalaryForm.set(false)"><i class="bi bi-x-lg"></i></button>
+                </div>
+            </div>
+
+            <div class="p-5">
+                <div class="staff-brief mb-4">
+                    <div class="avatar">{{ getInitials(selectedStaff()?.name || '') }}</div>
+                    <div class="info">
+                        <div class="name">{{ selectedStaff()?.name }}</div>
+                        <div class="role">{{ selectedStaff()?.role }} · {{ selectedStaff()?.salaryType }} Salary</div>
+                    </div>
+                </div>
+
+                <div class="salary-breakdown mb-5">
+                    <div class="break-item">
+                        <span>Base {{ selectedStaff()?.salaryType }} Salary</span>
+                        <span class="fw-800">₹{{ selectedStaff()?.salary?.toLocaleString('en-IN') }}</span>
+                    </div>
+                    <div class="break-item">
+                        <div class="d-flex align-items-center">
+                            <span>Bonus / Allowance</span>
+                            <i class="bi bi-plus-circle-fill ms-2 text-success" style="font-size: 0.8rem"></i>
+                        </div>
+                        <input type="number" class="salary-input" [(ngModel)]="bonus">
+                    </div>
+                    <div class="break-item">
+                        <div class="d-flex align-items-center">
+                            <span>Deductions / Tax</span>
+                            <i class="bi bi-dash-circle-fill ms-2 text-danger" style="font-size: 0.8rem"></i>
+                        </div>
+                        <input type="number" class="salary-input" [(ngModel)]="deductions">
+                    </div>
+                    <div class="break-total mt-4 pt-4 border-top">
+                        <span class="total-lab">NET PAYABLE</span>
+                        <span class="total-val">₹{{ netPayable.toLocaleString('en-IN') }}</span>
+                    </div>
+                </div>
+
+                <button class="btn-process-final w-100" (click)="processPayment()">
+                    Confirm & Transfer Salary
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+</div>

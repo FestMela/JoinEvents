@@ -1,0 +1,12 @@
+.filter-chip{padding:7px 16px;border-radius:var(--radius-full);border:1.5px solid var(--border-color);background:var(--bg-card);font-size:0.78rem;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all var(--transition);}
+.filter-chip.active{background:linear-gradient(135deg,#0EA5E9,#6B21A8);border-color:transparent;color:white;}
+.booking-num{font-family:var(--font-heading);font-weight:600;color:var(--primary);font-size:0.82rem;}
+.cust-cell{display:flex;align-items:center;gap:10px;}
+.cust-avatar{width:32px;height:32px;border-radius:50%;background:var(--gradient-primary);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.8rem;flex-shrink:0;}
+.cust-name{font-weight:600;font-size:0.82rem;color:var(--text-main);}
+.cust-phone{font-size:0.7rem;color:var(--text-soft);}
+.event-name-cell{font-weight:600;font-size:0.82rem;color:var(--text-main);}
+.pkg-name-cell{font-size:0.7rem;color:var(--text-soft);}
+.amount-cell{font-family:var(--font-heading);font-weight:700;color:var(--text-main);}
+.assigned-to{font-size:0.78rem;color:var(--text-muted);}
+.empty-table-cell{text-align:center;padding:40px;color:var(--text-soft);}

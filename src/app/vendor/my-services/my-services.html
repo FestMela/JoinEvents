@@ -1,0 +1,138 @@
+<div class="vendor-services-modern">
+  <!-- Hero Section -->
+  <div class="services-hero ee-card mb-4">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="h2 text-white fw-800">My Business Services</h1>
+        <p class="text-white text-opacity-75">You have {{ servicesStats().total }} active listings. Keep them updated to reach more customers.</p>
+        <div class="hero-actions mt-4">
+          <a routerLink="/vendor/add-service" class="btn btn-light fw-700 px-4 py-2 rounded-pill shadow-sm">
+            <i class="bi bi-plus-circle-fill me-2"></i> List New Service
+          </a>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-pill">
+          <div class="stat-val">{{ servicesStats().verified }}</div>
+          <div class="stat-lab">Verified</div>
+        </div>
+        <div class="stat-pill">
+          <div class="stat-val">{{ servicesStats().reviews }}</div>
+          <div class="stat-lab">Total Reviews</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar ee-card mb-4 p-3 d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-2">
+      <button class="filter-btn" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">All Services</button>
+      <button class="filter-btn" [class.active]="filterStatus() === 'verified'" (click)="filterStatus.set('verified')">Verified</button>
+      <button class="filter-btn" [class.active]="filterStatus() === 'pending'" (click)="filterStatus.set('pending')">Pending</button>
+    </div>
+    <div class="search-box-modern">
+      <i class="bi bi-search"></i>
+      <input type="text" placeholder="Search your services..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+    </div>
+  </div>
+
+  <!-- Services Grid -->
+  <div class="row g-4">
+    @for (svc of filteredServices(); track svc.id) {
+      <div class="col-12 col-md-6 col-xl-4">
+        <div class="svc-card-premium" [class.is-paused]="!svc.isActive">
+          <div class="svc-image-wrap">
+            <img [src]="svc.images && svc.images.length > 0 ? svc.images[0] : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=800'" [alt]="svc.name" loading="lazy">
+            <div class="image-overlay"></div>
+            
+            <!-- Category Chip -->
+            <div class="svc-category-badge">{{ svc.category }}</div>
+            
+            <!-- Status Badge -->
+            <div class="svc-status-badge" [class.verified]="svc.isVerified">
+              <i class="bi" [class.bi-patch-check-fill]="svc.isVerified" [class.bi-hourglass-split]="!svc.isVerified"></i>
+              {{ svc.isVerified ? 'Verified' : 'Under Review' }}
+            </div>
+
+            <!-- Action Trigger -->
+            <div class="svc-actions-trigger dropdown">
+              <button class="btn-action-glass" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-xl border-0 rounded-4">
+                <li><a class="dropdown-item py-2 px-3 fw-600" (click)="editService(svc.id)"><i class="bi bi-pencil-square me-2 text-primary"></i> Edit Details</a></li>
+                <li><a class="dropdown-item py-2 px-3 fw-600" (click)="manageGallery(svc.id)"><i class="bi bi-images me-2 text-info"></i> Manage Photos</a></li>
+                <li><hr class="dropdown-divider opacity-50"></li>
+                <li><a class="dropdown-item py-2 px-3 fw-600 text-danger" (click)="deleteService(svc.id)"><i class="bi bi-trash3 me-2"></i> Delete Listing</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="svc-card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h5 class="svc-name-premium">{{ svc.name }}</h5>
+              <div class="svc-rating-pill">
+                <i class="bi bi-star-fill"></i>
+                {{ svc.rating || 'New' }}
+              </div>
+            </div>
+
+            <div class="svc-location mb-3">
+              <i class="bi bi-geo-alt me-1"></i> {{ svc.city }}
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-end mt-4">
+              <div class="svc-pricing-premium">
+                <span class="price">₹{{ svc.pricePerUnit.toLocaleString('en-IN') }}</span>
+                <span class="unit">/ {{ svc.unit }}</span>
+              </div>
+              
+              <!-- Active Toggle -->
+              <div class="status-toggle-premium">
+                <span class="toggle-text">{{ svc.isActive ? 'Live' : 'Paused' }}</span>
+                <label class="ee-switch-sm">
+                  <input type="checkbox" [checked]="svc.isActive" (change)="toggleServiceStatus(svc)">
+                  <span class="slider-sm"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="svc-performance-grid mt-4">
+              <div class="perf-metric">
+                <span class="val">1.2k</span>
+                <span class="lab">Views</span>
+              </div>
+              <div class="perf-metric">
+                <span class="val">48</span>
+                <span class="lab">Enquiries</span>
+              </div>
+              <div class="perf-metric">
+                <span class="val">94%</span>
+                <span class="lab">Success</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="svc-card-footer-premium">
+            <button class="btn-edit-full" (click)="editService(svc.id)">
+              <i class="bi bi-pencil-square me-2"></i> Edit Service Listing
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+    @empty {
+      <div class="col-12">
+        <div class="empty-modern ee-card">
+          <div class="empty-ill">
+            <i class="bi bi-shop-window text-primary-ee"></i>
+          </div>
+          <h3>Your Business is Silent</h3>
+          <p class="text-muted">You haven't listed any services yet. Start adding your offerings to get discovered by thousands of customers planning their big day.</p>
+          <a routerLink="/vendor/add-service" class="btn-ee-primary px-5 mt-3">
+            <i class="bi bi-plus-lg me-2"></i> Create Your First Listing
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>

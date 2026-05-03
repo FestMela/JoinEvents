@@ -1,0 +1,26 @@
+.card-header-custom { padding:16px 20px;border-bottom:1px solid var(--border-color); }
+.card-header-title { font-family:var(--font-heading);font-size:0.9rem;font-weight:600;color:var(--text-main);margin:0; }
+.pay-booking-item { padding:16px 20px;border-bottom:1px solid var(--border-color);cursor:pointer;transition:all var(--transition); }
+.pay-booking-item:hover { background:var(--bg-light); }
+.pay-booking-item.active { background:rgba(255,107,53,0.04);border-left:3px solid var(--primary); }
+.pay-event-name { font-family:var(--font-heading);font-weight:600;font-size:0.875rem;color:var(--text-main); }
+.pay-meta { font-size:0.72rem;color:var(--text-soft);margin-top:2px; }
+.pay-amount-sm { font-size:0.78rem;color:var(--text-muted);font-weight:500; }
+.pay-balance { font-size:0.78rem;color:var(--danger);font-weight:600; }
+.pay-balance.settled { color:var(--success); }
+.payment-summary-hero { background:var(--gradient-dark);border-radius:var(--radius-xl);padding:28px;display:flex;align-items:center;gap:24px;flex-wrap:wrap; }
+.psh-label { font-size:0.72rem;color:rgba(255,255,255,0.5);letter-spacing:0.5px;margin-bottom:4px; }
+.psh-value { font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:white; }
+.psh-value.success { color:#4ADE80; }
+.psh-value.primary { color:var(--accent); }
+.psh-divider { width:1px;height:50px;background:rgba(255,255,255,0.15); }
+.section-mini-title { font-family:var(--font-heading);font-weight:600;font-size:0.9rem;color:var(--text-main);margin-bottom:16px; }
+.breakdown-table { display:flex;flex-direction:column;gap:0; }
+.br-row { display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border-color);font-size:0.875rem;color:var(--text-main); }
+.br-row.header { font-size:0.72rem;font-weight:600;color:var(--text-soft);letter-spacing:0.5px;text-transform:uppercase; }
+.br-row.danger { color:var(--danger); }
+.br-row.total { font-weight:600;border-top:2px solid var(--border-color);border-bottom:2px solid var(--border-color);margin:4px 0; }
+.br-row.paid { color:var(--success);font-weight:500; }
+.br-row.balance-due { padding-top:12px;border-bottom:none;font-size:1rem; }
+.pay-note { font-size:0.75rem;color:var(--text-soft);text-align:center;margin-top:12px; }
+.settled-banner { background:rgba(22,163,74,0.1);border:1px solid rgba(22,163,74,0.25);border-radius:var(--radius-md);padding:14px 20px;color:var(--success);font-weight:600;text-align:center;margin-top:16px; }

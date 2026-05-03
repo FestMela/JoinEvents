@@ -1,0 +1,38 @@
+export interface Vendor {
+  id: string;
+  name: string;
+  businessName: string;
+  email: string;
+  phone: string;
+  city: string;
+  state?: string;
+  services: string[];
+  serviceCategory?: string; // For B2B Network filtering
+  sustainabilityTags?: string[];
+  isVerified?: boolean;
+  verificationStatus: 'pending' | 'under_review' | 'verified' | 'rejected';
+  verificationDocs: VerificationDoc[];
+  rating: number;
+  totalReviews: number;
+  totalEarnings: number;
+  joinedDate: string;
+  bankAccount?: string;
+  gstNumber?: string;
+  notes?: string;
+  accountStatus?: 'active' | 'suspended' | 'banned';
+  suspensionReason?: string;
+  suspensionDuration?: string;
+}
+
+export interface VerificationDoc {
+  type: string;
+  name: string;
+  uploadedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface CalendarDay {
+  date: string;
+  status: 'available' | 'booked' | 'blocked' | 'unavailable';
+  bookingId?: string;
+}

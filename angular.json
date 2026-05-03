@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "Event_UI_Test": {
+    "JoinEvents": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -22,10 +22,19 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "src/img",
+                "output": "src/img"
               }
             ],
             "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.css"
+            ],
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
             ]
           },
           "configurations": {
@@ -38,8 +47,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "30kB",
+                  "maximumError": "50kB"
                 }
               ],
               "outputHashing": "all"
@@ -56,10 +65,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "Event_UI_Test:build:production"
+              "buildTarget": "JoinEvents:build:production"
             },
             "development": {
-              "buildTarget": "Event_UI_Test:build:development"
+              "buildTarget": "JoinEvents:build:development"
             }
           },
           "defaultConfiguration": "development"

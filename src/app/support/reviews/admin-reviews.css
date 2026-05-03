@@ -1,0 +1,112 @@
+.reviews-container {
+  padding: 20px 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.dispute-card {
+  background: var(--bg-card);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.dispute-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+}
+
+.rating-badge {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.review-box {
+  background: var(--bg-light);
+  padding: 16px;
+  border-radius: 12px;
+  border-left: 4px solid var(--border-color);
+  color: var(--text-main);
+}
+
+.dispute-box {
+  background: rgba(239, 68, 68, 0.05);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px dashed rgba(239, 68, 68, 0.3);
+  color: var(--text-main);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+.empty-icon {
+  font-size: 5rem;
+  color: var(--success);
+  opacity: 0.5;
+  margin-bottom: 20px;
+}
+
+:host-context(.dark-theme) .dispute-card { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.05) !important; }
+:host-context(.dark-theme) .review-box { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.1); }
+:host-context(.dark-theme) .dispute-box { background: rgba(239, 68, 68, 0.03); }
+
+/* Tabs Styling */
+.ee-tabs {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 2px;
+}
+
+.ee-tab-btn {
+  padding: 10px 24px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition);
+  position: relative;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.ee-tab-btn:hover {
+  color: var(--primary);
+  background: rgba(255, 107, 53, 0.04);
+}
+
+.ee-tab-btn.active {
+  color: var(--primary);
+}
+
+.ee-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: 4px;
+}
+
+/* History Card */
+.history-card {
+  border-left: 4px solid var(--border-color);
+  background: var(--bg-card);
+}
+
+.history-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.history-details {
+  border: 1px solid var(--border-color);
+}
+

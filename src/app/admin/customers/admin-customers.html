@@ -1,0 +1,161 @@
+<div class="page-header">
+  <h1>Customers</h1>
+  <p>Manage all registered customers and their booking history</p>
+</div>
+
+<div class="d-flex flex-column flex-md-row gap-3 mb-4 justify-content-between align-items-md-center">
+  <div class="d-flex flex-wrap gap-2">
+    <button class="filter-chip" [class.active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">All</button>
+    <button class="filter-chip chip-success" [class.active]="statusFilter() === 'active'" (click)="statusFilter.set('active')">Active</button>
+    <button class="filter-chip chip-warning" [class.active]="statusFilter() === 'warning'" (click)="statusFilter.set('warning')">Warning</button>
+    <button class="filter-chip chip-info" [class.active]="statusFilter() === 'restricted'" (click)="statusFilter.set('restricted')">Restricted</button>
+    <button class="filter-chip text-danger border-danger" [class.bg-danger]="statusFilter() === 'suspended'" [class.text-white]="statusFilter() === 'suspended'" (click)="statusFilter.set('suspended')">Suspended</button>
+    <button class="filter-chip text-dark border-dark" [class.bg-dark]="statusFilter() === 'banned'" [class.text-white]="statusFilter() === 'banned'" (click)="statusFilter.set('banned')">Banned</button>
+  </div>
+  
+  <div class="search-box admin-search-box px-3 py-1 rounded-pill d-flex align-items-center border shadow-sm admin-search-wrapper">
+    <i class="bi bi-search text-muted"></i>
+    <input type="text" #searchInput [value]="searchQuery()" (input)="searchQuery.set(searchInput.value)" placeholder="Search customers..." class="form-control border-0 shadow-none bg-transparent ms-2" style="font-size: 0.85rem; box-shadow: none !important; outline: none !important; width: 100%;">
+  </div>
+</div>
+
+<div class="row g-4">
+  @for (c of filteredCustomers(); track c.id) {
+    <div class="col-12 col-md-6 col-xl-4">
+      <div class="customer-admin-card ee-card position-relative overflow-hidden" [class.is-suspended]="c.accountStatus === 'suspended'" [class.is-banned]="c.accountStatus === 'banned'">
+        
+        @if (c.accountStatus === 'suspended') {
+          <div class="status-overlay suspended">SUSPENDED</div>
+        } @else if (c.accountStatus === 'banned') {
+          <div class="status-overlay banned">BANNED</div>
+        }
+
+        <div class="cac-header position-relative z-1">
+          <div class="cust-avatar">{{ c.name[0] }}</div>
+          <div class="flex-1">
+            <div class="cust-name">{{ c.name }}</div>
+            <div class="cust-email text-muted small">{{ c.email }}</div>
+          </div>
+          <span class="ee-badge {{ statusColor(c.accountStatus || 'active') }}">{{ (c.accountStatus || 'active') | titlecase }}</span>
+        </div>
+
+        <div class="cac-body position-relative z-1">
+          <div class="cac-stats row g-0 mb-3 text-center border-bottom pb-3">
+            <div class="col-4 border-end">
+              <div class="stat-val">{{ c.totalBookings }}</div>
+              <div class="stat-label">Bookings</div>
+            </div>
+            <div class="col-4 border-end">
+              <div class="stat-val">₹{{ (c.totalSpent || 0).toLocaleString('en-IN') }}</div>
+              <div class="stat-label">Spent</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-val text-warning">{{ c.strikes || 0 }}</div>
+              <div class="stat-label">Strikes</div>
+            </div>
+          </div>
+
+          <div class="cac-info mb-2"><i class="bi bi-telephone me-2"></i>{{ c.phone }}</div>
+          <div class="cac-info mb-2"><i class="bi bi-geo-alt me-2"></i>{{ c.city }}</div>
+          <div class="cac-info mb-3 small text-muted"><i class="bi bi-calendar-check me-2"></i>Joined {{ c.joinedDate }}</div>
+
+          @if (c.suspensionReason) {
+            <div class="p-2 rounded extra-small bg-warning bg-opacity-10 border border-warning border-opacity-25 mb-3">
+              <strong>Last Action Reason:</strong><br>
+              {{ c.suspensionReason }}
+            </div>
+          }
+
+          <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+            @if (isAdmin()) {
+              @if (c.accountStatus === 'active' || c.accountStatus === 'warning' || c.accountStatus === 'restricted') {
+                <button class="mod-action-btn warn-btn" (click)="openModerationForm(c, 'warn')" title="Issue Warning">
+                  <i class="bi bi-exclamation-triangle"></i>
+                </button>
+                <button class="mod-action-btn restrict-btn" (click)="openModerationForm(c, 'restrict')" title="Restrict">
+                  <i class="bi bi-shield-slash"></i>
+                </button>
+                <button class="mod-action-btn suspend-btn" (click)="openModerationForm(c, 'suspend')" title="Suspend">
+                  <i class="bi bi-pause-circle"></i>
+                </button>
+                <button class="mod-action-btn ban-btn" (click)="openModerationForm(c, 'ban')" title="Ban">
+                  <i class="bi bi-slash-circle"></i>
+                </button>
+              } @else {
+                <button class="mod-action-btn reactivate-btn w-100 justify-content-center" (click)="reactivateCustomer(c)">
+                  <i class="bi bi-arrow-counterclockwise me-2"></i> Reactivate Account
+                </button>
+              }
+            } @else {
+              <div class="text-muted extra-small"><i class="bi bi-info-circle me-1"></i> View Only Mode</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="col-12 py-5 text-center">
+      <i class="bi bi-people text-muted opacity-50" style="font-size: 3.5rem;"></i>
+      <h5 class="mt-4 fw-bold text-dark">No customers found</h5>
+      <p class="text-muted small">Try adjusting your filters or search query.</p>
+      <button class="btn btn-outline-secondary mt-2 rounded-pill px-4" (click)="searchQuery.set(''); statusFilter.set('all')">
+        Clear All Filters
+      </button>
+    </div>
+  }
+</div>
+
+@if (moderatingCustomer(); as c) {
+  <div class="modal-backdrop" (click)="cancelModeration()"></div>
+  <div class="custom-modal moderation-modal">
+    <div class="modal-header d-flex justify-content-between align-items-center mb-3">
+      <h5 class="m-0 fw-bold" [class.text-warning]="moderationAction() === 'warn'" [class.text-danger]="moderationAction() === 'suspend' || moderationAction() === 'ban'">
+        <i class="bi bi-shield-exclamation me-2"></i> 
+        {{ moderationAction() | titlecase }} Customer: {{ c.name }}
+      </h5>
+      <button class="btn-close shadow-none" (click)="cancelModeration()"></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert mb-3 small" [class.alert-warning]="moderationAction() === 'warn'" [class.alert-danger]="moderationAction() === 'ban'">
+        @if (moderationAction() === 'warn') {
+          This will issue a strike to the customer. 3 strikes may lead to automatic suspension.
+        } @else if (moderationAction() === 'restrict') {
+          The customer will be able to complete existing bookings but won't be allowed to make new ones.
+        } @else if (moderationAction() === 'suspend') {
+          The customer will be locked out of their account for the specified duration.
+        } @else if (moderationAction() === 'ban') {
+          The account will be permanently disabled. This action is severe.
+        }
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold text-muted">Reason for Action <span class="text-danger">*</span></label>
+        <textarea class="form-control" rows="3" [value]="moderationReason()" (input)="moderationReason.set($any($event.target).value)" placeholder="Explain the reason for this moderation action..."></textarea>
+      </div>
+
+      @if (moderationAction() === 'suspend') {
+        <div class="mb-4">
+          <label class="form-label small fw-bold text-muted">Suspension Duration</label>
+          <select class="form-select" [value]="moderationDuration()" (change)="moderationDuration.set($any($event.target).value)">
+            <option value="3_days">3 Days</option>
+            <option value="1_week">1 Week</option>
+            <option value="1_month">1 Month</option>
+            <option value="indefinite">Indefinite</option>
+          </select>
+        </div>
+      }
+
+      <div class="d-flex gap-2 justify-content-end mt-4">
+        <button class="btn btn-light" (click)="cancelModeration()">Cancel</button>
+        <button class="btn fw-bold px-4" 
+          [class.btn-warning]="moderationAction() === 'warn'"
+          [class.btn-info]="moderationAction() === 'restrict'"
+          [class.btn-danger]="moderationAction() === 'suspend' || moderationAction() === 'ban'"
+          [disabled]="!moderationReason().trim()" 
+          (click)="confirmModeration()">
+          Apply {{ moderationAction() | titlecase }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,42 @@
+<div class="page-header"><h1>All Bookings</h1><p>Monitor and manage all customer event bookings</p></div>
+
+<div class="d-flex flex-wrap gap-2 mb-4">
+  <button class="filter-chip" [class.active]="filter() === 'all'" (click)="filter.set('all')">All Bookings</button>
+  @for (s of statuses; track s) {
+    @if (s !== 'all') {
+      <button class="filter-chip" [class.active]="filter() === s" (click)="filter.set(s)">{{ statusLabels[s] }}</button>
+    }
+  }
+</div>
+
+<div class="ee-card p-0 overflow-hidden">
+  <div class="table-responsive">
+    <table class="ee-table">
+      <thead>
+        <tr>
+          <th>Booking #</th><th>Customer</th><th>Event</th><th>Date</th><th>City</th><th>Amount</th><th>Status</th><th>Assigned To</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (b of filtered; track b.id) {
+          <tr>
+            <td><span class="booking-num">{{ b.bookingNumber }}</span></td>
+            <td>
+              <div class="cust-cell">
+                <div class="cust-avatar">{{ b.customerName[0] }}</div>
+                <div><div class="cust-name">{{ b.customerName }}</div><div class="cust-phone">{{ b.customerPhone }}</div></div>
+              </div>
+            </td>
+            <td><div class="event-name-cell">{{ b.eventName }}</div><div class="pkg-name-cell">{{ b.packageName }}</div></td>
+            <td>{{ b.eventDate }}</td>
+            <td>{{ b.city }}</td>
+            <td><span class="amount-cell">₹{{ b.totalAmount.toLocaleString('en-IN') }}</span></td>
+            <td><span class="ee-badge {{ statusColors[b.status] }}">{{ statusLabels[b.status] }}</span></td>
+            <td><span class="assigned-to">{{ b.assignedTo || '—' }}</span></td>
+          </tr>
+        }
+        @empty { <tr><td colspan="8" class="empty-table-cell">No bookings found</td></tr> }
+      </tbody>
+    </table>
+  </div>
+</div>

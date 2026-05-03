@@ -1,0 +1,301 @@
+<div class="page-header">
+  <h1>My Bookings</h1>
+  <p>Track all your event bookings, payments and download invoices</p>
+</div>
+
+<!-- Filter Chips -->
+<div class="filter-bar">
+  <button class="filter-chip" [class.active]="activeFilter() === 'all'" (click)="activeFilter.set('all')">
+    All <span class="chip-count">{{ bookings().length }}</span>
+  </button>
+  @for (step of filterTabs; track step.key) {
+    <button class="filter-chip" [class.active]="activeFilter() === step.key" (click)="activeFilter.set(step.key)">
+      {{ step.label }}
+      <span class="chip-count">{{ getCountByStatus(step.key) }}</span>
+    </button>
+  }
+</div>
+
+<div class="bookings-layout">
+  <!-- Booking List -->
+  <div class="bookings-list">
+    @for (b of filteredBookings(); track b.id) {
+      <div class="booking-list-card" [class.active]="selectedBooking()?.id === b.id" (click)="selectBooking(b)">
+        <div class="card-top-row">
+          <div class="card-event-info">
+            <span class="event-type-dot" [class]="'dot-' + b.status"></span>
+            <div>
+              <div class="b-name">{{ b.eventName }}</div>
+              <div class="b-number">{{ b.bookingNumber }}</div>
+            </div>
+          </div>
+          <span class="status-pill {{ statusColors[b.status] }}">{{ statusLabels[b.status] }}</span>
+        </div>
+        <div class="b-meta">
+          <span><i class="bi bi-calendar2"></i> {{ b.eventDate }}</span>
+          <span><i class="bi bi-geo-alt"></i> {{ b.city }}</span>
+          <span><i class="bi bi-people"></i> {{ b.guestCount }}</span>
+        </div>
+        <div class="card-bottom-row">
+          <div class="b-amount">₹{{ b.totalAmount.toLocaleString('en-IN') }}</div>
+          @if (b.status === 'advance_paid' || b.status === 'confirmed' || b.status === 'settled' || b.status === 'completed') {
+            <div class="invoice-hint"><i class="bi bi-receipt"></i> Invoice</div>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-list">
+        <i class="bi bi-journal-x"></i>
+        <p>No bookings found</p>
+      </div>
+    }
+  </div>
+
+  <!-- Booking Detail -->
+  @if (selectedBooking(); as b) {
+    <div class="booking-detail">
+
+      <!-- Detail Header -->
+      <div class="detail-header-card">
+        <div class="dh-top">
+          <div>
+            <h3 class="detail-title">{{ b.eventName }}</h3>
+            <span class="detail-booking-id">{{ b.bookingNumber }}</span>
+          </div>
+          <span class="status-pill lg {{ statusColors[b.status] }}">{{ statusLabels[b.status] }}</span>
+        </div>
+        <div class="detail-info-grid">
+          <div class="info-chip">
+            <i class="bi bi-calendar-event"></i>
+            <div><span class="info-label">Date</span><span class="info-value">{{ b.eventDate }}</span></div>
+          </div>
+          <div class="info-chip">
+            <i class="bi bi-geo-alt-fill"></i>
+            <div><span class="info-label">Venue</span><span class="info-value">{{ b.venue }}, {{ b.city }}</span></div>
+          </div>
+          <div class="info-chip">
+            <i class="bi bi-people-fill"></i>
+            <div><span class="info-label">Guests</span><span class="info-value">{{ b.guestCount }}</span></div>
+          </div>
+          <div class="info-chip">
+            <i class="bi bi-box-seam"></i>
+            <div><span class="info-label">Package</span><span class="info-value">{{ b.packageName || 'Custom' }}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Stepper -->
+      <div class="detail-section-card">
+        <div class="section-header">
+          <h6 class="section-title"><i class="bi bi-signpost-2"></i> Booking Progress</h6>
+          @if (b.status !== 'cancelled' && b.status !== 'settled') {
+            <span class="live-badge"><span class="live-dot"></span> Live</span>
+          }
+        </div>
+        <div class="stepper">
+          @for (step of statusSteps; track step; let i = $index) {
+            <div class="step" [class.done]="i < getCurrentStepIndex()" [class.active]="i === getCurrentStepIndex()">
+              <div class="step-dot">
+                @if (i < getCurrentStepIndex()) {
+                  <i class="bi bi-check-lg"></i>
+                } @else {
+                  <span>{{ i + 1 }}</span>
+                }
+              </div>
+              <span class="step-label">{{ statusLabels[step] }}</span>
+              @if (i < statusSteps.length - 1) {
+                <div class="step-line" [class.done]="i < getCurrentStepIndex()"></div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Payment Summary -->
+      <div class="detail-section-card">
+        <div class="section-header">
+          <h6 class="section-title"><i class="bi bi-wallet2"></i> Payment Summary</h6>
+        </div>
+        <div class="payment-body">
+          <div class="pay-row"><span>Base Amount</span><span>₹{{ b.baseAmount.toLocaleString('en-IN') }}</span></div>
+          <div class="pay-row"><span>Extra Services</span><span>₹{{ b.extraServicesAmount.toLocaleString('en-IN') }}</span></div>
+          @if (b.damageCharges) {
+            <div class="pay-row danger"><span>Damage Charges</span><span>₹{{ b.damageCharges.toLocaleString('en-IN') }}</span></div>
+          }
+          <div class="pay-row"><span>GST ({{ b.gstPercent }}%)</span><span>₹{{ ((b.baseAmount + b.extraServicesAmount) * 0.18 | number:'1.0-0') }}</span></div>
+          <div class="pay-row total-row"><span>Total Amount</span><span>₹{{ b.totalAmount.toLocaleString('en-IN') }}</span></div>
+
+          @if (b.advanceAmount > 0) {
+            <div class="pay-row paid-row"><span><i class="bi bi-check-circle-fill me-1"></i> Advance Paid</span><span>- ₹{{ b.advanceAmount.toLocaleString('en-IN') }}</span></div>
+          }
+
+          @if (b.status === 'settled' && b.finalPaidAmount) {
+            <div class="pay-row paid-row"><span><i class="bi bi-check-circle-fill me-1"></i> Final Settlement</span><span>- ₹{{ (b.finalPaidAmount - b.advanceAmount).toLocaleString('en-IN') }}</span></div>
+            <div class="pay-row balance-row settled">
+              <span>Balance Due</span>
+              <span><i class="bi bi-patch-check-fill me-1"></i> Fully Settled</span>
+            </div>
+          } @else {
+            <div class="pay-row balance-row">
+              <span>Balance Due</span>
+              <span>₹{{ (b.totalAmount - b.advanceAmount).toLocaleString('en-IN') }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Invoice Downloads -->
+      @if (b.status === 'advance_paid' || b.status === 'confirmed' || b.status === 'in_progress' || b.status === 'completed' || b.status === 'settled') {
+        <div class="detail-section-card">
+          <div class="section-header">
+            <h6 class="section-title"><i class="bi bi-file-earmark-text"></i> Documents & Invoices</h6>
+          </div>
+          <div class="invoices-grid">
+
+            <!-- Advance Receipt -->
+            @if (b.advanceAmount > 0) {
+              <div class="invoice-card">
+                <div class="inv-icon advance"><i class="bi bi-receipt-cutoff"></i></div>
+                <div class="inv-info">
+                  <span class="inv-title">Advance Receipt</span>
+                  <span class="inv-detail">₹{{ b.advanceAmount.toLocaleString('en-IN') }} • {{ b.createdAt }}</span>
+                </div>
+                <button class="btn-download" (click)="downloadInvoice(b, 'advance')">
+                  <i class="bi bi-download"></i>
+                </button>
+              </div>
+            }
+
+            <!-- Proforma Invoice (if not settled yet) -->
+            @if (b.status !== 'settled') {
+              <div class="invoice-card">
+                <div class="inv-icon proforma"><i class="bi bi-file-earmark-ruled"></i></div>
+                <div class="inv-info">
+                  <span class="inv-title">Proforma Invoice</span>
+                  <span class="inv-detail">₹{{ b.totalAmount.toLocaleString('en-IN') }} • Estimated Total</span>
+                </div>
+                <button class="btn-download" (click)="downloadInvoice(b, 'proforma')">
+                  <i class="bi bi-download"></i>
+                </button>
+              </div>
+            }
+
+            <!-- Final Invoice (settled only) -->
+            @if (b.status === 'settled') {
+              <div class="invoice-card final">
+                <div class="inv-icon final"><i class="bi bi-file-earmark-check"></i></div>
+                <div class="inv-info">
+                  <span class="inv-title">Final Invoice</span>
+                  <span class="inv-detail">₹{{ b.totalAmount.toLocaleString('en-IN') }} • Fully Settled</span>
+                  <span class="inv-badge"><i class="bi bi-patch-check-fill"></i> Official</span>
+                </div>
+                <button class="btn-download final" (click)="downloadInvoice(b, 'final')">
+                  <i class="bi bi-download"></i>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Booked Services -->
+      @if (b.services.length) {
+        <div class="detail-section-card">
+          <div class="section-header">
+            <h6 class="section-title"><i class="bi bi-grid-3x3-gap"></i> Booked Services</h6>
+          </div>
+          <div class="services-list">
+            @for (s of b.services; track s.serviceId) {
+              <div class="service-row">
+                <div class="srv-info">
+                  <span class="srv-name">{{ s.serviceName }}</span>
+                  <span class="srv-vendor">{{ s.vendorName }}</span>
+                </div>
+                <div class="srv-right">
+                  <span class="srv-price">₹{{ s.price.toLocaleString('en-IN') }}</span>
+                  <span class="srv-status {{ s.status === 'confirmed' ? 'confirmed' : '' }}">{{ s.status }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (b.notes) {
+        <div class="detail-section-card">
+          <div class="section-header">
+            <h6 class="section-title"><i class="bi bi-sticky"></i> Notes</h6>
+          </div>
+          <p class="notes-text">{{ b.notes }}</p>
+        </div>
+      }
+
+      <!-- Rating & Review Section -->
+      @if (b.status === 'completed' || b.status === 'settled') {
+        <div class="detail-section-card review-section">
+          <div class="section-header">
+            <h6 class="section-title"><i class="bi bi-star-half"></i> Event Feedback</h6>
+          </div>
+          
+          <div class="review-body">
+            @if (submittedReviews()[b.id]) {
+              <!-- Already Reviewed State -->
+              <div class="submitted-review-card">
+                <div class="review-header">
+                  <div class="rating-display">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <i class="bi" [class.bi-star-fill]="star <= submittedReviews()[b.id].rating" 
+                         [class.bi-star]="star > submittedReviews()[b.id].rating"
+                         [class.active]="star <= submittedReviews()[b.id].rating"></i>
+                    }
+                  </div>
+                  <span class="review-badge"><i class="bi bi-patch-check-fill"></i> Verified Review</span>
+                </div>
+                <p class="review-text">"{{ submittedReviews()[b.id].comment }}"</p>
+                <button class="btn-edit-review" (click)="showReviewForm.set(true)">Edit Review</button>
+              </div>
+            } 
+            
+            @if (!submittedReviews()[b.id] || showReviewForm()) {
+              <!-- Review Form -->
+              <div class="review-form-container">
+                <p class="review-prompt">How was your experience with <strong>{{ b.packageName || 'the vendors' }}</strong>?</p>
+                
+                <div class="star-rating-input">
+                  @for (star of [1,2,3,4,5]; track star) {
+                    <i class="bi" 
+                       [class.bi-star-fill]="star <= reviewForm.rating" 
+                       [class.bi-star]="star > reviewForm.rating"
+                       (click)="setRating(star)"></i>
+                  }
+                  <span class="rating-label">
+                    {{ reviewForm.rating === 5 ? 'Excellent!' : reviewForm.rating === 4 ? 'Very Good' : reviewForm.rating === 3 ? 'Average' : reviewForm.rating === 2 ? 'Poor' : 'Terrible' }}
+                  </span>
+                </div>
+
+                <div class="form-group">
+                  <textarea class="form-input" rows="3" [(ngModel)]="reviewForm.comment"
+                    placeholder="Share details of your own experience at this event. What went well? What could be improved?"></textarea>
+                </div>
+
+                <div class="review-actions">
+                  @if (submittedReviews()[b.id]) {
+                    <button class="btn-cancel" (click)="showReviewForm.set(false)">Cancel</button>
+                  }
+                  <button class="btn-submit-review" (click)="submitReview()" [disabled]="submittingReview()">
+                    @if (submittingReview()) {
+                      <span class="spinner"></span> Submitting...
+                    } @else {
+                      <i class="bi bi-send-fill"></i> Submit Feedback
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+</div>

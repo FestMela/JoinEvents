@@ -1,0 +1,75 @@
+<div class="page-header"><h1>Event Planner</h1><p>Build your custom event by selecting services — we'll coordinate everything</p></div>
+
+<div class="row g-4">
+  <!-- Left: Event Details + Service Selector -->
+  <div class="col-12 col-lg-7">
+    <div class="ee-card p-4 mb-4">
+      <h6 class="planner-section-title"><i class="bi bi-info-circle me-2 text-primary-ee"></i>Event Details</h6>
+      <div class="row g-3">
+        <div class="col-12"><label class="ee-form-label">Event Name</label><input type="text" class="ee-form-control" [(ngModel)]="eventName" placeholder="e.g. Mohan's Wedding Reception"></div>
+        <div class="col-md-6"><label class="ee-form-label">Event Date</label><input type="date" class="ee-form-control" [(ngModel)]="eventDate"></div>
+        <div class="col-md-6"><label class="ee-form-label">City</label>
+          <select class="ee-form-control" [(ngModel)]="eventCity">
+            <option value="">Select city</option>
+            <option>Hyderabad</option><option>Bangalore</option><option>Chennai</option><option>Mumbai</option><option>Delhi</option>
+          </select>
+        </div>
+        <div class="col-12"><label class="ee-form-label">Expected Guests: {{ guestCount }}</label>
+          <input type="range" class="form-range" [(ngModel)]="guestCount" min="10" max="2000" step="10"></div>
+      </div>
+    </div>
+
+    <div class="ee-card p-4">
+      <h6 class="planner-section-title"><i class="bi bi-grid me-2 text-primary-ee"></i>Select Services</h6>
+      <div class="services-grid">
+        @for (cat of categories(); track cat.id) {
+          <div class="service-tile" [class.added]="isAdded(cat.id)" (click)="isAdded(cat.id) ? removeService(cat.id) : addService(cat)">
+            <div class="service-tile-icon" [style.color]="isAdded(cat.id) ? 'white' : 'var(--primary)'"
+                 [style.background]="isAdded(cat.id) ? 'var(--gradient-primary)' : 'rgba(255,107,53,0.1)'">
+              <i class="bi {{ cat.icon }}"></i>
+            </div>
+            <div class="service-tile-name">{{ cat.name }}</div>
+            <div class="service-tile-action">
+              @if (isAdded(cat.id)) { <i class="bi bi-check-circle-fill" style="color:var(--success)"></i> }
+              @else { <i class="bi bi-plus-circle"></i> }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Budget Summary -->
+  <div class="col-12 col-lg-5">
+    <div class="budget-card">
+      <div class="budget-header">
+        <h6>Budget Summary</h6>
+        <span class="ee-badge ee-badge-primary">{{ selectedServices().length }} services</span>
+      </div>
+      @if (selectedServices().length === 0) {
+        <div class="budget-empty"><i class="bi bi-calculator" style="font-size:2rem;color:rgba(255,255,255,0.3)"></i><p>Add services to see your budget</p></div>
+      } @else {
+        <div class="budget-services">
+          @for (svc of selectedServices(); track svc.category) {
+            <div class="budget-svc-row">
+              <div class="flex-1">
+                <div class="bsr-name">{{ svc.name }}</div>
+                <div class="bsr-price">₹{{ svc.price.toLocaleString('en-IN') }}</div>
+              </div>
+              <button class="remove-svc-btn" (click)="removeService(svc.category)"><i class="bi bi-x"></i></button>
+            </div>
+          }
+        </div>
+        <div class="budget-totals">
+          <div class="budget-row"><span>Sub Total</span><span>₹{{ getTotal().toLocaleString('en-IN') }}</span></div>
+          <div class="budget-row"><span>GST (18%)</span><span>₹{{ getGst().toLocaleString('en-IN') }}</span></div>
+          <div class="budget-row total"><span>Total Estimate</span><span>₹{{ (getTotal() + getGst()).toLocaleString('en-IN') }}</span></div>
+          <div class="budget-advance"><i class="bi bi-info-circle me-1"></i>Advance to book: ₹{{ getAdvance().toLocaleString('en-IN') }}</div>
+        </div>
+      }
+      <button class="btn-save-plan" (click)="savePlan()" [disabled]="selectedServices().length === 0">
+        @if (saved) { <i class="bi bi-check-circle-fill me-2"></i>Plan Saved! } @else { <i class="bi bi-send me-2"></i>Submit Plan for Booking }
+      </button>
+    </div>
+  </div>
+</div>

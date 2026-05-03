@@ -1,0 +1,220 @@
+<div class="support-hero-banner">
+  <div class="hero-content">
+    <h1 class="hero-title-main">Booking Monitor</h1>
+    <p class="hero-subtitle">Proactive support for individual events & vendor coordination.</p>
+    
+    <div class="hero-filters mt-4">
+      <button class="hero-filter-chip" [class.active]="activeFilter() === 'all'" (click)="activeFilter.set('all')">All Events</button>
+      <button class="hero-filter-chip" [class.active]="activeFilter() === 'pending'" (click)="activeFilter.set('pending')">Pending</button>
+      <button class="hero-filter-chip" [class.active]="activeFilter() === 'confirmed'" (click)="activeFilter.set('confirmed')">Active</button>
+      <button class="hero-filter-chip" [class.active]="activeFilter() === 'in_progress'" (click)="activeFilter.set('in_progress')">In Progress</button>
+      <button class="hero-filter-chip" [class.active]="activeFilter() === 'completed'" (click)="activeFilter.set('completed')">Completed</button>
+    </div>
+  </div>
+  <div class="hero-art-side d-none-mobile">
+    <i class="bi bi-shield-check"></i>
+  </div>
+</div>
+
+<div class="bookings-layout" [class.show-detail]="showMobileDetail()">
+  <!-- Left Side: Booking List -->
+  <aside class="bookings-list" [class.d-none-mobile]="showMobileDetail()">
+    <div class="search-box mb-3">
+      <div class="input-group">
+        <span class="input-group-text border-0 bg-light"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-0 bg-light" placeholder="Search by name, ID or city..." [(ngModel)]="searchQuery">
+      </div>
+    </div>
+
+    <div class="list-container">
+      @for (b of filteredBookings(); track b.id) {
+        <div class="booking-card" [class.active]="selectedBooking()?.id === b.id" (click)="selectBooking(b)">
+          <div class="b-header">
+            <span class="status-dot" [class]="'bg-' + b.status"></span>
+            <span class="b-id">{{ b.bookingNumber }}</span>
+            <span class="status-tag {{ statusColors[b.status] }}">{{ statusLabels[b.status] }}</span>
+          </div>
+          <h5 class="event-name">{{ b.eventName }}</h5>
+          <div class="b-details">
+            <span><i class="bi bi-person me-2"></i> {{ b.customerName }}</span>
+            <span><i class="bi bi-calendar2-event me-2"></i> {{ b.eventDate }}</span>
+          </div>
+          <div class="b-footer">
+            <span class="amount">₹{{ b.totalAmount.toLocaleString('en-IN') }}</span>
+            <span class="city"><i class="bi bi-geo-alt me-1"></i> {{ b.city }}</span>
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-state">
+          <div class="empty-icon"><i class="bi bi-search"></i></div>
+          <p>No matching bookings</p>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- Right Side: Booking Details -->
+  <main class="booking-detail-pane" [class.d-block-mobile]="showMobileDetail()" [class.d-none-mobile]="!showMobileDetail()">
+    @if (selectedBooking(); as b) {
+      <div class="detail-container">
+        
+        <!-- Mobile Navigation -->
+        <div class="mobile-nav-bar d-none-desktop">
+          <button class="btn-back-link" (click)="showMobileDetail.set(false)">
+            <i class="bi bi-chevron-left"></i> Back to Monitor
+          </button>
+        </div>
+
+        <!-- Detail Header -->
+        <header class="detail-hero">
+          <div class="hero-main">
+            <div class="badge-row mb-3">
+              <span class="ee-badge ee-badge-primary">ID: {{ b.bookingNumber }}</span>
+              <span class="ee-badge {{ statusColors[b.status] }}">{{ statusLabels[b.status] }}</span>
+            </div>
+            <h2 class="hero-title">{{ b.eventName }}</h2>
+            <div class="hero-meta">
+              <div class="meta-item"><i class="bi bi-person-circle"></i> {{ b.customerName }} <span class="phone">{{ b.customerPhone }}</span></div>
+              <div class="meta-item"><i class="bi bi-geo-alt-fill"></i> {{ b.venue }}, {{ b.city }}</div>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary-glass"><i class="bi bi-chat-dots-fill me-2"></i> User Chat</button>
+          </div>
+        </header>
+
+        <div class="detail-grid">
+          <div class="detail-main-col">
+            
+            <!-- LifeCycle Stepper -->
+            <section class="info-card mb-4">
+              <h6 class="card-subtitle">Event Lifecycle Monitoring</h6>
+              <div class="lifecycle-track">
+                @for (step of statusSteps; track step; let i = $index) {
+                  <div class="track-step" [class.done]="i < getCurrentStepIndex()" [class.active]="i === getCurrentStepIndex()">
+                    <div class="step-marker">
+                      @if (i < getCurrentStepIndex()) { <i class="bi bi-check-circle-fill"></i> } @else { <span class="num">{{ i + 1 }}</span> }
+                    </div>
+                    <span class="step-name">{{ statusLabels[step] }}</span>
+                  </div>
+                }
+              </div>
+            </section>
+
+            <!-- Vendor Management -->
+            <section class="info-card mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h6 class="card-subtitle m-0">Vendor Coordination</h6>
+                <span class="badge bg-light text-muted">{{ b.services.length }} Services</span>
+              </div>
+              <div class="vendor-list">
+                @for (s of b.services; track s.serviceId) {
+                  <div class="vendor-service-card">
+                    <div class="service-info">
+                      <div class="name-row">
+                        <span class="s-name">{{ s.serviceName }}</span>
+                        <span class="ee-badge ee-badge-sm" [class.ee-badge-success]="s.status === 'confirmed'" [class.ee-badge-warning]="s.status === 'pending'">
+                          {{ s.status }}
+                        </span>
+                      </div>
+                      <div class="v-name"><i class="bi bi-shop me-1"></i> {{ s.vendorName }}</div>
+                    </div>
+                    <div class="service-actions">
+                      <button class="btn btn-action-remind" (click)="remindVendor(s.vendorId, s.vendorName)" [disabled]="isUpdating()">
+                        <i class="bi bi-bell"></i> Remind
+                      </button>
+                      <button class="btn btn-action-chat"><i class="bi bi-chat-text"></i></button>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="empty-list-notice">
+                    <i class="bi bi-box"></i> No individual services tracked.
+                  </div>
+                }
+              </div>
+            </section>
+
+            <!-- Logs Section -->
+            <section class="info-card">
+              <h6 class="card-subtitle mb-4">Support Activity Log</h6>
+              <div class="activity-timeline">
+                @for (log of b.supportLogs; track log.date) {
+                  <div class="activity-item">
+                    <div class="act-marker"></div>
+                    <div class="act-content">
+                      <div class="act-header">
+                        <span class="act-user">{{ log.actor }}</span>
+                        <span class="act-time">{{ log.date }}</span>
+                      </div>
+                      <p class="act-msg">{{ log.message }}</p>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="empty-logs">No activity recorded yet.</div>
+                }
+              </div>
+            </section>
+          </div>
+
+          <aside class="detail-side-col">
+            <!-- Action Cards -->
+            <div class="action-panel mb-4">
+              <h6 class="panel-title">Quick Actions</h6>
+              <div class="action-buttons">
+                <button class="btn-quick-action"><i class="bi bi-telephone"></i> Call Vendor</button>
+                <button class="btn-quick-action"><i class="bi bi-whatsapp"></i> WhatsApp User</button>
+                <button class="btn-quick-action"><i class="bi bi-file-earmark-text"></i> Event Brief</button>
+              </div>
+            </div>
+
+            <!-- Escrow Management -->
+            <div class="form-panel mb-4" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2);">
+              <h6 class="panel-title" style="color: #065F46;"><i class="bi bi-shield-lock-fill me-2"></i> Escrow Management</h6>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted small">Status</span>
+                <span class="badge bg-warning text-dark">Locked in Escrow</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-muted small">Amount</span>
+                <span class="fw-bold">₹{{ b.totalAmount.toLocaleString('en-IN') }}</span>
+              </div>
+              <button class="btn btn-success w-100 fw-bold" [disabled]="b.status !== 'completed'">
+                <i class="bi bi-unlock-fill me-2"></i> Release Escrow Funds
+              </button>
+              @if (b.status !== 'completed') {
+                <div class="text-center mt-2" style="font-size: 0.7rem; color: #6B7280;">
+                  Funds can only be released after event is marked completed.
+                </div>
+              }
+            </div>
+
+            <div class="form-panel mb-4">
+              <h6 class="panel-title text-warning"><i class="bi bi-sticky-fill me-2"></i> Internal Team Note</h6>
+              <textarea class="minimal-textarea" rows="4" placeholder="Private notes for staff..." [(ngModel)]="newInternalNote"></textarea>
+              <button class="btn btn-warning-soft w-100 mt-3" (click)="addInternalNote()" [disabled]="!newInternalNote() || isUpdating()">
+                Add Note
+              </button>
+            </div>
+
+            <div class="form-panel">
+              <h6 class="panel-title text-info"><i class="bi bi-megaphone-fill me-2"></i> Customer Update</h6>
+              <textarea class="minimal-textarea" rows="4" placeholder="Update the customer on progress..." [(ngModel)]="newUpdateMessage"></textarea>
+              <button class="btn btn-info-soft w-100 mt-3" (click)="updateUser()" [disabled]="!newUpdateMessage() || isUpdating()">
+                Post Update
+              </button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    } @else {
+      <div class="select-hero">
+        <div class="hero-art">
+          <div class="pulse-ring"></div>
+          <i class="bi bi-clipboard-check"></i>
+        </div>
+        <h3 class="fw-800 color-navy">Ready to Monitor</h3>
+        <p class="text-muted">Select an event booking from the left to start proactive monitoring and vendor coordination.</p>
+      </div>
+    }
+  </main>
+</div>

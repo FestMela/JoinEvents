@@ -1,0 +1,63 @@
+<div class="page-header"><h1>Availability Calendar</h1><p>Mark your available and unavailable dates so customers know when to book you</p></div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-8">
+    <div class="ee-card p-4">
+      <!-- Month Nav -->
+      <div class="cal-month-nav">
+        <button class="cal-nav-btn" (click)="prevMonth()"><i class="bi bi-chevron-left"></i></button>
+        <h5 class="cal-month-title">{{ getMonthLabel() }}</h5>
+        <button class="cal-nav-btn" (click)="nextMonth()"><i class="bi bi-chevron-right"></i></button>
+      </div>
+
+      <!-- Weekday Headers -->
+      <div class="cal-weekdays">
+        @for (wd of weekdays; track wd) {
+          <div class="cal-wd">{{ wd }}</div>
+        }
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="cal-grid-custom">
+        @for (blank of [].constructor(getFirstDayOfWeek()); track $index) {
+          <div class="cal-blank"></div>
+        }
+        @for (day of days(); track day.date) {
+          <div class="cal-day-cell" [class.booked]="day.status === 'booked'" [class.blocked]="day.status === 'blocked'"
+               [class.available]="day.status === 'available'" [style.background]="getStatusColor(day.status)"
+               (click)="toggleDay(day)" [title]="day.status">
+            <span class="cal-day-num">{{ day.date.split('-')[2] }}</span>
+            @if (day.status === 'booked') { <div class="cal-day-badge booked">Booked</div> }
+            @else if (day.status === 'blocked') { <div class="cal-day-badge blocked">Blocked</div> }
+          </div>
+        }
+      </div>
+
+      <!-- Legend -->
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot available"></div><span>Available</span></div>
+        <div class="legend-item"><div class="legend-dot booked"></div><span>Booked</span></div>
+        <div class="legend-item"><div class="legend-dot blocked"></div><span>Blocked by You</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-4">
+    <div class="ee-card p-4 mb-3">
+      <h6 class="section-mini-title">This Month Summary</h6>
+      <div class="cal-stats">
+        <div class="cal-stat-item"><span class="csi-val available-color">{{ stats.available }}</span><span class="csi-label">Available</span></div>
+        <div class="cal-stat-item"><span class="csi-val booked-color">{{ stats.booked }}</span><span class="csi-label">Booked</span></div>
+        <div class="cal-stat-item"><span class="csi-val blocked-color">{{ stats.blocked }}</span><span class="csi-label">Blocked</span></div>
+      </div>
+    </div>
+    <div class="ee-card p-4">
+      <h6 class="section-mini-title">How to use</h6>
+      <ul class="usage-tips">
+        <li><i class="bi bi-hand-index-thumb me-2 text-primary-ee"></i>Click a day to toggle it between <strong>Available</strong> and <strong>Blocked</strong></li>
+        <li><i class="bi bi-lock me-2 text-danger"></i><strong>Booked</strong> dates cannot be changed (already booked by a customer)</li>
+        <li><i class="bi bi-eye me-2 text-success"></i>Customers can see your availability before requesting a booking</li>
+      </ul>
+    </div>
+  </div>
+</div>

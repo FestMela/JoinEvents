@@ -1,0 +1,63 @@
+<div class="page-header"><h1>Verification Status</h1><p>Track your vendor verification progress</p></div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-7">
+    <div class="ee-card p-4">
+      <h6 class="section-title-sm">Verification Steps</h6>
+      <div class="verif-steps">
+        @for (step of steps; track step.label; let i = $index) {
+          <div class="verif-step-item">
+            <div class="verif-step-left">
+              <div class="verif-step-dot" [class.done]="step.status==='done'" [class.active]="step.status==='active'" [class.pending]="step.status==='pending'">
+                @if (step.status === 'done') { <i class="bi bi-check-lg"></i> }
+                @else if (step.status === 'active') { <span class="dot-pulse"></span> }
+                @else { {{ i + 1 }} }
+              </div>
+              @if (i < steps.length - 1) { <div class="verif-step-connector" [class.done]="step.status==='done'"></div> }
+            </div>
+            <div class="verif-step-content" [class.active-content]="step.status==='active'">
+              <div class="vsc-icon-wrap" [class.done]="step.status==='done'" [class.active]="step.status==='active'">
+                <i class="bi {{ step.icon }}"></i>
+              </div>
+              <div>
+                <div class="vsc-label">{{ step.label }}</div>
+                <div class="vsc-desc">{{ step.desc }}</div>
+                @if (step.status === 'active') {
+                  <div class="vsc-active-note">⏳ Currently in progress — usually takes 1-2 business days</div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-5">
+    <div class="ee-card p-4 mb-3">
+      <h6 class="section-title-sm">Uploaded Documents</h6>
+      <div class="docs-list">
+        @for (doc of docs; track doc.type) {
+          <div class="doc-item">
+            <div class="doc-icon"><i class="bi bi-file-earmark-pdf"></i></div>
+            <div class="flex-1">
+              <div class="doc-type">{{ doc.type }}</div>
+              <div class="doc-name">{{ doc.name }}</div>
+            </div>
+            <span class="ee-badge {{ doc.status === 'approved' ? 'ee-badge-success' : 'ee-badge-warning' }}">
+              {{ doc.status | titlecase }}
+            </span>
+          </div>
+        }
+      </div>
+      <button class="btn-ee-outline w-100 justify-content-center mt-3"><i class="bi bi-upload me-1"></i>Upload Additional Document</button>
+    </div>
+
+    <div class="help-verif-card">
+      <i class="bi bi-question-circle-fill" style="font-size:2rem;color:var(--info)"></i>
+      <h6>Need Help?</h6>
+      <p>Our vendor support team is here to help you complete verification quickly.</p>
+      <a href="tel:+918001234567" class="btn-ee-primary justify-content-center"><i class="bi bi-telephone"></i> Call Support</a>
+    </div>
+  </div>
+</div>

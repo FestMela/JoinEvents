@@ -1,0 +1,132 @@
+<div class="register-page">
+  <div class="register-container">
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <a routerLink="/" class="d-inline-flex align-items-center gap-2 text-decoration-none mb-3">
+        <div class="reg-logo">
+          <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+          <i class="bi bi-stars" style="display:none"></i>
+        </div>
+        <span style="font-family:var(--font-heading);font-weight:900;font-size:1.4rem;"><span class="brand-join">Join</span><span class="brand-events">Events</span></span>
+      </a>
+      <h3 class="reg-title">Create Your Account</h3>
+      <!-- Steps -->
+      <div class="step-indicator">
+        <div class="step-item" [class.active]="step() >= 1" [class.done]="step() > 1">
+          <div class="step-circle">@if (step() > 1) { <i class="bi bi-check"></i> } @else { 1 }</div>
+          <span>Role</span>
+        </div>
+        <div class="step-line" [class.done]="step() > 1"></div>
+        <div class="step-item" [class.active]="step() >= 2" [class.done]="step() > 2">
+          <div class="step-circle">@if (step() > 2) { <i class="bi bi-check"></i> } @else { 2 }</div>
+          <span>Details</span>
+        </div>
+        <div class="step-line" [class.done]="step() > 2"></div>
+        <div class="step-item" [class.active]="step() >= 3">
+          <div class="step-circle">3</div>
+          <span>Confirm</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reg-card">
+      <!-- Step 1: Role Selection -->
+      @if (step() === 1) {
+        <h5 class="step-heading">I want to register as...</h5>
+        <div class="role-select-grid">
+          <div class="role-select-card" [class.selected]="role() === 'customer'" (click)="selectRole('customer')">
+            <div class="role-select-icon" style="background:linear-gradient(135deg,#FF6B35,#F59E0B)"><i class="bi bi-person-heart"></i></div>
+            <h6>Customer</h6>
+            <p>Plan and book events for personal or family occasions</p>
+            @if (role() === 'customer') { <div class="selected-tick"><i class="bi bi-check-circle-fill"></i></div> }
+          </div>
+          <div class="role-select-card" [class.selected]="role() === 'vendor'" (click)="selectRole('vendor')">
+            <div class="role-select-icon" style="background:linear-gradient(135deg,#6B21A8,#9333EA)"><i class="bi bi-shop"></i></div>
+            <h6>Vendor</h6>
+            <p>Offer your services like catering, venue, decoration & more</p>
+            @if (role() === 'vendor') { <div class="selected-tick"><i class="bi bi-check-circle-fill"></i></div> }
+          </div>
+        </div>
+        <button class="btn-ee-primary w-100 justify-content-center py-3 mt-4" (click)="nextStep()">
+          Continue <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      }
+
+      <!-- Step 2: Personal Details -->
+      @if (step() === 2) {
+        <h5 class="step-heading">Personal Information</h5>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="ee-form-label">Full Name</label>
+            <input type="text" class="ee-form-control" [(ngModel)]="form.name" placeholder="Enter your full name">
+          </div>
+          <div class="col-12">
+            <label class="ee-form-label">Email Address</label>
+            <input type="email" class="ee-form-control" [(ngModel)]="form.email" placeholder="your@email.com">
+          </div>
+          <div class="col-12">
+            <label class="ee-form-label">Phone Number</label>
+            <input type="tel" class="ee-form-control" [(ngModel)]="form.phone" placeholder="+91 98765 43210">
+          </div>
+          @if (role() === 'vendor') {
+            <div class="col-12">
+              <label class="ee-form-label">Business Name</label>
+              <input type="text" class="ee-form-control" [(ngModel)]="form.businessName" placeholder="Your business / service name">
+            </div>
+          }
+          <div class="col-12">
+            <label class="ee-form-label">City</label>
+            <select class="ee-form-control" [(ngModel)]="form.city">
+              <option value="">Select your city</option>
+              <option>Hyderabad</option><option>Bangalore</option><option>Chennai</option>
+              <option>Mumbai</option><option>Delhi</option><option>Kolkata</option>
+              <option>Pune</option><option>Ahmedabad</option>
+            </select>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mt-4">
+          <button class="btn-ee-outline flex-1" (click)="prevStep()"><i class="bi bi-arrow-left"></i> Back</button>
+          <button class="btn-ee-primary flex-1 justify-content-center" (click)="nextStep()">Continue <i class="bi bi-arrow-right"></i></button>
+        </div>
+      }
+
+      <!-- Step 3: Set Password & Confirm -->
+      @if (step() === 3) {
+        <h5 class="step-heading">Set Password</h5>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="ee-form-label">Password</label>
+            <input type="password" class="ee-form-control" [(ngModel)]="form.password" placeholder="Min. 8 characters">
+          </div>
+          <div class="col-12">
+            <label class="ee-form-label">Confirm Password</label>
+            <input type="password" class="ee-form-control" [(ngModel)]="form.confirmPassword" placeholder="Re-enter password">
+          </div>
+          <div class="col-12">
+            <label class="d-flex align-items-start gap-2" style="cursor:pointer">
+              <input type="checkbox" [(ngModel)]="form.agreeTerms" style="margin-top:3px">
+              <span style="font-size:0.82rem;color:var(--slate)">I agree to the <a href="javascript:void(0)" class="link-primary-ee">Terms of Service</a> and <a href="javascript:void(0)" class="link-primary-ee">Privacy Policy</a></span>
+            </label>
+          </div>
+        </div>
+        @if (role() === 'vendor') {
+          <div class="vendor-note">
+            <i class="bi bi-info-circle me-2"></i>
+            Your account will go through a verification process before going live. We'll notify you via email.
+          </div>
+        }
+        <div class="d-flex gap-3 mt-4">
+          <button class="btn-ee-outline" (click)="prevStep()"><i class="bi bi-arrow-left"></i></button>
+          <button class="btn-ee-primary flex-1 justify-content-center py-3" (click)="onSubmit()" [disabled]="!form.agreeTerms || isLoading">
+            @if (isLoading) { <span class="spinner-border spinner-border-sm me-2"></span>Creating account... }
+            @else { <i class="bi bi-check-circle"></i> Create Account }
+          </button>
+        </div>
+      }
+
+      <p class="text-center mt-3" style="font-size:0.82rem;color:var(--slate)">
+        Already have an account? <a routerLink="/login" class="link-primary-ee">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>

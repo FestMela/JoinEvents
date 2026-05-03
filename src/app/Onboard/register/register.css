@@ -1,0 +1,26 @@
+.register-page { min-height: 100vh; background-color: var(--bg-app); display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
+.register-container { width: 100%; max-width: 520px; }
+.reg-logo { width:40px;height:40px;background:transparent;border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.1rem; }
+.reg-title { font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:var(--text-main); }
+.reg-card { background:var(--bg-card);border-radius:var(--radius-xl);padding:32px;box-shadow:var(--shadow-lg); border: 1px solid var(--border-color); }
+.step-heading { font-family:var(--font-heading);font-weight:600;color:var(--text-main);margin-bottom:20px; }
+.step-indicator { display:flex;align-items:center;justify-content:center;gap:0;margin-top:16px; }
+.step-item { display:flex;flex-direction:column;align-items:center;gap:4px; }
+.step-circle { width:32px;height:32px;border-radius:50%;background:var(--bg-light);border:2px solid var(--border-color);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:600;color:var(--text-muted);transition:all var(--transition); }
+.step-item span { font-size:0.68rem;color:var(--text-soft);font-weight:500; }
+.step-item.active .step-circle { background:var(--gradient-primary);border-color:var(--primary);color:white; }
+.step-item.active span { color:var(--primary);font-weight:600; }
+.step-item.done .step-circle { background:var(--success);border-color:var(--success);color:white; }
+.step-line { width:60px;height:2px;background:var(--border-color);transition:all var(--transition); }
+.step-line.done { background:var(--success); }
+.role-select-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+.role-select-card { border:2px solid var(--border-color);border-radius:var(--radius-lg);padding:24px 16px;text-align:center;cursor:pointer;transition:all var(--transition);position:relative; background: var(--bg-card); }
+.role-select-card:hover { border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow-md); }
+.role-select-card.selected { border-color:var(--primary);background:rgba(255,107,53,0.04); }
+.role-select-icon { width:56px;height:56px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:white;margin:0 auto 12px; }
+.role-select-card h6 { font-family:var(--font-heading);font-weight:600;color:var(--text-main);margin-bottom:6px; }
+.role-select-card p { font-size:0.78rem;color:var(--text-muted); }
+.selected-tick { position:absolute;top:10px;right:10px;color:var(--primary);font-size:1.1rem; }
+.vendor-note { background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.2);border-radius:var(--radius-md);padding:12px 16px;font-size:0.82rem;color:var(--info);margin-top:16px; }
+.link-primary-ee { color:var(--primary);font-weight:600;text-decoration:none; }
+.flex-1 { flex:1; }

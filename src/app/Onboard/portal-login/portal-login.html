@@ -1,0 +1,98 @@
+<div class="login-page">
+  <!-- Left Panel -->
+  <div class="login-left">
+    <div class="login-left-content">
+      <div class="d-flex align-items-center gap-2 mb-5">
+        <div class="brand-logo-hero">
+          <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+          <i class="bi bi-stars" style="display:none"></i>
+        </div>
+        <span class="brand-text-hero"><span class="brand-join">Join</span><span class="brand-events">Events</span></span>
+      </div>
+      <div class="float">
+        <div class="hero-illustration">
+          <i class="bi bi-briefcase" style="font-size:5rem;color:rgba(255,255,255,0.2);display:block;text-align:center;"></i>
+        </div>
+      </div>
+      <h2 style="color:white;font-family:var(--font-heading);font-size:1.8rem;font-weight:700;margin-top:24px;">Partner Portal</h2>
+      <p style="color:rgba(255,255,255,0.65);font-size:0.9rem;margin-top:8px;">Sign in to manage your services, support tickets, or operations.</p>
+      <div class="demo-creds-box">
+        <div class="demo-label">🔑 Demo Credentials</div>
+        @for (r of roles; track r.role) {
+          <div class="demo-row" (click)="selectRole(r.role)" [class.active-demo]="selectedRole() === r.role">
+            <i class="bi {{ r.icon }}" [style.color]="r.color"></i>
+            <span>{{ r.label }}</span>
+            <code>{{ demoCredentials[r.role] }}</code>
+          </div>
+        }
+        <div style="font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:8px;">Password: <code style="color:var(--accent)">demo123</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="login-right">
+    <div class="login-form-container">
+      <div class="mb-4">
+        <h3 class="login-title">Staff & Vendor Sign In</h3>
+        <p class="login-sub">Choose your role and enter credentials</p>
+      </div>
+
+      <!-- Role Selector -->
+      <div class="role-selector mb-4">
+        @for (r of roles; track r.role) {
+          <button class="role-btn" [class.active]="selectedRole() === r.role"
+                  [style.--rc]="r.color" (click)="selectRole(r.role)" type="button">
+            <i class="bi {{ r.icon }}"></i>
+            <span>{{ r.label }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Form -->
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+        <div class="mb-3">
+          <label class="ee-form-label">Email Address</label>
+          <div class="input-with-icon">
+            <i class="bi bi-envelope input-icon"></i>
+            <input type="email" class="ee-form-control ps-5" [(ngModel)]="email" name="email"
+                   placeholder="Enter your email" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="ee-form-label">Password</label>
+          <div class="input-with-icon">
+            <i class="bi bi-lock input-icon"></i>
+            <input [type]="showPassword ? 'text' : 'password'" class="ee-form-control ps-5 pe-5"
+                   [(ngModel)]="password" name="password" placeholder="Enter password" required>
+            <i class="bi input-icon-right cursor-pointer"
+               [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"
+               (click)="showPassword = !showPassword"></i>
+          </div>
+          <div class="text-end mt-2">
+            <a routerLink="/forgot-password" class="link-primary-ee small" style="font-size:0.8rem;font-weight:500;">Forgot Password?</a>
+          </div>
+        </div>
+
+        @if (errorMsg) {
+          <div class="alert-error mb-3">
+            <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMsg }}
+          </div>
+        }
+
+        <button type="submit" class="btn-ee-primary w-100 justify-content-center py-3" [disabled]="isLoading">
+          @if (isLoading) {
+            <span class="spinner-border spinner-border-sm me-2"></span>Signing in...
+          } @else {
+            <i class="bi bi-box-arrow-in-right"></i> Sign In
+          }
+        </button>
+      </form>
+
+      <div class="text-center mt-4">
+        <a routerLink="/" class="link-back"><i class="bi bi-arrow-left me-1"></i>Back to Home</a>
+      </div>
+    </div>
+  </div>
+</div>

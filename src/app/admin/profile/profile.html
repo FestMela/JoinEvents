@@ -1,0 +1,89 @@
+<div class="page-header">
+  <h1><i class="bi bi-shield-lock me-2 text-info"></i>Administrator Profile</h1>
+  <p>Manage your administrative credentials and platform settings</p>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-4">
+    <div class="ee-card text-center p-4">
+      <div class="profile-avatar-lg mx-auto mb-3 admin-bg">
+        {{ getInitials(user()?.name || '') }}
+      </div>
+      <h4 class="mb-1">{{ user()?.name }}</h4>
+      <div class="ee-badge ee-badge-info mb-3">System Admin</div>
+      
+      <div class="text-start mt-4">
+        <div class="mb-3">
+          <label class="ee-form-label text-muted">Role</label>
+          <div class="fw-medium">{{ profileData.role }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="ee-form-label text-muted">Department</label>
+          <div class="fw-medium">{{ profileData.department }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="ee-form-label text-muted">Last Login</label>
+          <div class="fw-medium small">{{ profileData.lastLogin }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <div class="ee-card">
+      <div class="card-header-custom d-flex align-items-center justify-content-between">
+        <h6 class="card-header-title"><i class="bi bi-person-badge me-2 text-info"></i>Admin Credentials</h6>
+        <button class="btn btn-sm btn-ee-outline" (click)="isEditing.set(!isEditing())">
+          <i class="bi" [class.bi-pencil]="!isEditing()" [class.bi-x-lg]="isEditing()"></i>
+          {{ isEditing() ? 'Cancel' : 'Edit' }}
+        </button>
+      </div>
+      
+      <div class="p-4">
+        <form (submit)="saveProfile()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="ee-form-label">Display Name</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.name" name="name">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">System Email</label>
+              <input type="email" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.email" name="email">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">Administrative Role</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.role" name="role">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">Department</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.department" name="department">
+            </div>
+            
+            @if (isEditing()) {
+              <div class="col-12 mt-4">
+                <button type="submit" class="btn-ee-primary bg-info border-0">Update Admin Profile</button>
+              </div>
+            }
+          </div>
+        </form>
+      </div>
+    <div class="ee-card mt-4">
+      <div class="card-header-custom d-flex align-items-center justify-content-between">
+        <h6 class="card-header-title"><i class="bi bi-shield-lock me-2 text-info"></i>Security & Access</h6>
+      </div>
+      <div class="p-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="fw-800 mb-1">Account Password</h6>
+          <p class="text-muted small m-0">Managed by System Policy</p>
+        </div>
+        <button class="btn btn-outline-info fw-800 rounded-pill px-4" (click)="showPasswordModal.set(true)">
+          Change Password
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (showPasswordModal()) {
+  <app-change-password (close)="showPasswordModal.set(false)" />
+}

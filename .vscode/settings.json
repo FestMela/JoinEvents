@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/45b7cf76-d66b-423c-8b98-26e50bcf6aed/resourceGroups/JoinEvents_group/providers/Microsoft.Web/sites/JoinEvents",
+    "appService.deploySubpath": "dist\\JoinEvents"
+}

@@ -1,0 +1,80 @@
+<div class="page-header"><h1>Support Tickets</h1><p>Manage customer and vendor support requests</p></div>
+
+<div class="support-layout">
+  <!-- Ticket List Sidebar -->
+  <div class="ticket-sidebar">
+    <div class="filter-bar">
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" class="ee-form-control" placeholder="Search tickets..." (input)="searchQuery.set(search.value)" #search>
+      </div>
+      <div class="d-flex gap-2">
+        <select class="ee-form-control form-select-sm" (change)="statusFilter.set($any($event.target).value)">
+          <option value="all">All Status</option>
+          <option value="open">Open</option>
+          <option value="in_progress">In Progress</option>
+          <option value="resolved">Resolved</option>
+          <option value="closed">Closed</option>
+        </select>
+        <select class="ee-form-control form-select-sm" (change)="priorityFilter.set($any($event.target).value)">
+          <option value="all">All Priority</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ticket-list">
+      @for (t of filteredTickets(); track t.id) {
+        <div class="ticket-item" [class.active]="selected()?.id === t.id" (click)="selectTicket(t)">
+          <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+            <div class="ticket-subject">{{ t.subject }}</div>
+            <span class="ee-badge {{ statusColor(t.status) }}">{{ t.status | titlecase }}</span>
+          </div>
+          <div class="ticket-meta">
+            <span><i class="bi bi-person me-1"></i>{{ t.customerName }}</span>
+            <span class="ee-badge {{ priorityColor(t.priority) }}">{{ t.priority | titlecase }}</span>
+          </div>
+          <div class="ticket-time"><i class="bi bi-clock me-1"></i>{{ t.createdAt | slice:0:10 }}</div>
+        </div>
+      } @empty {
+        <div class="text-center p-5 text-muted">
+          <i class="bi bi-search" style="font-size: 2rem; opacity: 0.5;"></i>
+          <p class="mt-2">No tickets match your filters.</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Ticket Detail -->
+  @if (selected(); as t) {
+    <div class="ticket-detail ee-card p-0">
+      <div class="ticket-detail-header">
+        <div>
+          <div class="tdc-subject">{{ t.subject }}</div>
+          <div class="tdc-meta">
+            {{ t.customerName }} &nbsp;·&nbsp;
+            <span class="ee-badge {{ priorityColor(t.priority) }}">{{ t.priority | titlecase }} Priority</span>
+            &nbsp;·&nbsp;
+            <span class="ee-badge {{ statusColor(t.status) }}">{{ t.status | titlecase }}</span>
+          </div>
+        </div>
+        @if (t.status !== 'resolved' && t.status !== 'closed') {
+          <button class="close-ticket-btn" (click)="closeTicket(t.id)"><i class="bi bi-check-circle me-1"></i>Mark Resolved</button>
+        }
+      </div>
+      <div class="ticket-messages">
+        <div class="msg-empty"><i class="bi bi-chat-square-dots" style="font-size:2.5rem;color:var(--slate-light)"></i><p>No messages yet in this ticket.</p><p class="msg-hint">Use the reply box below to respond to the customer.</p></div>
+      </div>
+      <div class="reply-box">
+        <textarea class="ee-form-control" rows="3" [(ngModel)]="reply" placeholder="Type your reply to the customer..."></textarea>
+        <div class="d-flex justify-content-end mt-2 gap-2">
+          <button class="btn-ee-outline">Close Ticket</button>
+          <button class="btn-ee-primary" (click)="sendReply()" [disabled]="!reply.trim()"><i class="bi bi-send"></i> Send Reply</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

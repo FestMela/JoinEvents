@@ -1,0 +1,80 @@
+<div class="page-header"><h1>Vendor Verifications</h1><p>Review vendor applications and approve or reject their profiles</p></div>
+
+<div class="verif-layout">
+  <!-- Vendor List -->
+  <div class="verif-list">
+    @for (v of vendors(); track v.id) {
+      <div class="verif-list-item" [class.active]="selectedVendor()?.id === v.id" (click)="selectVendor(v)">
+        <div class="vli-avatar">{{ v.name[0] }}</div>
+        <div class="flex-1">
+          <div class="vli-name">{{ v.businessName }}</div>
+          <div class="vli-owner">{{ v.name }} · {{ v.city }}</div>
+        </div>
+        <span class="ee-badge {{ statusColor(v.verificationStatus) }}">{{ statusLabel(v.verificationStatus) }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Vendor Detail -->
+  @if (selectedVendor(); as v) {
+    <div class="verif-detail">
+      <div class="ee-card p-4 mb-3">
+        <div class="d-flex align-items-start justify-content-between mb-3">
+          <div>
+            <h5 class="verif-detail-title">{{ v.businessName }}</h5>
+            <div class="verif-detail-sub">{{ v.name }} · {{ v.email }} · {{ v.phone }}</div>
+          </div>
+          <span class="ee-badge {{ statusColor(v.verificationStatus) }}">{{ statusLabel(v.verificationStatus) }}</span>
+        </div>
+        <div class="verif-info-grid">
+          <div class="vi-item"><span class="vi-label">City</span><span class="vi-val">{{ v.city }}</span></div>
+          <div class="vi-item"><span class="vi-label">Services</span><span class="vi-val">{{ v.services.join(', ') | titlecase }}</span></div>
+          <div class="vi-item"><span class="vi-label">Joined</span><span class="vi-val">{{ v.joinedDate }}</span></div>
+          @if (v.gstNumber) { <div class="vi-item"><span class="vi-label">GST No.</span><span class="vi-val">{{ v.gstNumber }}</span></div> }
+        </div>
+      </div>
+
+      <div class="ee-card p-4 mb-3">
+        <h6 class="section-mini-heading">Submitted Documents</h6>
+        @if (v.verificationDocs.length === 0) {
+          <div class="no-docs"><i class="bi bi-folder-x me-2"></i>No documents uploaded yet</div>
+        } @else {
+          <div class="docs-list">
+            @for (doc of v.verificationDocs; track doc.type) {
+              <div class="doc-review-item">
+                <div class="doc-icon-adm"><i class="bi bi-file-earmark-pdf"></i></div>
+                <div class="flex-1">
+                  <div class="doc-type-adm">{{ doc.type }}</div>
+                  <div class="doc-date">Uploaded {{ doc.uploadedAt }}</div>
+                </div>
+                <span class="ee-badge {{ doc.status === 'approved' ? 'ee-badge-success' : doc.status === 'rejected' ? 'ee-badge-danger' : 'ee-badge-warning' }}">{{ doc.status | titlecase }}</span>
+                <button class="doc-download-btn"><i class="bi bi-download"></i></button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (v.verificationStatus !== 'verified' && v.verificationStatus !== 'rejected') {
+        <div class="ee-card p-4">
+          <h6 class="section-mini-heading">Verification Action</h6>
+          <div class="mb-3">
+            <label class="ee-form-label">Remarks (optional)</label>
+            <textarea class="ee-form-control" rows="2" [(ngModel)]="remarks" placeholder="Add remarks for the vendor..."></textarea>
+          </div>
+          @if (actionDone()) {
+            <div class="action-success" [class.approved]="actionDone() === 'approved'" [class.rejected]="actionDone() === 'rejected'">
+              <i class="bi {{ actionDone() === 'approved' ? 'bi-patch-check-fill' : 'bi-x-circle-fill' }} me-2"></i>
+              Vendor {{ actionDone() === 'approved' ? 'Approved Successfully!' : 'Rejected.' }}
+            </div>
+          } @else {
+            <div class="d-flex gap-3">
+              <button class="approve-btn flex-1" (click)="approve(v.id)"><i class="bi bi-patch-check me-1"></i>Approve Vendor</button>
+              <button class="reject-btn" (click)="reject(v.id)"><i class="bi bi-x-circle me-1"></i>Reject</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

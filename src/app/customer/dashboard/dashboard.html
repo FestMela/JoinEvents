@@ -1,0 +1,176 @@
+<div class="dashboard-wrapper">
+  <!-- Top Welcome Section -->
+  <div class="welcome-hero-card mb-5" [style.background]="'var(--gradient-hero)'">
+    <div class="hero-content">
+      <div class="hero-greeting" [style.color]="'var(--text-hero)'">
+        <span class="greeting-time" style="opacity: 0.7">{{ getGreeting() }}</span>,
+        <span class="user-name">{{ user()?.name }}!</span> 👋
+      </div>
+      <p class="hero-subtext" [style.color]="'var(--text-hero)'" style="opacity: 0.85">You have <span class="highlight">2 active events</span> being planned. Ready to take the next step?</p>
+      <div class="hero-actions mt-4">
+        <button class="btn btn-white-glass me-3" routerLink="/customer/planner" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:inherit">
+          <i class="bi bi-plus-lg me-2"></i> Plan New Event
+        </button>
+        <button class="btn btn-link text-decoration-none" routerLink="/customer/events" [style.color]="'var(--text-hero)'">
+          Browse Catalogs <i class="bi bi-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="floating-icon-circle"><i class="bi bi-stars"></i></div>
+      <div class="floating-icon-circle small"><i class="bi bi-calendar-check"></i></div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="row g-4 mb-5">
+    @for (stat of stats; track stat.label) {
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="premium-stat-card">
+          <div class="stat-inner">
+            <div class="stat-info">
+              <div class="stat-label">{{ stat.label }}</div>
+              <div class="stat-value">{{ stat.value }}</div>
+            </div>
+            <div class="stat-icon-box" [style.background]="stat.gradient">
+              <i class="bi {{ stat.icon }}"></i>
+            </div>
+          </div>
+          <div class="stat-progress-bar">
+            <div class="progress-fill" [style.width]="'70%'" [style.background]="stat.gradient"></div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="row g-4">
+    <!-- Main Column -->
+    <div class="col-12 col-lg-8">
+      <!-- Recent Activity / Bookings -->
+      <div class="dashboard-section-card mb-4">
+        <div class="card-header-modern">
+          <div class="header-title">
+            <i class="bi bi-journal-text me-2 text-primary-ee"></i>
+            <span>Active Event Timeline</span>
+          </div>
+          <a routerLink="/customer/bookings" class="header-action-link">View All Bookings</a>
+        </div>
+        <div class="modern-booking-list p-4">
+          @for (b of bookings().slice(0,3); track b.id) {
+            <div class="modern-booking-item">
+              <div class="booking-date-badge">
+                <div class="day">{{ b.eventDate.split('-')[2] }}</div>
+                <div class="month">{{ b.eventDate.split('-')[1] }}</div>
+              </div>
+              <div class="booking-details flex-1">
+                <h6 class="event-name">{{ b.eventName }}</h6>
+                <div class="event-meta">
+                  <span><i class="bi bi-geo-alt me-1"></i>{{ b.venue }}, {{ b.city }}</span>
+                  <span class="mx-2 text-muted">|</span>
+                  <span><i class="bi bi-people me-1"></i>{{ b.guestCount }} Guests</span>
+                </div>
+              </div>
+              <div class="booking-status-box text-end">
+                <span class="status-pill {{ getStatusBadgeClass(b.status) }}">{{ getStatusLabel(b.status) }}</span>
+                <div class="price-text mt-2">₹{{ (b.totalAmount/1000).toFixed(1) }}k</div>
+              </div>
+              <div class="booking-action-btn">
+                <i class="bi bi-chevron-right"></i>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Quick Planner Grid -->
+      <div class="dashboard-section-card">
+        <div class="card-header-modern border-0">
+          <div class="header-title">
+            <i class="bi bi-lightning-charge me-2 text-warning"></i>
+            <span>Quick Event Categories</span>
+          </div>
+        </div>
+        <div class="p-4 pt-0">
+          <div class="modern-category-grid">
+            @for (et of eventTypes().slice(0,6); track et.id) {
+              <a routerLink="/customer/events" class="category-card" [style.--accent-color]="et.gradient">
+                <div class="category-icon" [style.background]="et.gradient">
+                  <i class="bi {{ et.icon }}"></i>
+                </div>
+                <div class="category-info">
+                  <div class="cat-name">{{ et.name }}</div>
+                  <div class="cat-sub">From ₹{{ (et.startingPrice/1000) }}k</div>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Column -->
+    <div class="col-12 col-lg-4">
+      <!-- Messenger Preview -->
+      <div class="dashboard-section-card mb-4 glass-card">
+        <div class="card-header-modern">
+          <div class="header-title"><i class="bi bi-chat-right-dots me-2"></i>Messages</div>
+        </div>
+        <div class="p-4">
+          <div class="message-preview-list">
+            <div class="msg-preview-item">
+              <div class="msg-avatar">PN</div>
+              <div class="msg-content">
+                <div class="msg-sender">Priya Nair (Admin)</div>
+                <div class="msg-text">Your catering vendor is confirmed for Dec 15th...</div>
+                <div class="msg-time">2 mins ago</div>
+              </div>
+            </div>
+            <div class="msg-preview-item">
+              <div class="msg-avatar bg-secondary-ee">AS</div>
+              <div class="msg-content">
+                <div class="msg-sender">Amit Sharma (Vendor)</div>
+                <div class="msg-text">We have sent the menu draft for approval...</div>
+                <div class="msg-time">1 hour ago</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-ee-primary w-100 mt-4 py-3 shadow-sm" routerLink="/customer/messages">
+            Open Messenger
+          </button>
+        </div>
+      </div>
+
+      <!-- Loyalty Card -->
+      <div class="loyalty-premium-card mb-4">
+        <div class="loyalty-icon-circle"><i class="bi bi-gem"></i></div>
+        <div class="loyalty-info text-center mt-3">
+          <div class="loyalty-label">Loyalty Tier</div>
+          <div class="loyalty-tier">Gold Member</div>
+          <div class="loyalty-progress mt-4">
+            <div class="d-flex justify-content-between small text-white-50 mb-2">
+              <span>Progress to Platinum</span>
+              <span>1,240 / 2,500 pts</span>
+            </div>
+            <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1);">
+              <div class="progress-bar bg-white" style="width: 50%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support Card -->
+      <div class="modern-support-card">
+        <div class="support-bg-art"></div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="support-icon"><i class="bi bi-headset"></i></div>
+          <div class="flex-1">
+            <div class="support-title">Premium Support</div>
+            <div class="support-sub">Personal event manager available 24/7</div>
+          </div>
+          <button class="btn-icon-circular"><i class="bi bi-telephone"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

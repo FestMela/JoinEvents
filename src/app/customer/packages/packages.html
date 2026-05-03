@@ -1,0 +1,65 @@
+<div class="page-header">
+  <h1>Event Packages</h1>
+  <p>Choose a package that suits your budget and requirements</p>
+</div>
+
+<!-- Event Selector -->
+<div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+  @for (opt of eventOptions; track opt.id) {
+    <button class="event-tab" [class.active]="selectedEvent() === opt.id" (click)="selectEvent(opt.id)">
+      {{ opt.label }}
+    </button>
+  }
+
+  @if (vendorId()) {
+    <div class="selected-vendor-pill ms-auto">
+      <i class="bi bi-shop me-2"></i> Viewing packages from: <span class="fw-bold ms-1">Spice Garden Catering</span>
+      <a routerLink="/customer/vendors/{{selectedEvent()}}" class="ms-2 text-primary-ee"><i class="bi bi-x-circle"></i></a>
+    </div>
+  }
+</div>
+
+<!-- Packages Grid -->
+<div class="row g-4 justify-content-center">
+  @for (pkg of filteredPackages(); track pkg.id) {
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="pkg-card" [class.popular]="pkg.isPopular">
+        @if (pkg.isPopular) { <div class="popular-ribbon">Most Popular</div> }
+        <div class="pkg-header" [style.background]="getTierGradient(pkg.tier)">
+          <div class="pkg-tier-label">{{ getTierLabel(pkg.tier) }}</div>
+          <div class="pkg-name">{{ pkg.name }}</div>
+          <div class="pkg-price">₹{{ pkg.price.toLocaleString('en-IN') }}</div>
+          <div class="pkg-price-sub">+ 18% GST = ₹{{ (pkg.price * 1.18).toLocaleString('en-IN') }}</div>
+          
+          @if (pkg.offerExpiresIn) {
+            <div class="pkg-urgency mt-2">
+              <i class="bi bi-stopwatch me-1"></i> Offer ends in: <span class="fw-bold">{{ pkg.offerExpiresIn }}</span>
+            </div>
+          }
+        </div>
+        <div class="pkg-body">
+          <div class="pkg-desc">{{ pkg.description }}</div>
+          <div class="pkg-meta">
+            <span><i class="bi bi-people me-1"></i>Up to {{ pkg.maxGuests }} guests</span>
+            @if (pkg.addons?.length) {
+              <span class="text-primary-ee"><i class="bi bi-plus-circle me-1"></i>{{ pkg.addons?.length }} Add-ons</span>
+            }
+          </div>
+          <ul class="pkg-services">
+            @for (svc of pkg.services; track svc) {
+              <li><i class="bi bi-check-circle-fill text-success me-2"></i>{{ svc }}</li>
+            }
+          </ul>
+          <div class="pkg-advance-note">
+            <i class="bi bi-info-circle me-1"></i>Advance to book: ₹{{ (pkg.price * 0.2).toLocaleString('en-IN') }} (20%)
+          </div>
+          <button class="btn-ee-primary w-100 justify-content-center mt-3" (click)="bookPackage(pkg)">
+            <i class="bi bi-calendar-check"></i> Book This Package
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+

@@ -1,0 +1,133 @@
+.filter-chip{padding:7px 18px;border-radius:var(--radius-full);border:1.5px solid var(--border-color);background:var(--bg-card);font-size:0.8rem;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all var(--transition);}
+.filter-chip:hover,.filter-chip.active{background:var(--secondary);border-color:var(--secondary);color:white;}
+.bookings-list-vendor{display:flex;flex-direction:column;gap:12px;}
+.vendor-req-card{overflow:hidden;}
+.vrc-header{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border-color);}
+.vrc-icon{width:42px;height:42px;border-radius:var(--radius-sm);background:rgba(107,33,168,0.1);display:flex;align-items:center;justify-content:center;color:var(--secondary);font-size:1.1rem;flex-shrink:0;}
+.flex-1{flex:1;}
+.vrc-event{font-family:var(--font-heading);font-weight:600;font-size:0.9rem;color:var(--text-main);}
+.vrc-customer{font-size:0.75rem;color:var(--text-muted);}
+.vrc-body{padding:14px 20px;}
+.vrc-details{display:flex;flex-wrap:wrap;gap:16px;font-size:0.78rem;color:var(--text-muted);margin-bottom:12px;}
+.vrc-amount{color:var(--secondary);font-weight:700;}
+.vrc-actions{display:flex;gap:10px;}
+.req-btn{display:flex;align-items:center;gap:4px;border:none;border-radius:var(--radius-sm);padding:8px 16px;font-size:0.8rem;font-weight:600;cursor:pointer;transition:all var(--transition);}
+.req-btn.accept{background:rgba(22,163,74,0.1);color:var(--success);}
+.req-btn.accept:hover{background:var(--success);color:white;}
+.req-btn.decline{background:rgba(220,38,38,0.1);color:var(--danger);}
+.req-btn.decline:hover{background:var(--danger);color:white;}
+
+/* VENDOR REVIEW DISPLAY */
+.vrc-review {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: 12px;
+}
+
+.vrc-review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.vrc-rating {
+  display: flex;
+  gap: 2px;
+  color: #F59E0B;
+  font-size: 1.05rem;
+}
+
+.vrc-rating .bi-star {
+  color: var(--border-color);
+}
+
+.vrc-review-date {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  font-weight: 600;
+}
+
+.vrc-review-text {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  line-height: 1.5;
+  font-style: italic;
+  margin: 0 0 12px;
+}
+
+.vrc-review-footer {
+  display: flex;
+  align-items: center;
+}
+
+.review-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dispute-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+.vrc-review.is-flagged {
+  border-color: #F59E0B;
+  background: rgba(245, 158, 11, 0.1);
+  opacity: 0.8;
+}
+
+:host-context(.dark-theme) .vrc-review {
+  background: rgba(245, 158, 11, 0.03);
+  border-color: rgba(245, 158, 11, 0.1);
+}
+:host-context(.dark-theme) .vrc-rating .bi-star {
+  color: rgba(255,255,255,0.1);
+}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);display:flex;flex-direction:column;align-items:center;gap:12px;}
+
+/* CONTACT BUTTONS */
+.contact-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: 24px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1.5px solid transparent;
+  letter-spacing: 0.3px;
+}
+.contact-btn-chat {
+  background: rgba(107, 33, 168, 0.08);
+  color: var(--secondary);
+}
+.contact-btn-chat:hover {
+  background: var(--secondary);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(107, 33, 168, 0.2);
+  transform: translateY(-2px);
+}
+.contact-btn-call {
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--success);
+}
+.contact-btn-call:hover {
+  background: var(--success);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+  transform: translateY(-2px);
+}

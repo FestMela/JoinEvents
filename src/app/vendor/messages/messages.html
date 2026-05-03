@@ -1,0 +1,104 @@
+<div class="chat-container">
+  <!-- Sidebar: Conversation List -->
+  <aside class="chat-sidebar" [class.hide-mobile]="selectedThread()">
+    <div class="chat-sidebar-header">
+      <h6>Messenger</h6>
+    </div>
+
+    <div class="search-wrapper">
+      <div class="search-input-group">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Search conversations...">
+      </div>
+    </div>
+
+    <div class="threads-list">
+      @for (thread of threads(); track thread.id) {
+        <div class="thread-item" [class.active]="selectedThread()?.id === thread.id" (click)="openThread(thread)">
+          <div class="thread-avatar-wrap">
+            <div class="thread-avatar">{{ thread.participants[0].name.charAt(0) }}</div>
+            <span class="online-indicator"></span>
+          </div>
+          <div class="thread-content">
+            <div class="thread-header">
+              <span class="thread-name">{{ thread.participants[0].name }}</span>
+              <span class="thread-time">10:30 AM</span>
+            </div>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="thread-preview">{{ thread.lastMessage }}</div>
+              @if (thread.unreadCount > 0) {
+                <span class="unread-pill">{{ thread.unreadCount }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- Main Chat Content -->
+  <main class="chat-main" [class.hide-mobile]="!selectedThread()">
+    @if (selectedThread()) {
+      <header class="chat-header">
+        <div class="chat-user-info">
+          <button class="btn-back-chat d-md-none border-0 bg-transparent me-2" (click)="closeThread()">
+            <i class="bi bi-arrow-left fs-4"></i>
+          </button>
+          <div class="header-avatar">{{ selectedThread()?.participants?.[0]?.name?.charAt(0) }}</div>
+          <div>
+            <div class="header-name">{{ selectedThread()?.participants?.[0]?.name }}</div>
+            <div class="header-status"><span class="status-dot online"></span> Active Now</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="action-btn"><i class="bi bi-telephone"></i></button>
+          <button class="action-btn"><i class="bi bi-camera-video"></i></button>
+          <button class="action-btn"><i class="bi bi-three-dots-vertical"></i></button>
+        </div>
+      </header>
+
+      <div class="messages-viewport" #scrollMe>
+        <div class="date-badge">Today</div>
+
+        @for (msg of messages(); track msg.id) {
+          <div class="message-wrap" [class.message-sent]="isSent(msg)" [class.message-received]="!isSent(msg)">
+            <div class="bubble">
+              {{ msg.content }}
+            </div>
+            <div class="msg-footer">
+              {{ formatTime(msg.timestamp) }}
+              @if (isSent(msg)) {
+                <i class="bi bi-check2-all read-check"></i>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <footer class="chat-footer">
+        <div class="input-container">
+          <button class="tool-btn"><i class="bi bi-paperclip"></i></button>
+          <textarea 
+            class="msg-input" 
+            [(ngModel)]="newMessage" 
+            (keyup.enter)="sendMessage()" 
+            placeholder="Write your message..." 
+            rows="1">
+          </textarea>
+          <button class="tool-btn"><i class="bi bi-emoji-smile"></i></button>
+          <button class="send-trigger" (click)="sendMessage()" [disabled]="!newMessage.trim()">
+            <i class="bi bi-send-fill"></i>
+          </button>
+        </div>
+      </footer>
+    } @else {
+      <div class="chat-placeholder">
+        <div class="placeholder-illustration">
+          <i class="bi bi-chat-heart-fill"></i>
+        </div>
+        <h3>Select a Conversation</h3>
+        <p>Pick a customer from the left panel to coordinate event requirements, share quotes, and finalize bookings.</p>
+      </div>
+    }
+  </main>
+</div>

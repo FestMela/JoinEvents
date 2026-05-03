@@ -1,0 +1,219 @@
+<div class="page-header">
+  <h1><i class="bi bi-shop me-2 text-secondary"></i>Business Profile</h1>
+  <p>Manage your vendor details and business information</p>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-4">
+    <div class="ee-card text-center p-4">
+      <div class="profile-avatar-lg mx-auto mb-3 vendor-bg">
+        {{ getInitials(user()?.name || '') }}
+      </div>
+      <h4 class="mb-1">{{ profileData.businessName }}</h4>
+      <p class="text-muted small mb-3">Managed by {{ user()?.name }}</p>
+      <div class="ee-badge ee-badge-secondary mb-3">Verified Vendor</div>
+      
+      <div class="row g-2 mt-2">
+        <div class="col-6">
+          <div class="p-2 bg-light rounded text-center">
+            <div class="fw-bold">4.8 ★</div>
+            <div class="small text-muted">Rating</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-2 bg-light rounded text-center">
+            <div class="fw-bold">245</div>
+            <div class="small text-muted">Reviews</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4 opacity-10">
+      
+      <div class="text-start">
+        <div class="mb-3">
+          <label class="ee-form-label text-muted">Business Email</label>
+          <div class="fw-medium">{{ user()?.email }}</div>
+        </div>
+        <div class="mb-3">
+          <label class="ee-form-label text-muted">GST Number</label>
+          <div class="fw-medium text-uppercase">{{ profileData.gst }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <div class="ee-card">
+      <div class="card-header-custom d-flex align-items-center justify-content-between">
+        <h6 class="card-header-title"><i class="bi bi-briefcase me-2 text-secondary"></i>Business Details</h6>
+        <button class="btn btn-sm btn-ee-outline" (click)="isEditing.set(!isEditing())">
+          <i class="bi" [class.bi-pencil]="!isEditing()" [class.bi-x-lg]="isEditing()"></i>
+          {{ isEditing() ? 'Cancel' : 'Edit Profile' }}
+        </button>
+      </div>
+      
+      <div class="p-4">
+        <form (submit)="saveProfile()">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="ee-form-label">Contact Person Name</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.name" name="name">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">Business Name</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.businessName" name="businessName">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">Business Email</label>
+              <input type="email" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.email" name="email">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">Phone Number</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.phone" name="phone">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">City</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.city" name="city">
+            </div>
+            <div class="col-md-6">
+              <label class="ee-form-label">GST Number</label>
+              <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.gst" name="gst">
+            </div>
+            <div class="col-12">
+              <label class="ee-form-label">Business Description</label>
+              <textarea class="ee-form-control" rows="4" [disabled]="!isEditing()" [(ngModel)]="profileData.description" name="description"></textarea>
+            </div>
+            
+            @if (isEditing()) {
+              <div class="col-12 mt-4">
+                <button type="submit" class="btn-ee-secondary">Save Business Profile</button>
+              </div>
+            }
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- Things to Know Section -->
+    <div class="ee-card mt-4">
+      <div class="card-header-custom d-flex align-items-center justify-content-between">
+        <h6 class="card-header-title"><i class="bi bi-info-circle me-2 text-secondary"></i> Things to Know</h6>
+        <span class="badge bg-primary-ee fs-tiny">Service Highlights</span>
+      </div>
+      
+      <div class="p-4">
+        <div class="row g-4">
+          <!-- Working Since -->
+          <div class="col-md-6">
+            <label class="ee-form-label">Working Since</label>
+            <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.workingSince" name="workingSince">
+          </div>
+          <!-- Max Capacity -->
+          <div class="col-md-6">
+            <label class="ee-form-label">Venue Capacity</label>
+            <input type="number" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.maxCapacity" name="maxCapacity">
+          </div>
+          <!-- Veg Price -->
+          <div class="col-md-6">
+            <label class="ee-form-label">Starting Veg Price (₹)</label>
+            <input type="number" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.vegPrice" name="vegPrice">
+          </div>
+          <!-- Non Veg Price -->
+          <div class="col-md-6">
+            <label class="ee-form-label">Starting Non-Veg Price (₹)</label>
+            <input type="number" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.nonVegPrice" name="nonVegPrice">
+          </div>
+          <!-- Policies -->
+          <div class="col-md-6">
+            <label class="ee-form-label">Catering Policy</label>
+            <select class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.cateringPolicy" name="cateringPolicy">
+              <option value="Inhouse only">Inhouse only</option>
+              <option value="Outside allowed">Outside allowed</option>
+              <option value="Both allowed">Both allowed</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="ee-form-label">Alcohol Policy</label>
+            <select class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.alcoholPolicy" name="alcoholPolicy">
+              <option value="Allowed">Allowed</option>
+              <option value="Not Allowed">Not Allowed</option>
+              <option value="Inhouse only">Inhouse only</option>
+            </select>
+          </div>
+          <!-- Space & Rating -->
+          <div class="col-md-6">
+            <label class="ee-form-label">Space Available</label>
+            <input type="text" class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.space" name="space">
+          </div>
+          <div class="col-md-6">
+            <label class="ee-form-label">Star Rating</label>
+            <select class="ee-form-control" [disabled]="!isEditing()" [(ngModel)]="profileData.thingsToKnow.starRating" name="starRating">
+              <option value="3 Star">3 Star</option>
+              <option value="4 Star">4 Star</option>
+              <option value="5 Star">5 Star</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Custom Facts CRUD -->
+        <div class="mt-5 pt-4 border-top">
+          <h6 class="fw-800 mb-4 color-navy">Additional Facts & Rules</h6>
+          
+          <div class="custom-facts-grid">
+            @for (fact of profileData.customFacts; track fact.id) {
+            <div class="fact-pill">
+              <div class="fact-content">
+                <span class="fact-label">{{ fact.label }}:</span>
+                <span class="fact-value">{{ fact.value }}</span>
+              </div>
+              @if (isEditing()) {
+                <button class="btn-remove-fact" (click)="removeFact(fact.id)">
+                  <i class="bi bi-x"></i>
+                </button>
+              }
+            </div>
+            }
+          </div>
+
+          @if (isEditing()) {
+            <div class="add-fact-form mt-4 p-3 bg-light rounded-4">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                  <label class="ee-form-label-sm">Fact Label (e.g. Parking)</label>
+                  <input type="text" class="ee-form-control-sm w-100" [(ngModel)]="newFact.label" placeholder="Enter Label">
+                </div>
+                <div class="col-md-5">
+                  <label class="ee-form-label-sm">Detail (e.g. 50 Cars)</label>
+                  <input type="text" class="ee-form-control-sm w-100" [(ngModel)]="newFact.value" placeholder="Enter Value">
+                </div>
+                <div class="col-md-2">
+                  <button class="btn btn-primary w-100 rounded-pill py-2 fw-700" (click)="addFact()">Add</button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Section -->
+    <div class="ee-card mt-4">
+      <div class="card-header-custom d-flex align-items-center justify-content-between">
+        <h6 class="card-header-title"><i class="bi bi-shield-lock me-2 text-warning"></i> Security & Access</h6>
+      </div>
+      <div class="p-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="fw-800 mb-1">Account Password</h6>
+          <p class="text-muted small m-0">Last changed 3 months ago</p>
+        </div>
+        <button class="btn btn-outline-primary fw-800 rounded-pill px-4" (click)="showPasswordModal.set(true)">
+          Change Password
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (showPasswordModal()) {
+  <app-change-password (close)="showPasswordModal.set(false)" />
+}
