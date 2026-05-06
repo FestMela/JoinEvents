@@ -1,37 +1,28 @@
 # Stage 1: Build the Angular application
-FROM node:18-alpine as build
+FROM node:20-alpine AS build
 WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copy the rest of the application code
 COPY . .
 
-# Build the Angular app in production mode
-# Note: Ensure the output path in angular.json matches /app/dist/join-events
-RUN npm run build -- --configuration production
+# Build the Angular application
+RUN npm run build
 
-# Stage 2: Serve the app with Nginx
-FROM nginx:alpine
+# Stage 2: Serve the application using sirv-cli (robust and non-root compatible)
+FROM node:20-alpine
+WORKDIR /app
 
-# Copy the build output to Nginx's default public directory
-# REPLACE 'join-events' with the actual project name defined in your angular.json
-COPY --from=build /app/dist/join-events /usr/share/nginx/html
+# Install sirv-cli for lightweight and robust static file serving
+RUN npm install -g sirv-cli
 
-# Copy a custom Nginx configuration to handle Angular routing (optional but recommended)
-# If you don't have a custom config, Nginx will serve index.html by default
-RUN echo 'server { \
-    listen 8080; \
-    location / { \
-        root /usr/share/nginx/html; \
-        index index.html index.htm; \
-        try_files $uri $uri/ /index.html =404; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+# Copy built files from the build stage
+COPY --from=build /app/dist/JoinEvents/browser /app/public
 
-# Inform Cloud Run that the container listens on port 8082
 EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
+# sirv-cli respects the PORT env variable and handles SPA routing perfectly with --single
+CMD ["sh", "-c", "sirv /app/public --single --port ${PORT:-8080} --host 0.0.0.0"]
