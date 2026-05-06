@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { inject } from '@angular/core';
 import { MockApiService } from '../../core/services/mock-api.service';
@@ -6,11 +6,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { EventType } from '../../core/models/event.model';
 
 import { FormsModule } from '@angular/forms';
+import { AiPlanner } from '../../customer/ai-planner/ai-planner';
 
 @Component({
   selector: 'app-get-start',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, AiPlanner],
   templateUrl: './get-start.html',
   styleUrl: './get-start.css'
 })
@@ -67,11 +68,45 @@ export class GetStart implements OnInit {
     }
   ]);
 
+  filteredTopVenues = computed(() => {
+    const q = this.searchQuery().toLowerCase();
+    if (!q) return this.topVenues();
+    return this.topVenues().filter(v => 
+      v.name.toLowerCase().includes(q) || 
+      v.city.toLowerCase().includes(q) || 
+      v.type.toLowerCase().includes(q)
+    );
+  });
+
+  filteredTopPlanners = computed(() => {
+    const q = this.searchQuery().toLowerCase();
+    if (!q) return this.topPlanners();
+    return this.topPlanners().filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      p.label.toLowerCase().includes(q)
+    );
+  });
+
+  filteredPremiumPackages = computed(() => {
+    const q = this.searchQuery().toLowerCase();
+    if (!q) return this.premiumPackages();
+    return this.premiumPackages().filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      p.catering.toLowerCase().includes(q)
+    );
+  });
+
   readonly playbook = [
-    { title: 'The Engagement', status: 'completed', icon: 'bi-gem' },
-    { title: 'Venue Booking', status: 'active', icon: 'bi-building' },
-    { title: 'Vendor Shortlisting', status: 'pending', icon: 'bi-people' },
-    { title: 'Final Execution', status: 'pending', icon: 'bi-stars' }
+    { title: 'The Engagement', status: 'completed', icon: 'bi-gem', desc: 'Set the ring and the date.' },
+    { title: 'Venue Booking', status: 'active', icon: 'bi-building', desc: 'Find the perfect place.' },
+    { title: 'Vendor Shortlisting', status: 'pending', icon: 'bi-people', desc: 'Select top-rated professionals.' },
+    { title: 'Final Execution', status: 'pending', icon: 'bi-stars', desc: 'Experience the magic seamlessly.' }
+  ];
+
+  readonly quotations = [
+    { title: 'Wedding Quotation', desc: 'Planning your big day? Tell us about your vision and get a bundled quote.', icon: 'bi-heart-fill', color: '#E91E8C', bg: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800' },
+    { title: 'Corporate Quotation', desc: 'Hosting a seminar or product launch? We offer specialized management.', icon: 'bi-briefcase-fill', color: '#0EA5E9', bg: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&q=80&w=800' },
+    { title: 'International Wedding', desc: 'Dreaming of a destination wedding? We manage logistics across borders.', icon: 'bi-globe', color: '#D97706', bg: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800' }
   ];
 
   ngOnInit() {
@@ -97,34 +132,6 @@ export class GetStart implements OnInit {
     { icon: 'bi-graph-up', title: 'Live Tracking', desc: 'Monitor your event progress in real time' },
   ];
 
-  isAiChatOpen = signal(false);
-  aiInput = '';
-  chatMessages = signal<any[]>([
-    { id: 1, text: 'Hi! I am your JoinEvents AI Concierge. What kind of event are you planning? (e.g., "Find me an eco-friendly wedding venue under 10 Lakhs")', isUser: false }
-  ]);
-
-  toggleAiChat() {
-    this.isAiChatOpen.update(v => !v);
-  }
-
-  sendAiMessage() {
-    if (!this.aiInput.trim()) return;
-    
-    const userMsg = { id: Date.now(), text: this.aiInput, isUser: true };
-    this.chatMessages.update(msgs => [...msgs, userMsg]);
-    const currentInput = this.aiInput.toLowerCase();
-    this.aiInput = '';
-
-    // Mock AI Response logic
-    setTimeout(() => {
-      let response = "That's a great question! Let me check our best options for you.";
-      if (currentInput.includes('venue')) response = "We have over 500+ premium venues. Are you looking for a palace, a resort, or an open lawn?";
-      else if (currentInput.includes('budget')) response = "I can help you find something that fits your budget perfectly. Our packages start from ₹5 Lakhs.";
-      else if (currentInput.includes('planner')) response = "Our top-rated planners like DreamCraft can handle everything from decor to catering!";
-      
-      this.chatMessages.update(msgs => [...msgs, { id: Date.now() + 1, text: response, isUser: false }]);
-    }, 1000);
-  }
 
   handleImageError(event: Event) {
     const img = event.target as HTMLImageElement;
