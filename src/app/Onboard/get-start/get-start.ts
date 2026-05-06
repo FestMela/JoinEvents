@@ -7,6 +7,7 @@ import { EventType } from '../../core/models/event.model';
 
 import { FormsModule } from '@angular/forms';
 import { AiPlanner } from '../../customer/ai-planner/ai-planner';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-get-start',
@@ -19,6 +20,7 @@ export class GetStart implements OnInit {
   private api = inject(MockApiService);
   private auth = inject(AuthService);
   private router = inject(Router);
+  public theme = inject(ThemeService);
 
   eventTypes = signal<EventType[]>([]);
   currentSlide = signal(0);

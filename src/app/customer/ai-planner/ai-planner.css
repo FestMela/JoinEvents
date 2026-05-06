@@ -55,7 +55,7 @@
 .tooltip-text {
   position: absolute;
   right: 80px;
-  background: var(--navy);
+  background: #0F172A;
   color: white;
   padding: 6px 12px;
   border-radius: 8px;
@@ -210,7 +210,7 @@
 }
 
 .user-bubble {
-  background: var(--navy);
+  background: var(--primary);
   color: white;
   border-bottom-right-radius: 4px;
 }
@@ -334,7 +334,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--navy);
+  background: var(--primary);
   color: white;
   border: none;
   display: flex;
@@ -377,7 +377,7 @@
     border-radius: 0;
   }
   .ai-fab {
-    bottom: 20px;
+    bottom: 95px; /* Elevate on mobile to prevent overlapping sticky bottom bars */
     right: 20px;
   }
 }

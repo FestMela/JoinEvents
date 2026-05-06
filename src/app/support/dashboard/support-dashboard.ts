@@ -9,8 +9,8 @@ import { AuthService } from '../../core/services/auth.service';
   template: `
     <div class="support-welcome-banner">
       <div>
-        <div style="color:white;font-family:var(--font-heading);font-size:1.5rem;font-weight:800;letter-spacing:-0.5px;">Support Hub 🎧</div>
-        <div style="color:rgba(255,255,255,0.85);font-size:0.9rem;margin-top:6px;max-width:500px;">You're doing great! There are <span style="color:white;font-weight:700">8 open tickets</span> and <span style="color:white;font-weight:700">14 active chats</span> currently in queue.</div>
+        <div style="color:inherit;font-family:var(--font-heading);font-size:1.5rem;font-weight:800;letter-spacing:-0.5px;">Support Hub 🎧</div>
+        <div style="color:inherit;opacity:0.85;font-size:0.9rem;margin-top:6px;max-width:500px;">You're doing great! There are <span style="font-weight:700">8 open tickets</span> and <span style="font-weight:700">14 active chats</span> currently in queue.</div>
       </div>
       <div class="d-flex gap-2">
         <a routerLink="/support/tickets" class="btn-support-action">
@@ -23,10 +23,19 @@ import { AuthService } from '../../core/services/auth.service';
     <div class="row g-3 mb-4">
       @for (kpi of supportKpis; track kpi.label) {
         <div class="col-6 col-md-3">
-          <div class="support-kpi-card" [style.background]="kpi.gradient">
-            <div class="kpi-icon"><i class="bi {{ kpi.icon }}"></i></div>
-            <div class="kpi-value">{{ kpi.value }}</div>
-            <div class="kpi-label">{{ kpi.label }}</div>
+          <div class="premium-stat-card">
+            <div class="stat-inner">
+              <div class="stat-details">
+                <div class="stat-label">{{ kpi.label }}</div>
+                <div class="stat-value">{{ kpi.value }}</div>
+              </div>
+              <div class="stat-icon-box" [style.background]="kpi.gradient">
+                <i class="bi {{ kpi.icon }}"></i>
+              </div>
+            </div>
+            <div class="stat-progress-bar">
+              <div class="progress-fill" [style.background]="kpi.gradient" style="width: 70%"></div>
+            </div>
           </div>
         </div>
       }

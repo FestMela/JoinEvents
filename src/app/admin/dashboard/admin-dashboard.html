@@ -1,104 +1,136 @@
-<div class="admin-welcome-banner">
-  <div class="banner-content">
-    <h1 class="banner-title">Admin Dashboard 🛡️</h1>
-    <p class="banner-sub">Monitor platform operations, bookings, and staff management</p>
-  </div>
-  <a routerLink="/admin/employees" class="btn-admin-action">
-    <i class="bi bi-person-badge"></i> 
-    <span>Employee Management</span>
-  </a>
-</div>
-
-<!-- KPI Cards -->
-<div class="row g-4 mb-4">
-  @for (kpi of filteredKpis; track kpi.key) {
-    <div class="col-6 col-md-3">
-      <div class="admin-kpi-card" [style.background]="kpi.gradient">
-        <div class="kpi-icon"><i class="bi {{ kpi.icon }}"></i></div>
-        <div class="kpi-value" [style.color]="kpi.textColor">{{ formatKpi(kpi.key) }}</div>
-        <div class="kpi-label">{{ kpi.label }}</div>
+<div class="dashboard-wrapper">
+  <!-- Top Welcome Hero Card -->
+  <div class="welcome-hero-card mb-5" style="background: var(--gradient-hero); color: var(--text-hero);">
+    <div class="hero-content">
+      <div class="hero-greeting" style="color: var(--text-hero);">
+        <span class="greeting-time" style="color: inherit; opacity: 0.75;">Welcome Back,</span>
+        <span class="user-name" style="color: inherit;">Administrator! 🛡️</span>
+      </div>
+      <p class="hero-subtext" style="color: inherit; opacity: 0.85;">Monitor platform operations, bookings, and staff management seamlessly from your control center.</p>
+      <div class="hero-actions mt-4">
+        <a routerLink="/admin/employees" class="btn btn-white-glass me-3" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: inherit;">
+          <i class="bi bi-person-badge me-2"></i> Employee Management
+        </a>
+        <a routerLink="/admin/bookings" class="btn btn-link text-decoration-none" style="color: inherit; opacity: 0.9;">
+          Manage Bookings <i class="bi bi-arrow-right ms-1"></i>
+        </a>
       </div>
     </div>
-  }
-</div>
-
-<!-- Quick Action Row -->
-<div class="row g-4 mb-4">
-  <div class="col-12 col-md-6">
-    <div class="alert-card info">
-      <div class="alert-icon-box"><i class="bi bi-people-fill"></i></div>
-      <div>
-        <div class="alert-title">Platform Statistics</div>
-        <div class="alert-sub">Monitor user growth and internal activity</div>
-      </div>
-      <a routerLink="/admin/customers" class="alert-link"><i class="bi bi-chevron-right"></i></a>
+    <div class="hero-visual">
+      <div class="floating-icon-circle"><i class="bi bi-shield-fill-check"></i></div>
+      <div class="floating-icon-circle small"><i class="bi bi-cpu"></i></div>
     </div>
   </div>
-  <div class="col-12 col-md-6">
-    <div class="alert-card success">
-      <div class="alert-icon-box"><i class="bi bi-calendar-check-fill"></i></div>
-      <div>
-        <div class="alert-title">12 Active Events</div>
-        <div class="alert-sub">Real-time monitoring of ongoing events</div>
+
+  <!-- KPI Stats Cards -->
+  <div class="row g-4 mb-5">
+    @for (kpi of filteredKpis; track kpi.key) {
+      <div class="col-12 col-sm-6 col-xl-3">
+        <div class="premium-stat-card">
+          <div class="stat-inner">
+            <div class="stat-info">
+              <div class="stat-label">{{ kpi.label }}</div>
+              <div class="stat-value">{{ formatKpi(kpi.key) }}</div>
+            </div>
+            <div class="stat-icon-box" [style.background]="kpi.gradient">
+              <i class="bi {{ kpi.icon }}"></i>
+            </div>
+          </div>
+          <div class="stat-progress-bar">
+            <div class="progress-fill" [style.width]="'75%'" [style.background]="kpi.gradient"></div>
+          </div>
+        </div>
       </div>
-      <a routerLink="/admin/bookings" class="alert-link"><i class="bi bi-chevron-right"></i></a>
+    }
+  </div>
+
+  <!-- Quick Action Row -->
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-md-6">
+      <div class="alert-card info">
+        <div class="alert-icon-box"><i class="bi bi-people-fill"></i></div>
+        <div class="alert-info-content">
+          <div class="alert-title">Platform Statistics</div>
+          <div class="alert-sub">Monitor user growth and internal partner activity</div>
+        </div>
+        <a routerLink="/admin/customers" class="alert-link"><i class="bi bi-chevron-right"></i></a>
+      </div>
+    </div>
+    <div class="col-12 col-md-6">
+      <div class="alert-card success">
+        <div class="alert-icon-box"><i class="bi bi-calendar-check-fill"></i></div>
+        <div class="alert-info-content">
+          <div class="alert-title">12 Active Events Running</div>
+          <div class="alert-sub">Real-time tracking of ongoing vendor executions</div>
+        </div>
+        <a routerLink="/admin/bookings" class="alert-link"><i class="bi bi-chevron-right"></i></a>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Revenue Chart + Quick Stats -->
-<div class="row g-4">
-  <div class="col-12 col-lg-8">
-    <div class="ee-card p-4">
-      <h6 class="chart-title"><i class="bi bi-graph-up-arrow"></i> Monthly Revenue (2025)</h6>
-      <div class="chart-container">
-        @if (kpis()) {
-          <div class="revenue-chart">
-            @for (month of ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; track $index; let i = $index) {
-              <div class="bar-group">
-                <div class="bar-wrap" [title]="month + ': ' + formatKpi('monthlyRevenue')">
-                  <div class="revenue-bar" [style.height]="getBarWidth(i)"></div>
+  <!-- Revenue Chart + Quick Stats -->
+  <div class="row g-4 mb-5">
+    <div class="col-12 col-lg-8">
+      <div class="dashboard-section-card p-4">
+        <div class="card-header-modern border-0 p-0 mb-4">
+          <div class="header-title">
+            <i class="bi bi-graph-up-arrow me-2 text-primary-ee"></i>
+            <span>Monthly Revenue Overview (2025)</span>
+          </div>
+        </div>
+        <div class="chart-container">
+          @if (kpis()) {
+            <div class="revenue-chart">
+              @for (month of ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; track $index; let i = $index) {
+                <div class="bar-group">
+                  <div class="bar-wrap" [title]="month + ': ' + formatKpi('monthlyRevenue')">
+                    <div class="revenue-bar" [style.height]="getBarWidth(i)"></div>
+                  </div>
+                  <div class="bar-month">{{ month }}</div>
                 </div>
-                <div class="bar-month">{{ month }}</div>
-              </div>
-            }
-          </div>
-        }
+              }
+            </div>
+          }
+        </div>
       </div>
     </div>
-  </div>
-  <div class="col-12 col-lg-4">
-    <div class="ee-card p-4">
-      <h6 class="chart-title"><i class="bi bi-lightning-charge"></i> Quick Insights</h6>
-      <div class="quick-stats-list">
-        <div class="qs-item">
-          <span class="qs-label">Completed Events</span>
-          <span class="qs-val">312</span>
+    <div class="col-12 col-lg-4">
+      <div class="dashboard-section-card p-4 h-100">
+        <div class="card-header-modern border-0 p-0 mb-4">
+          <div class="header-title">
+            <i class="bi bi-lightning-charge me-2 text-warning"></i>
+            <span>Quick Operational Insights</span>
+          </div>
         </div>
-        @if (isAdmin()) {
+        <div class="quick-stats-list">
           <div class="qs-item">
-            <span class="qs-label">Total Revenue</span>
-            <span class="qs-val text-success">₹48.5L</span>
+            <span class="qs-label">Completed Events</span>
+            <span class="qs-val">312</span>
+          </div>
+          @if (isAdmin()) {
+            <div class="qs-item">
+              <span class="qs-label">Total Revenue</span>
+              <span class="qs-val text-success">₹48.5L</span>
+            </div>
+            <div class="qs-item">
+              <span class="qs-label">Avg Event Value</span>
+              <span class="qs-val text-info">₹1.55L</span>
+            </div>
+          }
+          <div class="qs-item">
+            <span class="qs-label">Customer Satisfaction</span>
+            <span class="qs-val text-accent">4.9 ★</span>
           </div>
           <div class="qs-item">
-            <span class="qs-label">Avg Event Value</span>
-            <span class="qs-val">₹1.55L</span>
+            <span class="qs-label">Vendor Success Rate</span>
+            <span class="qs-val text-success">96%</span>
           </div>
-        }
-        <div class="qs-item">
-          <span class="qs-label">Customer Satisfaction</span>
-          <span class="qs-val text-accent">4.9 ★</span>
-        </div>
-        <div class="qs-item">
-          <span class="qs-label">Vendor Success Rate</span>
-          <span class="qs-val text-success">96%</span>
-        </div>
-        <div class="qs-item">
-          <span class="qs-label">Tickets Resolved</span>
-          <span class="qs-val">97%</span>
+          <div class="qs-item">
+            <span class="qs-label">Tickets Resolved</span>
+            <span class="qs-val">97%</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-

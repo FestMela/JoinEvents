@@ -27,17 +27,33 @@
 .hero-subtext { font-size: 1.1rem; color: var(--text-hero); opacity: 0.85; margin-top: 16px; }
 .hero-subtext .highlight { color: var(--accent); font-weight: 700; opacity: 1; }
 
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
 .btn-white-glass {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: inherit !important;
   padding: 12px 28px;
   border-radius: var(--radius-lg);
   font-weight: 600;
-  transition: all var(--transition);
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
 }
-.btn-white-glass:hover { background: white; color: var(--navy); transform: translateY(-3px); }
+
+.btn-white-glass:hover {
+  background: var(--text-hero);
+  color: var(--bg-card) !important;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
 
 .hero-visual { position: relative; width: 300px; height: 100%; display: flex; align-items: center; justify-content: center; }
 .floating-icon-circle {
@@ -233,4 +249,15 @@
   .welcome-hero-card { padding: 32px 24px; flex-direction: column; text-align: center; }
   .hero-visual { display: none; }
   .hero-greeting { font-size: 1.8rem; }
+  .hero-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+  }
+  .hero-actions .btn {
+    width: 100%;
+    margin-right: 0 !important;
+    justify-content: center;
+  }
 }

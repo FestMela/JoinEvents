@@ -24,7 +24,7 @@ export class Login implements OnInit {
   ngOnInit() {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
     this.email = 'customer@demo.com';
-    this.password = 'demo123';
+    this.password = 'JoinEvents@2025';
   }
 
   onSubmit() {
@@ -42,7 +42,7 @@ export class Login implements OnInit {
     this.isLoading = true;
     this.errorMsg = '';
     setTimeout(() => {
-      const result = this.auth.login('customer@demo.com', 'demo123', 'customer', this.returnUrl);
+      const result = this.auth.login('customer@demo.com', 'JoinEvents@2025', 'customer', this.returnUrl);
       if (!result.success) { this.errorMsg = result.message; }
       this.isLoading = false;
     }, 1000);

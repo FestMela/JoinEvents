@@ -39,7 +39,7 @@ export class PortalLogin implements OnInit {
   selectRole(role: UserRole) {
     this.selectedRole.set(role);
     this.email = this.demoCredentials[role];
-    this.password = 'demo123';
+    this.password = 'JoinEvents@2025';
     this.errorMsg = '';
   }
 
@@ -47,7 +47,7 @@ export class PortalLogin implements OnInit {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
     // Init demo creds for default vendor role
     this.email = this.demoCredentials['vendor'];
-    this.password = 'demo123';
+    this.password = 'JoinEvents@2025';
   }
 
   onSubmit() {

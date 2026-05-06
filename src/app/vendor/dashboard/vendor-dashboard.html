@@ -1,19 +1,19 @@
 <div class="dashboard-wrapper">
   <!-- Premium Hero Header -->
-  <div class="vendor-hero mb-5">
+  <div class="vendor-hero mb-5" style="background: var(--gradient-hero); color: var(--text-hero); border: 1px solid var(--border-color); box-shadow: var(--shadow-md);">
     <div class="hero-content">
-      <div class="hero-main text-white">
+      <div class="hero-main" style="color: var(--text-hero);">
         <h1 class="fw-900 mb-2">Welcome back, {{ dashboard()?.vendorName || 'Partner' }}! 🚀</h1>
-        <p class="mb-0 fs-5" style="opacity: 0.9">Your business is scaling fast. You've received <span class="fw-800">12 new enquiries</span> this week.</p>
+        <p class="mb-0 fs-5" style="opacity: 0.85">Your business is scaling fast. You've received <span class="fw-800" style="color: var(--primary);">12 new enquiries</span> this week.</p>
       </div>
-      <div class="hero-badge">
+      <div class="hero-badge" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: inherit;">
         <div class="level-icon"><i class="bi bi-award-fill"></i></div>
-        <div class="level-info">
-          <div class="level-name">{{ vendorLevel().current }}</div>
-          <div class="level-progress">
-            <div class="progress-bar" [style.width.%]="(vendorLevel().points/vendorLevel().needed)*100"></div>
+        <div class="level-info" style="color: inherit;">
+          <div class="level-name" style="color: inherit;">{{ vendorLevel().current }}</div>
+          <div class="level-progress" style="background: rgba(0,0,0,0.08);">
+            <div class="progress-bar" [style.width.%]="(vendorLevel().points/vendorLevel().needed)*100" style="background: var(--primary);"></div>
           </div>
-          <div class="level-next">{{ vendorLevel().points }}/{{ vendorLevel().needed }} pts to next level</div>
+          <div class="level-next" style="color: inherit; opacity: 0.8;">{{ vendorLevel().points }}/{{ vendorLevel().needed }} pts to next level</div>
         </div>
     </div>
   </div>

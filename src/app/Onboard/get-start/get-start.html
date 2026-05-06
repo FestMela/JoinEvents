@@ -9,6 +9,13 @@
       <span class="brand-text-hero"><span class="brand-join">Join</span>Events</span>
     </div>
     <div class="d-flex gap-3 align-items-center">
+      <!-- Theme Switcher -->
+      <button class="topbar-icon-btn theme-switcher" (click)="theme.toggleTheme()"
+        [title]="theme.isDarkMode() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        style="background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.25); color: white; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid;">
+        <i class="bi" [class.bi-sun-fill]="theme.isDarkMode()" [class.bi-moon-stars-fill]="!theme.isDarkMode()"></i>
+      </button>
+
       <a routerLink="/login" class="btn-hero-outline">Sign In</a>
       <a routerLink="/register" class="btn-hero-fill">Get Started</a>
     </div>
@@ -147,7 +154,7 @@
 </section>
 
 <!-- TOP PLANNERS -->
-<section class="discovery-section" style="background: white;">
+<section class="discovery-section">
   <div class="container-wide">
     <div class="discovery-header">
       <div>
