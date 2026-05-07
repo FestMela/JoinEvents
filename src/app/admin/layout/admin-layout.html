@@ -1,4 +1,5 @@
-<div class="app-shell">
+<div class="app-shell" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+  <a href="#main-content" class="skip-to-content-link">Skip to main content</a>
   @if (sidebarOpen()) { <div class="sidebar-overlay" (click)="toggleSidebar()"></div> }
   <aside class="sidebar admin-sidebar" [class.open]="sidebarOpen()">
     <div class="sidebar-brand">
@@ -91,5 +92,5 @@
       </div>
     </div>
   </header>
-  <main class="main-content"><router-outlet /></main>
+  <main id="main-content" class="main-content"><router-outlet /></main>
 </div>

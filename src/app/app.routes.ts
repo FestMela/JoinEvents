@@ -52,6 +52,7 @@ export const routes: Routes = [
       { path: 'messages', loadComponent: () => import('./vendor/messages/messages').then(m => m.VendorMessages) },
       { path: 'rfp', loadComponent: () => import('./vendor/rfp/vendor-rfp').then(m => m.VendorRfp) },
       { path: 'notifications', loadComponent: () => import('./shared/pages/notifications/notifications').then(m => m.NotificationsPage) },
+      { path: 'analytics', loadComponent: () => import('./vendor/analytics/vendor-analytics').then(m => m.VendorAnalytics) },
     ]
   },
 
@@ -68,6 +69,7 @@ export const routes: Routes = [
       { path: 'employees', loadComponent: () => import('./admin/employees/admin-employees').then(m => m.AdminEmployees) },
       { path: 'profile', loadComponent: () => import('./admin/profile/profile').then(m => m.AdminProfile) },
       { path: 'notifications', loadComponent: () => import('./shared/pages/notifications/notifications').then(m => m.NotificationsPage) },
+      { path: 'analytics', loadComponent: () => import('./admin/analytics/admin-analytics').then(m => m.AdminAnalytics) },
     ]
   },
   {

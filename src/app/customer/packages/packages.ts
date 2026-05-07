@@ -1,8 +1,9 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { CommonModule, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { MockApiService } from '../../core/services/mock-api.service';
+import { SearchService } from '../../core/services/search.service';
 import { EventPackage } from '../../core/models/event.model';
 
 @Component({
@@ -16,10 +17,18 @@ export class CustomerPackages implements OnInit {
   private api = inject(MockApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  public search = inject(SearchService);
+
   packages = signal<EventPackage[]>([]);
   selectedEvent = signal('wedding');
   vendorId = signal<string | null>(null);
-  filteredPackages = signal<EventPackage[]>([]);
+
+  // Filter form bindings
+  queryVal = signal('');
+  minPriceVal = signal<number | null>(null);
+  maxPriceVal = signal<number | null>(null);
+  locationVal = signal('');
+  minRatingVal = signal<number | null>(null);
 
   readonly eventOptions = [
     { id: 'wedding', label: '💍 Wedding' },
@@ -28,6 +37,22 @@ export class CustomerPackages implements OnInit {
     { id: 'religious', label: '🔥 Religious' },
   ];
 
+  filteredPackages = computed(() => {
+    let result = this.packages().filter(p => p.eventTypeId === this.selectedEvent());
+    return this.search.filterPackages(result);
+  });
+
+  activeFiltersCount = computed(() => {
+    const f = this.search.filters();
+    let count = 0;
+    if (f.query) count++;
+    if (f.minPrice !== undefined) count++;
+    if (f.maxPrice !== undefined) count++;
+    if (f.location) count++;
+    if (f.minRating !== undefined) count++;
+    return count;
+  });
+
   ngOnInit() {
     this.route.queryParams.subscribe(params => {
       if (params['eventTypeId']) this.selectedEvent.set(params['eventTypeId']);
@@ -35,22 +60,48 @@ export class CustomerPackages implements OnInit {
       
       this.api.getPackages().subscribe(p => {
         this.packages.set(p);
-        this.filterPackages();
       });
+    });
+
+    // Sync search service category with selectedEvent
+    this.search.updateFilters({ category: this.selectedEvent() });
+  }
+
+  selectEvent(id: string) {
+    this.selectedEvent.set(id);
+    this.search.updateFilters({ category: id });
+  }
+
+  applyActiveFilters() {
+    this.search.updateFilters({
+      query: this.queryVal() || undefined,
+      minPrice: this.minPriceVal() !== null ? Number(this.minPriceVal()) : undefined,
+      maxPrice: this.maxPriceVal() !== null ? Number(this.maxPriceVal()) : undefined,
+      location: this.locationVal() || undefined,
+      minRating: this.minRatingVal() !== null ? Number(this.minRatingVal()) : undefined
     });
   }
 
-  filterPackages() {
-    this.filteredPackages.set(this.packages().filter(p => p.eventTypeId === this.selectedEvent()));
+  clearAllFilters() {
+    // 300ms transition to restore unfiltered
+    setTimeout(() => {
+      this.queryVal.set('');
+      this.minPriceVal.set(null);
+      this.maxPriceVal.set(null);
+      this.locationVal.set('');
+      this.minRatingVal.set(null);
+      this.search.clearFilters();
+      this.search.updateFilters({ category: this.selectedEvent() });
+    }, 300);
   }
 
-  selectEvent(id: string) { this.selectedEvent.set(id); this.filterPackages(); }
-  
   bookPackage(pkg: EventPackage) {
     this.router.navigate(['/customer/book', pkg.id]);
   }
+
   getTierGradient(tier: string) {
     return tier === 'basic' ? 'linear-gradient(135deg,#94A3B8,#64748B)' : tier === 'standard' ? 'var(--gradient-primary)' : 'var(--gradient-secondary)';
   }
+
   getTierLabel(tier: string) { return tier === 'basic' ? 'Silver' : tier === 'standard' ? 'Gold ⭐ Most Popular' : 'Diamond 💎 Premium'; }
 }

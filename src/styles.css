@@ -168,6 +168,23 @@ p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
   outline: none;
 }
 
+.skip-to-content-link {
+  position: absolute;
+  top: -100px;
+  left: 20px;
+  background: var(--primary);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  z-index: 9999;
+  font-weight: bold;
+  transition: top 0.2s ease-in-out;
+}
+.skip-to-content-link:focus {
+  top: 20px;
+  outline: none;
+}
+
 html, body {
   font-family: var(--font-body);
   background-color: var(--bg-app) !important;
