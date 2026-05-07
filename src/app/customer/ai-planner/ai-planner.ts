@@ -34,7 +34,7 @@ export class AiPlanner implements AfterViewChecked {
       id: 'msg-1',
       sender: 'ai',
       type: 'text',
-      content: 'Hi! I am your JoinEvents AI Concierge. What kind of event are you planning? (e.g., "Find me an eco-friendly wedding venue under 10 Lakhs")',
+      content: 'Hi! I am Roshi, your JoinEvents assistant. What kind of event are you planning? (e.g., "Find me an eco-friendly wedding venue under 10 Lakhs")',
       timestamp: new Date()
     }
   ]);

@@ -26,6 +26,14 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      - name: Set Project ID Fallback
+        run: |
+          PROJ_ID="${{ secrets.GCP_PROJECT_ID }}"
+          if [ -z "$PROJ_ID" ]; then
+            PROJ_ID="${{ steps.auth.outputs.project_id }}"
+          fi
+          echo "PROJECT_ID=$PROJ_ID" >> $GITHUB_ENV
+
       - name: Set up SDK
         uses: google-github-actions/setup-gcloud@v2
 
