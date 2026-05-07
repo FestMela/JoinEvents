@@ -58,7 +58,7 @@
         </div>
         <div class="modern-booking-list p-4">
           @for (b of bookings().slice(0,3); track b.id) {
-            <div class="modern-booking-item">
+            <div class="modern-booking-item" [routerLink]="['/customer/bookings']" [queryParams]="{ bookingId: b.id }" style="cursor: pointer;">
               <div class="booking-date-badge">
                 <div class="day">{{ b.eventDate.split('-')[2] }}</div>
                 <div class="month">{{ b.eventDate.split('-')[1] }}</div>
@@ -160,7 +160,7 @@
       </div>
 
       <!-- Support Card -->
-      <div class="modern-support-card">
+      <div class="modern-support-card" routerLink="/customer/support" style="cursor: pointer;">
         <div class="support-bg-art"></div>
         <div class="d-flex align-items-center gap-3">
           <div class="support-icon"><i class="bi bi-headset"></i></div>

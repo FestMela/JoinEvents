@@ -1,0 +1,179 @@
+<div class="support-container">
+  <!-- Header Banner -->
+  <div class="support-hero-banner mb-4">
+    <div class="banner-text">
+      <h2>Premium Support Center</h2>
+      <p>Have an issue or need to make changes to your event? Raise a ticket and our 24/7 support agents will resolve it instantly.</p>
+    </div>
+    <button class="btn-create-ticket" (click)="openCreateModal()">
+      <i class="bi bi-plus-circle me-2"></i>Raise Support Issue
+    </button>
+  </div>
+
+  <div class="row g-4">
+    <!-- Left Column: Tickets List -->
+    <div class="col-12 col-md-5">
+      <div class="support-card ticket-list-card">
+        <div class="card-header-flex">
+          <span class="card-title-main"><i class="bi bi-ticket-detailed me-2"></i>My Tickets</span>
+          <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search issues..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+          <button [class.active]="activeTab() === 'all'" (click)="activeTab.set('all')">All</button>
+          <button [class.active]="activeTab() === 'open'" (click)="activeTab.set('open')">Open</button>
+          <button [class.active]="activeTab() === 'resolved'" (click)="activeTab.set('resolved')">Resolved</button>
+        </div>
+
+        <div class="ticket-scroller">
+          @if (filteredTickets().length === 0) {
+            <div class="empty-state">
+              <i class="bi bi-ticket-perforated"></i>
+              <p>No support tickets found.</p>
+            </div>
+          } @else {
+            @for (t of filteredTickets(); track t.id) {
+              <div class="ticket-list-item" [class.selected]="selectedTicket()?.id === t.id" (click)="selectTicket(t)">
+                <div class="ticket-item-header">
+                  <span class="ticket-id">#{{ t.id.toUpperCase() }}</span>
+                  <span class="badge {{ priorityColor(t.priority) }}">{{ t.priority }}</span>
+                </div>
+                <div class="ticket-subject">{{ t.subject }}</div>
+                <div class="ticket-item-footer">
+                  <span class="badge {{ statusColor(t.status) }}">{{ t.status | titlecase }}</span>
+                  <span class="ticket-time"><i class="bi bi-clock me-1"></i>{{ t.createdAt | date:'shortDate' }}</span>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Ticket Details -->
+    <div class="col-12 col-md-7">
+      @if (selectedTicket()) {
+        <div class="support-card ticket-detail-card">
+          <div class="detail-header">
+            <div>
+              <span class="ticket-id-large">#{{ selectedTicket()?.id?.toUpperCase() }}</span>
+              <h4 class="detail-subject">{{ selectedTicket()?.subject }}</h4>
+            </div>
+            <div class="detail-badges">
+              <span class="badge {{ priorityColor(selectedTicket()!.priority) }} px-3 py-2 me-2">{{ selectedTicket()?.priority | titlecase }}</span>
+              <span class="badge {{ statusColor(selectedTicket()!.status) }} px-3 py-2">{{ selectedTicket()?.status | titlecase }}</span>
+            </div>
+          </div>
+
+          <div class="detail-meta-box">
+            <div class="meta-item">
+              <span class="meta-label">Raised By</span>
+              <span class="meta-value">{{ selectedTicket()?.customerName }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Created At</span>
+              <span class="meta-value">{{ selectedTicket()?.createdAt | date:'medium' }}</span>
+            </div>
+          </div>
+
+          <!-- Timeline view / Thread -->
+          <div class="ticket-thread-box">
+            <div class="thread-message system">
+              <div class="message-avatar bg-primary text-white"><i class="bi bi-robot"></i></div>
+              <div class="message-body">
+                <div class="message-header">
+                  <strong>System Bot</strong>
+                  <span class="message-time">Just Now</span>
+                </div>
+                <p>Hello Rajesh Kumar! Your ticket has been registered successfully. A dedicated Customer Satisfaction officer is reviewing the details and will contact you shortly.</p>
+              </div>
+            </div>
+
+            @if (selectedTicket()?.status === 'resolved' || selectedTicket()?.status === 'closed') {
+              <div class="thread-message support">
+                <div class="message-avatar bg-success text-white"><i class="bi bi-shield-check"></i></div>
+                <div class="message-body">
+                  <div class="message-header">
+                    <strong>Rahul Support (Agent)</strong>
+                    <span class="message-time">Yesterday</span>
+                  </div>
+                  <p>Dear Customer, we have investigated this issue and resolved it successfully with your catering vendor. Thank you for using our premium services!</p>
+                </div>
+              </div>
+            }
+          </div>
+
+          <div class="detail-actions">
+            <button class="btn btn-outline-secondary w-100 py-3" disabled>
+              <i class="bi bi-chat-text me-2"></i>Reply to Support Agent (Coming Soon)
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="support-card empty-detail-card">
+          <i class="bi bi-ticket-detailed large-icon"></i>
+          <h4>No Ticket Selected</h4>
+          <p>Please select a ticket from the left panel to view its complete progress logs and message timeline.</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Create Support Ticket Modal Popup -->
+@if (showCreateModal()) {
+  <div class="modal-backdrop-ee fade show"></div>
+  <div class="modal modal-ee fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header-modern bg-gradient-primary">
+          <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Raise Support Issue</h5>
+          <button type="button" class="btn-close-white" (click)="closeCreateModal()"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Issue Subject / Description</label>
+            <textarea class="form-control" rows="4" placeholder="Briefly describe what issue you are facing or what changes you want to make..." [(ngModel)]="newSubject"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Issue Priority</label>
+            <select class="form-select" [(ngModel)]="newPriority">
+              <option value="low">Low (General Query)</option>
+              <option value="medium">Medium (Requires attention)</option>
+              <option value="high">High (Blocks progress)</option>
+              <option value="urgent">Urgent (Immediate critical issue)</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold"><i class="bi bi-paperclip me-1"></i>Attach File / Screenshot (Optional)</label>
+            <div class="file-upload-wrapper">
+              <input type="file" id="ticketFile" class="d-none" (change)="onFileSelected($event)">
+              <label for="ticketFile" class="file-upload-label">
+                @if (selectedFileName()) {
+                  <span class="file-name"><i class="bi bi-file-earmark-check-fill text-success me-2"></i>{{ selectedFileName() }}</span>
+                  <button type="button" class="btn-remove-file" (click)="removeSelectedFile($event)"><i class="bi bi-x"></i></button>
+                } @else {
+                  <span class="file-placeholder"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Click to attach a file</span>
+                }
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer border-0 p-0 mt-4 d-flex gap-3">
+            <button type="button" class="btn btn-outline-cancel flex-1 py-3" (click)="closeCreateModal()">Cancel</button>
+            <button type="button" class="btn btn-ee-primary flex-1 py-3" [disabled]="submitting()" (click)="submitTicket()">
+              @if (submitting()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>Raising...
+              } @else {
+                Raise Ticket
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

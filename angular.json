@@ -25,7 +25,7 @@
               },
               {
                 "glob": "**/*",
-                "input": "src/img",
+                "input": "src/Img",
                 "output": "src/img"
               }
             ],

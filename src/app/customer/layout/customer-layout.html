@@ -8,7 +8,7 @@
   <aside class="sidebar" [class.open]="sidebarOpen()">
     <div class="sidebar-brand">
       <div class="brand-logo">
-        <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+        <img src="src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
         <i class="bi bi-stars" style="display:none"></i>
       </div>
       <div>
@@ -34,10 +34,10 @@
   <!-- Topbar -->
   <header class="topbar">
     <div class="d-flex align-items-center gap-3">
-      <button class="topbar-icon-btn d-lg-none" (click)="toggleSidebar()">
+      <button class="topbar-icon-btn d-xl-none" (click)="toggleSidebar()">
         <i class="bi bi-list"></i>
       </button>
-      <div class="topbar-brand-mobile d-lg-none">
+      <div class="topbar-brand-mobile d-xl-none">
         <span style="font-family:var(--font-heading);font-weight:900;font-size:1.25rem;">
           <span class="brand-join">Join</span><span class="brand-events">Events</span>
         </span>

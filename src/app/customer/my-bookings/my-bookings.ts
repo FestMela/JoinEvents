@@ -4,6 +4,7 @@ import { MockApiService } from '../../core/services/mock-api.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Booking } from '../../core/models/booking.model';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-my-bookings',
@@ -14,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 export class MyBookings implements OnInit {
   private api = inject(MockApiService);
   private toast = inject(ToastService);
+  private route = inject(ActivatedRoute);
   bookings = signal<Booking[]>([]);
   selectedBooking = signal<Booking | null>(null);
   activeFilter = signal<string>('all');
@@ -60,6 +62,14 @@ export class MyBookings implements OnInit {
   ngOnInit() {
     this.api.getBookings('c1').subscribe(b => {
       this.bookings.set(b);
+      const bookingId = this.route.snapshot.queryParams['bookingId'];
+      if (bookingId) {
+        const found = b.find(item => item.id === bookingId);
+        if (found) {
+          this.selectedBooking.set(found);
+          return;
+        }
+      }
       if (b.length) this.selectedBooking.set(b[0]);
     });
   }

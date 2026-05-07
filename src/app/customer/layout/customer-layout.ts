@@ -39,6 +39,7 @@ export class CustomerLayout {
     { path: '/customer/bookings',  icon: 'bi-journal-check',  label: 'My Bookings', protected: true },
     { path: '/customer/messages',  icon: 'bi-chat-dots',      label: 'Messages', badge: 2, protected: true },
     { path: '/customer/payments',  icon: 'bi-credit-card',    label: 'Payments', protected: true },
+    { path: '/customer/support',   icon: 'bi-ticket-detailed', label: 'Support', protected: true },
   ];
 
   get filteredNavItems() {

@@ -290,12 +290,29 @@ export class MockApiService {
   }
 
   // ─── SUPPORT TICKETS ───────────────────────────────────────────
+  globalTickets = signal<SupportTicket[]>([
+    { id: 'st1', customerId: 'c1', customerName: 'Rajesh Kumar', subject: 'Decoration vendor not responding', status: 'open', priority: 'high', createdAt: '2025-10-09T08:00:00', messages: [] },
+    { id: 'st2', customerId: 'c2', customerName: 'Sunita Patel', subject: 'Need to change event date', status: 'in_progress', priority: 'medium', createdAt: '2026-04-10T11:00:00', messages: [] },
+    { id: 'st3', customerId: 'c3', customerName: 'Anand Reddy', subject: 'Catering quality issue after event', status: 'resolved', priority: 'urgent', createdAt: '2026-03-28T16:00:00', messages: [] },
+  ]);
+
   getSupportTickets(): Observable<SupportTicket[]> {
-    return of<SupportTicket[]>([
-      { id: 'st1', customerId: 'c1', customerName: 'Rajesh Kumar', subject: 'Decoration vendor not responding', status: 'open', priority: 'high', createdAt: '2025-10-09T08:00:00', messages: [] },
-      { id: 'st2', customerId: 'c2', customerName: 'Sunita Patel', subject: 'Need to change event date', status: 'in_progress', priority: 'medium', createdAt: '2026-04-10T11:00:00', messages: [] },
-      { id: 'st3', customerId: 'c3', customerName: 'Anand Reddy', subject: 'Catering quality issue after event', status: 'resolved', priority: 'urgent', createdAt: '2026-03-28T16:00:00', messages: [] },
-    ]).pipe(delay(300));
+    return of(this.globalTickets()).pipe(delay(300));
+  }
+
+  createSupportTicket(subject: string, priority: string): Observable<SupportTicket> {
+    const newTicket: SupportTicket = {
+      id: 'st' + Math.floor(Math.random() * 10000),
+      customerId: 'c1',
+      customerName: 'Rajesh Kumar',
+      subject,
+      status: 'open',
+      priority: priority as any,
+      createdAt: new Date().toISOString(),
+      messages: []
+    };
+    this.globalTickets.update(tickets => [...tickets, newTicket]);
+    return of(newTicket).pipe(delay(300));
   }
 
   // ─── ADMIN DASHBOARD ───────────────────────────────────────────
