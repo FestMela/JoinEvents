@@ -4,7 +4,7 @@
   <nav class="hero-nav glass-nav">
     <div class="nav-logo-wrap">
       <div class="brand-logo-hero">
-        <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+        <img src="src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
       </div>
       <span class="brand-text-hero"><span class="brand-join">Join</span>Events</span>
     </div>
@@ -16,8 +16,14 @@
         <i class="bi" [class.bi-sun-fill]="theme.isDarkMode()" [class.bi-moon-stars-fill]="!theme.isDarkMode()"></i>
       </button>
 
-      <a routerLink="/login" class="btn-hero-outline">Sign In</a>
-      <a routerLink="/register" class="btn-hero-fill">Get Started</a>
+      <a routerLink="/login" class="btn-hero-outline" title="Sign In">
+        <i class="bi bi-box-arrow-in-right me-2"></i>
+        <span class="btn-text">Sign In</span>
+      </a>
+      <a routerLink="/register" class="btn-hero-fill" title="Get Started">
+        <i class="bi bi-stars me-2"></i>
+        <span class="btn-text">Get Started</span>
+      </a>
     </div>
   </nav>
 
@@ -239,7 +245,7 @@
       <div class="footer-brand-col">
         <div class="d-flex align-items-center gap-2 mb-3">
           <div class="brand-logo-hero sm">
-            <img src="/src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
+            <img src="src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
           </div>
           <span class="brand-text-hero"><span class="brand-join">Join</span>Events</span>
         </div>
