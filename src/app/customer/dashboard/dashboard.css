@@ -186,7 +186,18 @@
 /* ---- Sidebar Elements ---- */
 .glass-card { background: var(--bg-top); backdrop-filter: blur(10px); border: 1px solid var(--border-glass); }
 
-.msg-preview-item { display: flex; gap: 12px; margin-bottom: 20px; }
+.msg-preview-item { 
+  display: flex; 
+  gap: 12px; 
+  margin-bottom: 20px; 
+  transition: all var(--transition, 0.25s ease); 
+  padding: 8px; 
+  border-radius: 14px; 
+}
+.msg-preview-item:hover { 
+  background: rgba(0,0,0,0.03); 
+  transform: translateX(6px); 
+}
 .msg-avatar {
   width: 40px; height: 40px;
   background: var(--gradient-primary);
@@ -206,6 +217,13 @@
   color: white;
   position: relative;
   overflow: hidden;
+  transition: all var(--transition, 0.25s ease);
+  border: 1px solid transparent;
+}
+.loyalty-premium-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg, 0 10px 25px rgba(0,0,0,0.15));
+  border-color: rgba(255, 255, 255, 0.15);
 }
 .loyalty-icon-circle {
   width: 60px; height: 60px;

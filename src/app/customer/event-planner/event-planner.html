@@ -73,3 +73,35 @@
     </div>
   </div>
 </div>
+
+@if (showSuccessModal()) {
+  <div class="planner-modal-overlay">
+    <div class="planner-modal-card">
+      <div class="modal-success-icon">
+        <i class="bi bi-check2-all"></i>
+      </div>
+      <h3>Plan Broadcasted Successfully!</h3>
+      <p>Your custom event plan has been saved and broadcasted to our verified vendor network as an active RFP. Verified vendors will now start bidding on your requirements!</p>
+      
+      <div class="modal-meta-grid">
+        <div class="meta-item">
+          <span class="meta-label">Est. Budget</span>
+          <span class="meta-value">₹{{ (getTotal() + getGst()).toLocaleString('en-IN') }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Services Included</span>
+          <span class="meta-value">{{ selectedServices().length }} Services</span>
+        </div>
+      </div>
+
+      <div class="modal-action-buttons">
+        <button class="btn-ee-primary w-100 mb-2 py-3 fw-bold" (click)="goToRfp()" style="border-radius: 14px;">
+          <i class="bi bi-file-earmark-text me-2"></i>View Bids on RFP Board
+        </button>
+        <button class="btn btn-outline-secondary w-100 py-3 fw-bold" (click)="goToDashboard()" style="border-radius: 14px; border-width: 2px;">
+          <i class="bi bi-house me-2"></i>Back to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+}

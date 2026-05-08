@@ -6,7 +6,13 @@
         <span class="greeting-time" style="opacity: 0.7">{{ getGreeting() }}</span>,
         <span class="user-name">{{ user()?.name }}!</span> 👋
       </div>
-      <p class="hero-subtext" [style.color]="'var(--text-hero)'" style="opacity: 0.85">You have <span class="highlight">2 active events</span> being planned. Ready to take the next step?</p>
+      <p class="hero-subtext" [style.color]="'var(--text-hero)'" style="opacity: 0.85">
+        @if (bookings().length === 0) {
+          Welcome to JoinEvents! Let's get started on planning your first dream event.
+        } @else {
+          You have <span class="highlight">{{ bookings().length }} active events</span> being planned. Ready to take the next step?
+        }
+      </p>
       <div class="hero-actions mt-4">
         <button class="btn btn-white-glass" routerLink="/customer/planner">
           <i class="bi bi-plus-lg me-2"></i> Plan New Event
@@ -24,9 +30,9 @@
 
   <!-- Stats Grid -->
   <div class="row g-4 mb-5">
-    @for (stat of stats; track stat.label) {
+    @for (stat of stats(); track stat.label) {
       <div class="col-12 col-sm-6 col-xl-3">
-        <div class="premium-stat-card">
+        <div class="premium-stat-card" [routerLink]="stat.route" style="cursor: pointer;">
           <div class="stat-inner">
             <div class="stat-info">
               <div class="stat-label">{{ stat.label }}</div>
@@ -48,40 +54,43 @@
     <!-- Main Column -->
     <div class="col-12 col-lg-8">
       <!-- Recent Activity / Bookings -->
-      <div class="dashboard-section-card mb-4">
-        <div class="card-header-modern">
-          <div class="header-title">
-            <i class="bi bi-journal-text me-2 text-primary-ee"></i>
-            <span>Active Event Timeline</span>
+      <!-- Recent Activity / Bookings -->
+      @if (bookings().length > 0) {
+        <div class="dashboard-section-card mb-4">
+          <div class="card-header-modern">
+            <div class="header-title">
+              <i class="bi bi-journal-text me-2 text-primary-ee"></i>
+              <span>Active Event Timeline</span>
+            </div>
+            <a routerLink="/customer/bookings" class="header-action-link">View All Bookings</a>
           </div>
-          <a routerLink="/customer/bookings" class="header-action-link">View All Bookings</a>
-        </div>
-        <div class="modern-booking-list p-4">
-          @for (b of bookings().slice(0,3); track b.id) {
-            <div class="modern-booking-item" [routerLink]="['/customer/bookings']" [queryParams]="{ bookingId: b.id }" style="cursor: pointer;">
-              <div class="booking-date-badge">
-                <div class="day">{{ b.eventDate.split('-')[2] }}</div>
-                <div class="month">{{ b.eventDate.split('-')[1] }}</div>
-              </div>
-              <div class="booking-details flex-1">
-                <h6 class="event-name">{{ b.eventName }}</h6>
-                <div class="event-meta">
-                  <span><i class="bi bi-geo-alt me-1"></i>{{ b.venue }}, {{ b.city }}</span>
-                  <span class="mx-2 text-muted">|</span>
-                  <span><i class="bi bi-people me-1"></i>{{ b.guestCount }} Guests</span>
+          <div class="modern-booking-list p-4">
+            @for (b of bookings().slice(0,3); track b.id) {
+              <div class="modern-booking-item" [routerLink]="['/customer/bookings']" [queryParams]="{ bookingId: b.id }" style="cursor: pointer;">
+                <div class="booking-date-badge">
+                  <div class="day">{{ b.eventDate.split('-')[2] }}</div>
+                  <div class="month">{{ b.eventDate.split('-')[1] }}</div>
+                </div>
+                <div class="booking-details flex-1">
+                  <h6 class="event-name">{{ b.eventName }}</h6>
+                  <div class="event-meta">
+                    <span><i class="bi bi-geo-alt me-1"></i>{{ b.venue }}, {{ b.city }}</span>
+                    <span class="mx-2 text-muted">|</span>
+                    <span><i class="bi bi-people me-1"></i>{{ b.guestCount }} Guests</span>
+                  </div>
+                </div>
+                <div class="booking-status-box text-end">
+                  <span class="status-pill {{ getStatusBadgeClass(b.status) }}">{{ getStatusLabel(b.status) }}</span>
+                  <div class="price-text mt-2">₹{{ (b.totalAmount/1000).toFixed(1) }}k</div>
+                </div>
+                <div class="booking-action-btn">
+                  <i class="bi bi-chevron-right"></i>
                 </div>
               </div>
-              <div class="booking-status-box text-end">
-                <span class="status-pill {{ getStatusBadgeClass(b.status) }}">{{ getStatusLabel(b.status) }}</span>
-                <div class="price-text mt-2">₹{{ (b.totalAmount/1000).toFixed(1) }}k</div>
-              </div>
-              <div class="booking-action-btn">
-                <i class="bi bi-chevron-right"></i>
-              </div>
-            </div>
-          }
+            }
+          </div>
         </div>
-      </div>
+      }
 
       <!-- Quick Planner Grid -->
       <div class="dashboard-section-card">
@@ -118,7 +127,7 @@
         </div>
         <div class="p-4">
           <div class="message-preview-list">
-            <div class="msg-preview-item">
+            <div class="msg-preview-item" routerLink="/customer/messages" style="cursor: pointer;">
               <div class="msg-avatar">PN</div>
               <div class="msg-content">
                 <div class="msg-sender">Priya Nair (Admin)</div>
@@ -126,7 +135,7 @@
                 <div class="msg-time">2 mins ago</div>
               </div>
             </div>
-            <div class="msg-preview-item">
+            <div class="msg-preview-item" routerLink="/customer/messages" style="cursor: pointer;">
               <div class="msg-avatar bg-secondary-ee">AS</div>
               <div class="msg-content">
                 <div class="msg-sender">Amit Sharma (Vendor)</div>
@@ -142,18 +151,27 @@
       </div>
 
       <!-- Loyalty Card -->
-      <div class="loyalty-premium-card mb-4">
+      <div class="loyalty-premium-card mb-4" routerLink="/customer/profile" style="cursor: pointer;">
         <div class="loyalty-icon-circle"><i class="bi bi-gem"></i></div>
         <div class="loyalty-info text-center mt-3">
           <div class="loyalty-label">Loyalty Tier</div>
-          <div class="loyalty-tier">Gold Member</div>
+          <div class="loyalty-tier">
+            @if ((customerProfile()?.loyaltyPoints ?? 0) >= 1000) { Platinum Member }
+            @else if ((customerProfile()?.loyaltyPoints ?? 0) >= 400) { Gold Member }
+            @else { Silver Member }
+          </div>
           <div class="loyalty-progress mt-4">
             <div class="d-flex justify-content-between small text-white-50 mb-2">
-              <span>Progress to Platinum</span>
-              <span>1,240 / 2,500 pts</span>
+              @if ((customerProfile()?.loyaltyPoints ?? 0) < 1000) {
+                <span>Progress to Platinum</span>
+                <span>{{ customerProfile()?.loyaltyPoints ?? 0 }} / 1,000 pts</span>
+              } @else {
+                <span>Highest Tier Reached!</span>
+                <span>{{ customerProfile()?.loyaltyPoints ?? 0 }} pts</span>
+              }
             </div>
-            <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1);">
-              <div class="progress-bar bg-white" style="width: 50%"></div>
+            <div class="progress" style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+              <div class="progress-bar bg-white" [style.width.%]="((customerProfile()?.loyaltyPoints ?? 0) / 1000) * 100" style="border-radius: 10px;"></div>
             </div>
           </div>
         </div>

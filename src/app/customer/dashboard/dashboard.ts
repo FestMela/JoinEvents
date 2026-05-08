@@ -2,6 +2,7 @@ import { Component, signal, OnInit, inject, ChangeDetectionStrategy } from '@ang
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { MockApiService } from '../../core/services/mock-api.service';
+import { RfpService } from '../../core/services/rfp.service';
 import { EventType } from '../../core/models/event.model';
 import { Booking } from '../../core/models/booking.model';
 
@@ -15,21 +16,58 @@ import { Booking } from '../../core/models/booking.model';
 export class CustomerDashboard implements OnInit {
   private auth = inject(AuthService);
   private api = inject(MockApiService);
+  private rfpService = inject(RfpService);
 
   user = this.auth.currentUser;
   eventTypes = signal<EventType[]>([]);
   bookings = signal<Booking[]>([]);
+  customerProfile = signal<any>(null);
 
-  readonly stats = [
-    { label: 'Upcoming Events', value: '2', icon: 'bi-calendar-event', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', iconBg: 'rgba(255,107,53,0.12)', iconColor: 'var(--primary)' },
-    { label: 'Active Bookings', value: '1', icon: 'bi-journal-check', gradient: 'linear-gradient(135deg,#6B21A8,#9333EA)', iconBg: 'rgba(107,33,168,0.12)', iconColor: 'var(--secondary)' },
-    { label: 'Total Spent', value: '₹82.6K', icon: 'bi-currency-rupee', gradient: 'linear-gradient(135deg,#16A34A,#0EA5E9)', iconBg: 'rgba(22,163,74,0.12)', iconColor: 'var(--success)' },
-    { label: 'Loyalty Points', value: '1,240', icon: 'bi-star-half', gradient: 'linear-gradient(135deg,#F59E0B,#FF6B35)', iconBg: 'rgba(245,158,11,0.12)', iconColor: 'var(--accent)' },
-  ];
+  readonly stats = signal([
+    { label: 'Upcoming Events', value: '0', icon: 'bi-calendar-event', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', iconBg: 'rgba(255,107,53,0.12)', iconColor: 'var(--primary)', route: '/customer/bookings' },
+    { label: 'Active Bookings', value: '0', icon: 'bi-journal-check', gradient: 'linear-gradient(135deg,#6B21A8,#9333EA)', iconBg: 'rgba(107,33,168,0.12)', iconColor: 'var(--secondary)', route: '/customer/bookings' },
+    { label: 'RFP Requests', value: '0', icon: 'bi-file-earmark-text', gradient: 'linear-gradient(135deg,#16A34A,#0EA5E9)', iconBg: 'rgba(22,163,74,0.12)', iconColor: 'var(--success)', route: '/customer/rfp' },
+    { label: 'Loyalty Points', value: '0', icon: 'bi-star-half', gradient: 'linear-gradient(135deg,#F59E0B,#FF6B35)', iconBg: 'rgba(245,158,11,0.12)', iconColor: 'var(--accent)', route: '/customer/profile' },
+  ]);
 
   ngOnInit() {
     this.api.getEventTypes().subscribe(t => this.eventTypes.set(t));
-    this.api.getBookings('c1').subscribe(b => this.bookings.set(b));
+    
+    const user = this.auth.currentUser();
+    const userId = user?.id ?? 'c1';
+
+    this.api.getBookings(userId).subscribe(b => {
+      this.bookings.set(b);
+      const upcoming = b.filter(book => book.status === 'confirmed' || book.status === 'pending' || book.status === 'in_progress').length;
+      const active = b.filter(book => book.status === 'confirmed' || book.status === 'in_progress').length;
+      
+      this.stats.update(s => {
+        const updated = [...s];
+        updated[0].value = upcoming.toString();
+        updated[1].value = active.toString();
+        return updated;
+      });
+    });
+
+    this.rfpService.getRfps(userId).subscribe(rfps => {
+      this.stats.update(s => {
+        const updated = [...s];
+        updated[2].value = rfps.length.toString();
+        return updated;
+      });
+    });
+
+    this.api.getCustomers().subscribe(customers => {
+      const customer = customers.find(c => c.id === userId);
+      if (customer) {
+        this.customerProfile.set(customer);
+        this.stats.update(s => {
+          const updated = [...s];
+          updated[3].value = customer.loyaltyPoints.toLocaleString();
+          return updated;
+        });
+      }
+    });
   }
 
   getStatusBadgeClass(status: string): string {

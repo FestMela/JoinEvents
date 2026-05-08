@@ -5,6 +5,7 @@ import { AuthUser, UserRole } from '../models/user.model';
 
 const MOCK_USERS: Record<string, AuthUser & { password: string }> = {
   'customer@demo.com': { id: 'c1', name: 'Rajesh Kumar', email: 'customer@demo.com', role: 'customer', phone: '+91 98765 43210', password: 'JoinEvents@2025', token: 'mock-jwt-token-customer-123' },
+  'meena@demo.com':    { id: 'c4', name: 'Meena Sharma', email: 'meena@demo.com', role: 'customer', phone: '+91 95432 10987', password: 'JoinEvents@2025', token: 'mock-jwt-token-customer-999' },
   'vendor@demo.com':   { id: 'v1', name: 'Amit Sharma', email: 'vendor@demo.com', role: 'vendor', phone: '+91 91234 56789', password: 'JoinEvents@2025', token: 'mock-jwt-token-vendor-456' },
   'admin@demo.com':    { id: 'a1', name: 'Priya Nair', email: 'admin@demo.com', role: 'admin', phone: '+91 99887 76655', password: 'JoinEvents@2025', token: 'mock-jwt-token-admin-789' },
   'support@demo.com':  { id: 's1', name: 'Rahul Support', email: 'support@demo.com', role: 'support', phone: '+91 99000 11223', password: 'JoinEvents@2025', token: 'mock-jwt-token-support-000' },

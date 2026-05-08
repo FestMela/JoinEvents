@@ -1,14 +1,16 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { NotificationService } from './notification.service';
 import { AuthService } from './auth.service';
 
 describe('NotificationService', () => {
   let service: NotificationService;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
+  const currentUserSignal = signal({ id: 'c1', name: 'Rajesh Kumar', role: 'customer' as const });
 
   beforeEach(() => {
     const spy = jasmine.createSpyObj('AuthService', [], {
-      currentUser: () => ({ id: 'c1', name: 'Rajesh Kumar', role: 'customer' })
+      currentUser: currentUserSignal
     });
 
     TestBed.configureTestingModule({
@@ -26,7 +28,13 @@ describe('NotificationService', () => {
   });
 
   it('should create notifications for the active user', () => {
-    service.triggerNotification('c1', 'booking', 'Test Notification', 'This is a test message.');
+    service.addNotification({
+      targetUserId: 'c1',
+      targetRole: 'customer',
+      type: 'booking',
+      title: 'Test Notification',
+      message: 'This is a test message.'
+    });
     const active = service.activeNotifications();
     expect(active.length).toBeGreaterThan(0);
     expect(active[0].title).toBe('Test Notification');
@@ -34,7 +42,13 @@ describe('NotificationService', () => {
   });
 
   it('should mark all notifications as read', () => {
-    service.triggerNotification('c1', 'booking', 'Unread', 'Unread message.');
+    service.addNotification({
+      targetUserId: 'c1',
+      targetRole: 'customer',
+      type: 'booking',
+      title: 'Unread',
+      message: 'Unread message.'
+    });
     service.markAllAsRead();
     const active = service.activeNotifications();
     expect(active.every(n => n.isRead)).toBeTrue();
@@ -42,7 +56,13 @@ describe('NotificationService', () => {
   });
 
   it('should delete specified notification', () => {
-    service.triggerNotification('c1', 'booking', 'Test Del', 'Del message.');
+    service.addNotification({
+      targetUserId: 'c1',
+      targetRole: 'customer',
+      type: 'booking',
+      title: 'Test Del',
+      message: 'Del message.'
+    });
     const id = service.activeNotifications()[0].id;
     service.deleteNotification(id);
     expect(service.activeNotifications().find(n => n.id === id)).toBeUndefined();
