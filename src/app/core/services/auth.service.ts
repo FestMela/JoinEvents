@@ -1,6 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
 import { AuthUser, UserRole } from '../models/user.model';
 
 const MOCK_USERS: Record<string, AuthUser & { password: string }> = {
@@ -14,6 +17,8 @@ const MOCK_USERS: Record<string, AuthUser & { password: string }> = {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private router = inject(Router);
+  private http = inject(HttpClient);
+  private apiUrl = 'https://localhost:7010/api/v1';
 
   currentUser = signal<AuthUser | null>(this.loadFromStorage());
 
@@ -24,26 +29,70 @@ export class AuthService {
     } catch { return null; }
   }
 
-  login(email: string, password: string, role: UserRole, returnUrl?: string): { success: boolean; message: string } {
+  login(email: string, password: string, role: UserRole, returnUrl?: string): Observable<{ success: boolean; message: string }> {
     // Clear any existing session first
     sessionStorage.removeItem('joinevents_user');
     this.currentUser.set(null);
 
-    const user = MOCK_USERS[email.toLowerCase()];
-    if (!user) return { success: false, message: 'Email not found.' };
-    if (user.password !== password) return { success: false, message: 'Incorrect password.' };
-    if (user.role !== role) return { success: false, message: `This account is registered as a ${user.role}, not ${role}.` };
-    
-    const { password: _p, ...safeUser } = user;
-    sessionStorage.setItem('joinevents_user', JSON.stringify(safeUser));
-    this.currentUser.set(safeUser);
-    
-    if (returnUrl) {
-      this.router.navigateByUrl(returnUrl);
-    } else {
-      this.router.navigate([`/${role}/dashboard`]);
-    }
-    return { success: true, message: 'Login successful!' };
+    return this.http.post<any>(`${this.apiUrl}/auth/login`, { email, password, role }).pipe(
+      map(response => {
+        if (response && response.token) {
+          const user: AuthUser = {
+            id: response.user.id,
+            name: response.user.name,
+            email: response.user.email,
+            role: response.user.role || role,
+            token: response.token
+          };
+          sessionStorage.setItem('joinevents_user', JSON.stringify(user));
+          this.currentUser.set(user);
+          
+          if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+          } else {
+            this.router.navigate([`/${user.role}/dashboard`]);
+          }
+          return { success: true, message: 'Login successful!' };
+        }
+        return { success: false, message: 'Invalid response from server.' };
+      }),
+      catchError(error => {
+        let msg = 'Login failed.';
+        if (error.error && error.error.error) msg = error.error.error;
+        else if (error.message) msg = error.message;
+        return of({ success: false, message: msg });
+      })
+    );
+  }
+
+  register(name: string, email: string, phone: string, password: string, role: UserRole): Observable<{ success: boolean; message: string }> {
+    sessionStorage.removeItem('joinevents_user');
+    this.currentUser.set(null);
+
+    return this.http.post<any>(`${this.apiUrl}/auth/register`, { name, email, phone, password, role }).pipe(
+      map(response => {
+        if (response && response.token) {
+          const user: AuthUser = {
+            id: response.user.id,
+            name: response.user.name,
+            email: response.user.email,
+            role: response.user.role || role,
+            token: response.token
+          };
+          sessionStorage.setItem('joinevents_user', JSON.stringify(user));
+          this.currentUser.set(user);
+          this.router.navigate([`/${user.role}/dashboard`]);
+          return { success: true, message: 'Registration successful!' };
+        }
+        return { success: false, message: 'Invalid response from server.' };
+      }),
+      catchError(error => {
+        let msg = 'Registration failed.';
+        if (error.error && error.error.error) msg = error.error.error;
+        else if (error.message) msg = error.message;
+        return of({ success: false, message: msg });
+      })
+    );
   }
 
   logout(): void {

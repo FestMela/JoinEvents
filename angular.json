@@ -96,6 +96,26 @@
           }
         }
       }
+    },
+    "join-events-tests": {
+      "projectType": "library",
+      "root": "projects/join-events-tests",
+      "sourceRoot": "projects/join-events-tests/src",
+      "prefix": "test",
+      "architect": {
+        "test": {
+          "builder": "@angular/build:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "projects/join-events-tests/tsconfig.spec.json",
+            "assets": [],
+            "styles": []
+          }
+        }
+      }
     }
   }
 }

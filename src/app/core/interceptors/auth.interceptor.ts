@@ -35,23 +35,27 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // ── Global error handling ───────────────────────────────────
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      switch (error.status) {
-        case 401:
-          localStorage.removeItem('joinevents_user');
-          toast.warning('Session expired. Please log in again.');
-          router.navigate(['/login']);
-          break;
-        case 403:
-          toast.error('You do not have permission to perform this action.');
-          break;
-        case 500:
-        case 502:
-        case 503:
-          toast.error('Something went wrong on our end. Please try again later.');
-          break;
-        case 0:
-          toast.error('Network error. Please check your connection.');
-          break;
+      const suppressErrors = req.headers.has('X-Suppress-Errors');
+
+      if (!suppressErrors) {
+        switch (error.status) {
+          case 401:
+            localStorage.removeItem('joinevents_user');
+            toast.warning('Session expired. Please log in again.');
+            router.navigate(['/login']);
+            break;
+          case 403:
+            toast.error('You do not have permission to perform this action.');
+            break;
+          case 500:
+          case 502:
+          case 503:
+            toast.error('Something went wrong on our end. Please try again later.');
+            break;
+          case 0:
+            toast.error('Network error. Please check your connection.');
+            break;
+        }
       }
       return throwError(() => error);
     })

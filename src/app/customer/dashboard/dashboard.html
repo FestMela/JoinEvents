@@ -68,8 +68,8 @@
             @for (b of bookings().slice(0,3); track b.id) {
               <div class="modern-booking-item" [routerLink]="['/customer/bookings']" [queryParams]="{ bookingId: b.id }" style="cursor: pointer;">
                 <div class="booking-date-badge">
-                  <div class="day">{{ b.eventDate.split('-')[2] }}</div>
-                  <div class="month">{{ b.eventDate.split('-')[1] }}</div>
+                  <div class="day">{{ b.eventDate?.split('-')?.[2] || '' }}</div>
+                  <div class="month">{{ b.eventDate?.split('-')?.[1] || '' }}</div>
                 </div>
                 <div class="booking-details flex-1">
                   <h6 class="event-name">{{ b.eventName }}</h6>
@@ -121,34 +121,42 @@
     <!-- Sidebar Column -->
     <div class="col-12 col-lg-4">
       <!-- Messenger Preview -->
-      <div class="dashboard-section-card mb-4 glass-card">
-        <div class="card-header-modern">
-          <div class="header-title"><i class="bi bi-chat-right-dots me-2"></i>Messages</div>
-        </div>
-        <div class="p-4">
-          <div class="message-preview-list">
-            <div class="msg-preview-item" routerLink="/customer/messages" style="cursor: pointer;">
-              <div class="msg-avatar">PN</div>
-              <div class="msg-content">
-                <div class="msg-sender">Priya Nair (Admin)</div>
-                <div class="msg-text">Your catering vendor is confirmed for Dec 15th...</div>
-                <div class="msg-time">2 mins ago</div>
-              </div>
-            </div>
-            <div class="msg-preview-item" routerLink="/customer/messages" style="cursor: pointer;">
-              <div class="msg-avatar bg-secondary-ee">AS</div>
-              <div class="msg-content">
-                <div class="msg-sender">Amit Sharma (Vendor)</div>
-                <div class="msg-text">We have sent the menu draft for approval...</div>
-                <div class="msg-time">1 hour ago</div>
-              </div>
-            </div>
+      @if (recentMessages().length > 0) {
+        <div class="dashboard-section-card mb-4 glass-card">
+          <div class="card-header-modern">
+            <div class="header-title"><i class="bi bi-chat-right-dots me-2"></i>Messages</div>
           </div>
-          <button class="btn-ee-primary w-100 mt-4 py-3 shadow-sm" routerLink="/customer/messages">
-            Open Messenger
-          </button>
+          <div class="p-4">
+            <div class="message-preview-list">
+              @for (msg of recentMessages(); track msg.id) {
+                <div class="msg-preview-item" [routerLink]="['/customer/messages']" [queryParams]="{ threadId: msg.id }" style="cursor: pointer;">
+                  <div class="msg-avatar" [ngClass]="msg.unreadCount > 0 ? 'bg-primary-ee text-white' : 'bg-light text-dark'">
+                    {{ msg.participants?.[1]?.name?.charAt(0) || 'U' }}
+                  </div>
+                  <div class="msg-content">
+                    <div class="msg-sender fw-bold d-flex justify-content-between">
+                      {{ msg.participants?.[1]?.name || 'Unknown' }}
+                      @if (msg.unreadCount > 0) {
+                        <span class="badge bg-danger rounded-pill">{{ msg.unreadCount }}</span>
+                      }
+                    </div>
+                    <div class="msg-text text-truncate" style="max-width: 200px;">{{ msg.lastMessage }}</div>
+                    <div class="msg-time opacity-75 small">{{ msg.lastMessageTime | date:'shortTime' }}</div>
+                  </div>
+                </div>
+              } @empty {
+                <div class="text-center p-4 text-muted">
+                  <i class="bi bi-chat-square-text fs-1 mb-2 opacity-50"></i>
+                  <p class="mb-0">No recent messages.</p>
+                </div>
+              }
+            </div>
+            <button class="btn-ee-primary w-100 mt-4 py-3 shadow-sm" routerLink="/customer/messages">
+              Open Messenger
+            </button>
+          </div>
         </div>
-      </div>
+      }
 
       <!-- Loyalty Card -->
       <div class="loyalty-premium-card mb-4" routerLink="/customer/profile" style="cursor: pointer;">

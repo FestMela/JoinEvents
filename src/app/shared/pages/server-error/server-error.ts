@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Output, EventEmitter, Input } from '@angular/core';
 
 @Component({
   selector: 'app-server-error',
@@ -9,11 +9,8 @@ import { Component, Output, EventEmitter } from '@angular/core';
         <div class="error-icon-wrap">
           <i class="bi bi-exclamation-triangle"></i>
         </div>
-        <h1 class="error-title">Something Went Wrong</h1>
-        <p class="error-msg">
-          An unexpected error occurred. Our team has been notified.
-          Please try again or refresh the page.
-        </p>
+        <h1 class="error-title">{{ errorTitle }}</h1>
+        <p class="error-msg">{{ errorMessage }}</p>
         <div class="error-actions">
           <button class="btn-ee-primary" (click)="retry.emit()">
             <i class="bi bi-arrow-clockwise"></i> Try Again
@@ -65,6 +62,8 @@ import { Component, Output, EventEmitter } from '@angular/core';
   `]
 })
 export class ServerErrorPage {
+  @Input() errorTitle = 'Something Went Wrong';
+  @Input() errorMessage = 'An unexpected error occurred. Our team has been notified. Please try again or refresh the page.';
   @Output() retry = new EventEmitter<void>();
   reload() { window.location.reload(); }
 }

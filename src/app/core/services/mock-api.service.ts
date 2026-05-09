@@ -1,6 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { of, Observable } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, catchError, map } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { EventType, EventPackage } from '../models/event.model';
 import { Booking } from '../models/booking.model';
 import { Vendor, CalendarDay } from '../models/vendor.model';
@@ -11,6 +13,8 @@ import { Employee, EmployeeRole, EmployeeStatus } from '../models/employee.model
 
 @Injectable({ providedIn: 'root' })
 export class MockApiService {
+  private http = inject(HttpClient);
+  private apiUrl = 'https://localhost:7010/api/v1';
 
   // ─── EVENT TYPES ───────────────────────────────────────────────
   getEventTypes(): Observable<EventType[]> {
@@ -99,7 +103,11 @@ export class MockApiService {
       { id: 'b-basic', eventTypeId: 'birthday', name: 'Fun Birthday', tier: 'basic', price: 25000, description: 'Simple & cheerful birthday party setup', services: ['Venue (50 guests)','Snacks & Cake','Balloon Decoration','Photography'], maxGuests: 50, durationHours: 4, location: 'Local Venue', image: 'https://images.unsplash.com/photo-1530103862676-fa8c9d34b3b3?auto=format&fit=crop&q=80&w=800' },
     ];
     const result = eventTypeId ? packages.filter(p => p.eventTypeId === eventTypeId) : packages;
-    return of(result).pipe(delay(300));
+    
+    // Call the real backend API, fallback to mock data on error
+    return this.http.get<any[]>(`${this.apiUrl}/packages/search${eventTypeId ? '?eventTypeId=' + eventTypeId : ''}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(result).pipe(delay(300)))
+    );
   }
 
   // ─── BOOKINGS ──────────────────────────────────────────────────
@@ -109,8 +117,11 @@ export class MockApiService {
       { id: 'bk002', bookingNumber: 'EE-2025-002', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'birthday', eventName: "Daughter's 10th Birthday", packageId: 'b-std', packageName: 'Party Birthday', eventDate: '2025-11-20', venue: 'Fun Zone Party Hall', city: 'Hyderabad', guestCount: 80, status: 'settled', advanceAmount: 12000, baseAmount: 60000, extraServicesAmount: 8000, damageCharges: 2000, gstPercent: 18, totalAmount: 82600, finalPaidAmount: 82600, services: [], createdAt: '2025-09-15' },
       { id: 'bk003', bookingNumber: 'EE-2026-001', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'religious', eventName: 'Gruhapravesh Puja', packageId: 'r-std', packageName: 'Full Puja', eventDate: '2026-05-10', venue: 'Home', city: 'Hyderabad', guestCount: 40, status: 'pending', advanceAmount: 0, baseAmount: 40000, extraServicesAmount: 0, damageCharges: 0, gstPercent: 18, totalAmount: 47200, services: [], createdAt: '2026-04-20' },
     ];
-    const result = customerId ? bookings.filter(b => b.customerId === customerId) : bookings;
-    return of(result).pipe(delay(300));
+    const fallbackResult = customerId ? bookings.filter(b => b.customerId === customerId) : bookings;
+    
+    return this.http.get<Booking[]>(`${this.apiUrl}/bookings${customerId ? '?customerId=' + customerId : ''}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(fallbackResult).pipe(delay(300)))
+    );
   }
 
   getAdminBookings(): Observable<Booking[]> {
@@ -138,12 +149,17 @@ export class MockApiService {
   }
 
   addSupportLog(bookingId: string, message: string, actor: string): Observable<boolean> {
-    // In a real app we would update the list. For mock, we just return true.
-    return of(true).pipe(delay(500));
+    return this.http.post<any>(`${this.apiUrl}/support/bookings/${bookingId}/logs`, { message, actor }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
+    );
   }
 
   remindVendor(vendorId: string, bookingId: string): Observable<boolean> {
-    return of(true).pipe(delay(1000));
+    return this.http.post<any>(`${this.apiUrl}/support/reminders/vendor`, { vendorId, bookingId }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(1000)))
+    );
   }
 
   // ─── VENDORS ───────────────────────────────────────────────────
@@ -156,10 +172,13 @@ export class MockApiService {
   ]);
 
   getVendors(): Observable<Vendor[]> {
-    return of(this.globalVendors()).pipe(delay(300));
+    return this.http.get<Vendor[]>(`${this.apiUrl}/admin/vendors`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(this.globalVendors()).pipe(delay(300)))
+    );
   }
 
   moderateVendor(vendorId: string, action: 'suspend' | 'ban' | 'reactivate', reason?: string, duration?: string): Observable<boolean> {
+    // Optimistic UI update
     this.globalVendors.update(vendors => 
       vendors.map(v => {
         if (v.id === vendorId) {
@@ -174,7 +193,12 @@ export class MockApiService {
         return v;
       })
     );
-    return of(true).pipe(delay(300));
+    
+    // API call
+    return this.http.post<any>(`${this.apiUrl}/admin/vendors/${vendorId}/moderate`, { action, reason, duration }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(300)))
+    );
   }
 
   // ─── CUSTOMERS ────────────────────────────────────────────────
@@ -186,7 +210,9 @@ export class MockApiService {
   ]);
 
   getCustomers(): Observable<CustomerProfile[]> {
-    return of(this.globalCustomers()).pipe(delay(300));
+    return this.http.get<CustomerProfile[]>(`${this.apiUrl}/admin/customers`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(this.globalCustomers()).pipe(delay(300)))
+    );
   }
 
   moderateCustomer(customerId: string, action: 'warn' | 'restrict' | 'suspend' | 'ban' | 'reactivate', reason?: string, duration?: string): Observable<boolean> {
@@ -232,6 +258,14 @@ export class MockApiService {
       { id: 'vs5', vendorId: 'v1', vendorName: 'Spice Garden Catering', category: 'catering', name: 'Gourmet Dessert Counter', description: 'Premium live dessert counters with international delicacies', pricePerUnit: 150, unit: 'per plate', minGuests: 100, maxGuests: 500, city: 'Hyderabad', images: [], rating: 0, totalReviews: 0, isActive: true, isVerified: false },
     ];
     const result = vendorId ? services.filter(s => s.vendorId === vendorId) : services;
+    
+    if (vendorId) {
+      return this.http.get<any>(`https://localhost:7010/services/getAll?VendorId=${vendorId}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+        map(res => res.Services || res.services || result),
+        catchError(() => of(result).pipe(delay(300)))
+      );
+    }
+    
     return of(result).pipe(delay(300));
   }
 
@@ -267,16 +301,21 @@ export class MockApiService {
 
   // ─── MESSAGES ──────────────────────────────────────────────────
   getChatThreads(userId: string): Observable<ChatThread[]> {
-    if (userId.startsWith('v')) {
-      return of<ChatThread[]>([
-        { id: 'vth1', bookingId: 'bk001', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Thank you for the quote. Can we negotiate on the dessert counter?', lastMessageTime: new Date().toISOString(), unreadCount: 1, subject: 'Wedding Catering Inquiry' },
-        { id: 'vth2', bookingId: 'bk004', participants: [{ id: 'c2', name: 'Sunita Patel', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Is the menu finalized for the corporate event?', lastMessageTime: new Date().toISOString(), unreadCount: 0, subject: 'Annual Day Conference' },
-      ]).pipe(delay(300));
-    }
-    return of<ChatThread[]>([
+    const vendorFallback: ChatThread[] = [
+      { id: 'vth1', bookingId: 'bk001', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Thank you for the quote. Can we negotiate on the dessert counter?', lastMessageTime: new Date().toISOString(), unreadCount: 1, subject: 'Wedding Catering Inquiry' },
+      { id: 'vth2', bookingId: 'bk004', participants: [{ id: 'c2', name: 'Sunita Patel', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Is the menu finalized for the corporate event?', lastMessageTime: new Date().toISOString(), unreadCount: 0, subject: 'Annual Day Conference' },
+    ];
+    const customerFallback: ChatThread[] = [
       { id: 'th1', bookingId: 'bk001', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'a1', name: 'Priya Nair', role: 'admin' }], lastMessage: 'We have confirmed the decoration vendor for your wedding.', lastMessageTime: '2025-10-10T14:30:00', unreadCount: 2, subject: 'EE-2025-001 | Wedding Reception' },
       { id: 'th2', bookingId: 'bk003', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'a1', name: 'Priya Nair', role: 'admin' }], lastMessage: 'Your advance payment has been received. Booking confirmed!', lastMessageTime: '2026-04-20T09:15:00', unreadCount: 0, subject: 'EE-2026-001 | Gruhapravesh Puja' },
-    ]).pipe(delay(300));
+    ];
+    
+    let fallbackData = userId.startsWith('v') ? vendorFallback : customerFallback;
+    fallbackData = fallbackData.filter(t => t.participants.some(p => p.id === userId));
+
+    return this.http.get<ChatThread[]>(`${this.apiUrl}/messenger/threads`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(fallbackData).pipe(delay(300)))
+    );
   }
 
   getChatMessages(threadId: string): Observable<ChatMessage[]> {
@@ -317,7 +356,7 @@ export class MockApiService {
 
   // ─── ADMIN DASHBOARD ───────────────────────────────────────────
   getAdminKPIs(): Observable<any> {
-    return of({
+    const fallbackData = {
       totalRevenue: 6420000,
       activeEvents: 18,
       pendingVerifications: 5,
@@ -326,7 +365,11 @@ export class MockApiService {
       completedEvents: 428,
       openTickets: 12,
       monthlyRevenue: [280000, 350000, 420000, 310000, 580000, 620000, 490000, 850000, 720000, 940000, 1150000, 1380000],
-    }).pipe(delay(300));
+    };
+    
+    return this.http.get<any>(`${this.apiUrl}/admin/dashboard`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(fallbackData).pipe(delay(300)))
+    );
   }
 
   // ─── VENDOR DASHBOARD ──────────────────────────────────────────
@@ -346,13 +389,17 @@ export class MockApiService {
   }
   // ─── NOTIFICATIONS ─────────────────────────────────────────────
   getNotifications(): Observable<any[]> {
-    return of([
+    const fallbackData = [
       { id: 'n1', title: 'Booking Confirmed', message: 'Your booking for Wedding Reception has been confirmed.', time: '2 mins ago', icon: 'bi-check-circle', color: '#10B981', isRead: false },
       { id: 'n2', title: 'New Message', message: 'You have a new message from Priya Nair regarding your event.', time: '1 hour ago', icon: 'bi-chat-dots', color: '#3B82F6', isRead: false },
       { id: 'n3', title: 'Payment Received', message: 'Advance payment for Gruhapravesh Puja received successfully.', time: '5 hours ago', icon: 'bi-credit-card', color: '#F59E0B', isRead: true },
       { id: 'n4', title: 'Verification Update', message: 'Your vendor verification is now in progress.', time: '1 day ago', icon: 'bi-shield-check', color: '#8B5CF6', isRead: true },
       { id: 'n5', title: 'New Customer Review', message: 'Rajesh Kumar left a 5-star review for Daughter\'s Birthday.', time: 'Just now', icon: 'bi-star-fill', color: '#F59E0B', isRead: false },
-    ]).pipe(delay(300));
+    ];
+    
+    return this.http.get<any[]>(`${this.apiUrl}/notifications`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(fallbackData).pipe(delay(300)))
+    );
   }
   
   // ─── REVIEWS & MODERATION ──────────────────────────────────────────
@@ -446,7 +493,9 @@ export class MockApiService {
   ]);
 
   getEmployees(): Observable<Employee[]> {
-    return of(this.globalEmployees()).pipe(delay(300));
+    return this.http.get<Employee[]>(`${this.apiUrl}/admin/employees`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(this.globalEmployees()).pipe(delay(300)))
+    );
   }
 
   addEmployee(emp: Omit<Employee, 'id'>): Observable<Employee> {
