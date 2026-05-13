@@ -2,6 +2,8 @@ import { ApplicationConfig, ErrorHandler, provideBrowserGlobalErrorListeners, pr
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
+import { environment } from '../environments/environment';
+import { API_ROUTES } from './core/constants/api.constants';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { cacheInterceptor } from './core/interceptors/cache.interceptor';
@@ -10,7 +12,9 @@ import { GlobalErrorHandler } from './core/handlers/global-error.handler';
 export function checkBackendAvailability(errorHandler: ErrorHandler) {
   const globalHandler = errorHandler as GlobalErrorHandler;
   return () => {
-    return fetch('https://localhost:7010/api/v1/auth/login', { method: 'OPTIONS' })
+    // Standard GET on a public endpoint is more robust than an explicit OPTIONS call
+    // which may be rejected (405) by many backend configurations.
+    return fetch(`${environment.apiUrl}${API_ROUTES.PACKAGES.SEARCH}`)
       .catch(error => {
         globalHandler.lastError.set({
           title: 'Backend Server Unavailable',

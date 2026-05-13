@@ -16,6 +16,8 @@
 .req-btn.accept:hover{background:var(--success);color:white;}
 .req-btn.decline{background:rgba(220,38,38,0.1);color:var(--danger);}
 .req-btn.decline:hover{background:var(--danger);color:white;}
+.req-btn.warning{background:rgba(245,158,11,0.1);color:var(--warning);}
+.req-btn.warning:hover{background:var(--warning);color:white;}
 
 /* VENDOR REVIEW DISPLAY */
 .vrc-review {

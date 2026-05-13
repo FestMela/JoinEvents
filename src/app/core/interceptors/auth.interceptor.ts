@@ -40,9 +40,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       if (!suppressErrors) {
         switch (error.status) {
           case 401:
-            localStorage.removeItem('joinevents_user');
-            toast.warning('Session expired. Please log in again.');
-            router.navigate(['/login']);
+            // Don't show "Session expired" for the login request itself
+            if (!req.url.includes('/auth/login')) {
+              sessionStorage.removeItem('joinevents_user');
+              toast.warning('Session expired. Please log in again.');
+              router.navigate(['/login']);
+            }
             break;
           case 403:
             toast.error('You do not have permission to perform this action.');

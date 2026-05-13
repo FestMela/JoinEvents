@@ -1,24 +1,33 @@
 import { Component, signal, computed, OnInit, inject } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { MockApiService } from '../../core/services/mock-api.service';
+import { BookingService } from '../../core/services/booking.service';
 import { ToastService } from '../../core/services/toast.service';
 import { Booking } from '../../core/models/booking.model';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-my-bookings',
-  imports: [DecimalPipe, FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './my-bookings.html',
   styleUrl: './my-bookings.css'
 })
 export class MyBookings implements OnInit {
   private api = inject(MockApiService);
+  private bookingService = inject(BookingService);
   private toast = inject(ToastService);
   private route = inject(ActivatedRoute);
   bookings = signal<Booking[]>([]);
   selectedBooking = signal<Booking | null>(null);
   activeFilter = signal<string>('all');
+  
+  // UI States
+  showCancelPrompt = signal(false);
+  showDisputePrompt = signal(false);
+  cancelReason = signal('');
+  disputeReason = signal('');
   
   // Review State
   showReviewForm = signal(false);
@@ -60,7 +69,7 @@ export class MyBookings implements OnInit {
   });
 
   ngOnInit() {
-    this.api.getBookings('c1').subscribe(b => {
+    this.bookingService.getBookings('c1').subscribe(b => {
       this.bookings.set(b);
       const bookingId = this.route.snapshot.queryParams['bookingId'];
       if (bookingId) {
@@ -124,6 +133,47 @@ export class MyBookings implements OnInit {
         this.showReviewForm.set(false);
         this.toast.success('Thank you! Your review has been submitted and published instantly.');
       });
+  }
+
+  // --- Cancellation & Dispute Actions ---
+  cancelBooking() {
+    const b = this.selectedBooking();
+    if (!b) return;
+    if (!this.cancelReason().trim()) {
+      this.toast.error('Please provide a reason for cancellation.');
+      return;
+    }
+    this.bookingService.cancelBooking(b.id, this.cancelReason(), 'customer').subscribe(() => {
+      this.bookings.update(bs => bs.map(item => item.id === b.id ? { ...item, status: 'cancelled', cancelledBy: 'customer', cancellationReason: this.cancelReason() } : item));
+      this.selectedBooking.update(item => item ? { ...item, status: 'cancelled', cancelledBy: 'customer', cancellationReason: this.cancelReason() } : null);
+      this.showCancelPrompt.set(false);
+      this.toast.warning('Booking has been cancelled.');
+    });
+  }
+
+  approveDamageCharges() {
+    const b = this.selectedBooking();
+    if (!b) return;
+    this.bookingService.updateBookingStatus(b.id, 'confirmed').subscribe(() => { // Using confirmed as approval for damage charges for now
+      this.bookings.update(bs => bs.map(item => item.id === b.id ? { ...item, isDamageChargeApproved: true } : item));
+      this.selectedBooking.update(item => item ? { ...item, isDamageChargeApproved: true } : null);
+      this.toast.success('Damage charges approved and added to your final bill.');
+    });
+  }
+
+  submitDispute() {
+    const b = this.selectedBooking();
+    if (!b) return;
+    if (!this.disputeReason().trim()) {
+      this.toast.error('Please describe your dispute.');
+      return;
+    }
+    this.api.raiseDispute(b.id, this.disputeReason()).subscribe(() => {
+      this.bookings.update(bs => bs.map(item => item.id === b.id ? { ...item, status: 'disputed', disputeInfo: { reason: this.disputeReason(), status: 'open' } } : item));
+      this.selectedBooking.update(item => item ? { ...item, status: 'disputed', disputeInfo: { reason: this.disputeReason(), status: 'open' } } : null);
+      this.showDisputePrompt.set(false);
+      this.toast.info('Dispute raised. Our support team will review this shortly.');
+    });
   }
 
   private generateInvoiceHTML(b: Booking, type: 'advance' | 'proforma' | 'final'): string {

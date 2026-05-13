@@ -1,5 +1,5 @@
-import { Component, signal, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, signal, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MockApiService } from '../../core/services/mock-api.service';
 import { EventType } from '../../core/models/event.model';
@@ -13,6 +13,8 @@ import { EventType } from '../../core/models/event.model';
 })
 export class CustomerEvents implements OnInit {
   private api = inject(MockApiService);
+  private route = inject(ActivatedRoute);
+  private cdr = inject(ChangeDetectorRef);
   events = signal<EventType[]>([]);
   filtered = signal<EventType[]>([]);
   search = '';
@@ -29,7 +31,21 @@ export class CustomerEvents implements OnInit {
   ];
 
   ngOnInit() {
-    this.api.getEventTypes().subscribe(e => { this.events.set(e); this.filtered.set(e); });
+    this.route.queryParams.subscribe(params => {
+      if (params['category']) {
+        this.selectedCategory = params['category'];
+      }
+      if (this.events().length > 0) {
+        this.filterEvents();
+        this.cdr.markForCheck();
+      }
+    });
+
+    this.api.getEventTypes().subscribe(e => {
+      this.events.set(e);
+      this.filterEvents();
+      this.cdr.markForCheck();
+    });
   }
 
   filterEvents() {

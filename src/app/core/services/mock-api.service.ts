@@ -9,6 +9,7 @@ import { Vendor, CalendarDay } from '../models/vendor.model';
 import { VendorService, ServiceCategoryDef } from '../models/service.model';
 import { ChatThread, ChatMessage, SupportTicket } from '../models/message.model';
 import { CustomerProfile } from '../models/user.model';
+import { BookingStatus } from '../models/booking.model';
 import { Employee, EmployeeRole, EmployeeStatus } from '../models/employee.model';
 
 @Injectable({ providedIn: 'root' })
@@ -114,8 +115,9 @@ export class MockApiService {
   getBookings(customerId?: string): Observable<Booking[]> {
     const bookings: Booking[] = [
       { id: 'bk001', bookingNumber: 'EE-2025-001', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'wedding', eventName: 'Wedding Reception', packageId: 'w-std', packageName: 'Gold Wedding', eventDate: '2025-12-15', venue: 'Raj Mahal Banquet Hall', city: 'Hyderabad', guestCount: 450, status: 'confirmed', advanceAmount: 70000, baseAmount: 350000, extraServicesAmount: 45000, damageCharges: 0, gstPercent: 18, totalAmount: 464100, services: [{ serviceId: 's1', serviceName: 'Premium Catering', category: 'catering', vendorId: 'v1', vendorName: 'Spice Garden Catering', price: 25000, status: 'confirmed' },{ serviceId: 's2', serviceName: 'Floral Decoration', category: 'decoration', vendorId: 'v2', vendorName: 'Blooms & Bliss', price: 20000, status: 'confirmed' }], createdAt: '2025-10-01', notes: 'VIP table for 20 family members' },
-      { id: 'bk002', bookingNumber: 'EE-2025-002', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'birthday', eventName: "Daughter's 10th Birthday", packageId: 'b-std', packageName: 'Party Birthday', eventDate: '2025-11-20', venue: 'Fun Zone Party Hall', city: 'Hyderabad', guestCount: 80, status: 'settled', advanceAmount: 12000, baseAmount: 60000, extraServicesAmount: 8000, damageCharges: 2000, gstPercent: 18, totalAmount: 82600, finalPaidAmount: 82600, services: [], createdAt: '2025-09-15' },
+      { id: 'bk002', bookingNumber: 'EE-2025-002', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'birthday', eventName: "Daughter's 10th Birthday", packageId: 'b-std', packageName: 'Party Birthday', eventDate: '2025-11-20', venue: 'Fun Zone Party Hall', city: 'Hyderabad', guestCount: 80, status: 'settled', advanceAmount: 12000, baseAmount: 60000, extraServicesAmount: 8000, damageCharges: 2000, damageChargeNotes: 'Broken vase in hallway', isDamageChargeApproved: true, gstPercent: 18, totalAmount: 82600, finalPaidAmount: 82600, services: [], createdAt: '2025-09-15' },
       { id: 'bk003', bookingNumber: 'EE-2026-001', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'religious', eventName: 'Gruhapravesh Puja', packageId: 'r-std', packageName: 'Full Puja', eventDate: '2026-05-10', venue: 'Home', city: 'Hyderabad', guestCount: 40, status: 'pending', advanceAmount: 0, baseAmount: 40000, extraServicesAmount: 0, damageCharges: 0, gstPercent: 18, totalAmount: 47200, services: [], createdAt: '2026-04-20' },
+      { id: 'bk005', bookingNumber: 'EE-2026-003', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'wedding', eventName: 'Engagement Ceremony', eventDate: '2026-07-15', venue: 'Grand Plaza', city: 'Hyderabad', guestCount: 150, status: 'in_progress', advanceAmount: 30000, baseAmount: 150000, extraServicesAmount: 20000, damageCharges: 5000, damageChargeNotes: 'Table cloth burns', isDamageChargeApproved: false, gstPercent: 18, totalAmount: 200600, services: [], createdAt: '2026-03-20' },
     ];
     const fallbackResult = customerId ? bookings.filter(b => b.customerId === customerId) : bookings;
     
@@ -159,6 +161,42 @@ export class MockApiService {
     return this.http.post<any>(`${this.apiUrl}/support/reminders/vendor`, { vendorId, bookingId }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
       map(() => true),
       catchError(() => of(true).pipe(delay(1000)))
+    );
+  }
+
+  // ─── BOOKING MANAGEMENT ────────────────────────────────────────
+  updateBookingStatus(bookingId: string, status: BookingStatus): Observable<boolean> {
+    return this.http.patch<any>(`${this.apiUrl}/bookings/${bookingId}/status`, { status }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(300)))
+    );
+  }
+
+  cancelBooking(bookingId: string, reason: string, cancelledBy: 'customer' | 'vendor'): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/cancel`, { reason, cancelledBy }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
+    );
+  }
+
+  addDamageCharges(bookingId: string, amount: number, notes: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/damage`, { amount, notes }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
+    );
+  }
+
+  approveDamageCharges(bookingId: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/damage/approve`, {}, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(300)))
+    );
+  }
+
+  raiseDispute(bookingId: string, reason: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/dispute`, { reason }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
     );
   }
 
@@ -313,19 +351,26 @@ export class MockApiService {
     let fallbackData = userId.startsWith('v') ? vendorFallback : customerFallback;
     fallbackData = fallbackData.filter(t => t.participants.some(p => p.id === userId));
 
-    return this.http.get<ChatThread[]>(`${this.apiUrl}/messenger/threads`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
-      catchError(() => of(fallbackData).pipe(delay(300)))
-    );
+    return of(fallbackData).pipe(delay(300));
   }
 
   getChatMessages(threadId: string): Observable<ChatMessage[]> {
-    return of<ChatMessage[]>([
+    const fallback: ChatMessage[] = [
       { id: 'm1', threadId: 'th1', senderId: 'c1', senderName: 'Rajesh Kumar', senderRole: 'customer', content: 'Hello, I wanted to confirm about the decoration vendor for my wedding.', timestamp: '2025-10-10T10:00:00', isRead: true, type: 'text' },
       { id: 'm2', threadId: 'th1', senderId: 'a1', senderName: 'Priya Nair', senderRole: 'admin', content: 'Hi Rajesh! Sure, let me check the availability for your date.', timestamp: '2025-10-10T10:05:00', isRead: true, type: 'text' },
       { id: 'm3', threadId: 'th1', senderId: 'a1', senderName: 'Priya Nair', senderRole: 'admin', content: 'Great news! Blooms & Bliss is available on Dec 15. I\'ve assigned them to your booking.', timestamp: '2025-10-10T10:15:00', isRead: true, type: 'text' },
       { id: 'm4', threadId: 'th1', senderId: 'c1', senderName: 'Rajesh Kumar', senderRole: 'customer', content: 'Wonderful! Thank you so much for the quick response 🙏', timestamp: '2025-10-10T10:20:00', isRead: true, type: 'text' },
       { id: 'm5', threadId: 'th1', senderId: 'a1', senderName: 'Priya Nair', senderRole: 'admin', content: 'We have confirmed the decoration vendor for your wedding.', timestamp: '2025-10-10T14:30:00', isRead: false, type: 'text' },
-    ]).pipe(delay(300));
+    ];
+    return of(fallback).pipe(delay(300));
+  }
+
+  sendMessage(msg: Partial<ChatMessage>): Observable<ChatMessage> {
+    return of({ ...msg, id: 'mock-' + Date.now(), timestamp: new Date().toISOString() } as ChatMessage).pipe(delay(500));
+  }
+
+  markAsRead(threadId: string): Observable<boolean> {
+    return of(true).pipe(delay(300));
   }
 
   // ─── SUPPORT TICKETS ───────────────────────────────────────────
@@ -382,8 +427,8 @@ export class MockApiService {
       rating: 4.8,
       thisMonthEarnings: 125000,
       recentRequests: [
-        { id: 'br1', bookingId: 'bk001', customerName: 'Rajesh Kumar', eventDate: '2025-12-15', eventName: 'Wedding Reception', amount: 25000, status: 'pending' },
-        { id: 'br2', bookingId: 'bk004', customerName: 'Sunita Patel', eventDate: '2026-06-05', eventName: 'Annual Day Conference', amount: 40000, status: 'pending' },
+        { id: 'br1', bookingId: 'bk003', customerName: 'Rajesh Kumar', eventDate: '2026-05-10', eventName: 'Gruhapravesh Puja', amount: 47200, status: 'pending' },
+        { id: 'br2', bookingId: 'bk001', customerName: 'Rajesh Kumar', eventDate: '2025-12-15', eventName: 'Wedding Reception', amount: 464100, status: 'confirmed' },
       ]
     }).pipe(delay(300));
   }

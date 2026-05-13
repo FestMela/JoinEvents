@@ -103,7 +103,7 @@
         <div class="p-4 pt-0">
           <div class="modern-category-grid">
             @for (et of eventTypes().slice(0,6); track et.id) {
-              <a routerLink="/customer/events" class="category-card" [style.--accent-color]="et.gradient">
+              <a [routerLink]="['/customer/vendors', et.id]" class="category-card" [style.--accent-color]="et.gradient">
                 <div class="category-icon" [style.background]="et.gradient">
                   <i class="bi {{ et.icon }}"></i>
                 </div>

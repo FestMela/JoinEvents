@@ -25,12 +25,25 @@
   </div>
 
   <!-- Filter Bar -->
-  <div class="filter-bar ee-card mb-4 p-3 d-flex justify-content-between align-items-center">
-    <div class="d-flex gap-2">
-      <button class="filter-btn" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">All Services</button>
-      <button class="filter-btn" [class.active]="filterStatus() === 'verified'" (click)="filterStatus.set('verified')">Verified</button>
-      <button class="filter-btn" [class.active]="filterStatus() === 'pending'" (click)="filterStatus.set('pending')">Pending</button>
+  <div class="filter-bar ee-card mb-4 p-3 d-flex flex-wrap gap-4 justify-content-between align-items-center">
+    <div class="d-flex flex-wrap gap-3">
+      <div class="filter-group d-flex gap-2 align-items-center">
+        <span class="text-muted small fw-600">Verification:</span>
+        <button class="filter-btn" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">All</button>
+        <button class="filter-btn" [class.active]="filterStatus() === 'verified'" (click)="filterStatus.set('verified')">Verified</button>
+        <button class="filter-btn" [class.active]="filterStatus() === 'pending'" (click)="filterStatus.set('pending')">Pending</button>
+      </div>
+      
+      <div class="vr mx-2 text-muted opacity-25"></div>
+
+      <div class="filter-group d-flex gap-2 align-items-center">
+        <span class="text-muted small fw-600">Availability:</span>
+        <button class="filter-btn" [class.active]="liveFilter() === 'all'" (click)="liveFilter.set('all')">All</button>
+        <button class="filter-btn" [class.active]="liveFilter() === 'live'" (click)="liveFilter.set('live')">Live</button>
+        <button class="filter-btn" [class.active]="liveFilter() === 'paused'" (click)="liveFilter.set('paused')">Paused</button>
+      </div>
     </div>
+    
     <div class="search-box-modern">
       <i class="bi bi-search"></i>
       <input type="text" placeholder="Search your services..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
@@ -39,11 +52,33 @@
 
   <!-- Services Grid -->
   <div class="row g-4">
-    @for (svc of filteredServices(); track svc.id) {
+    @if (isLoading()) {
+      <div class="col-12 text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Fetching your services...</p>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="col-12">
+        <div class="alert alert-danger d-flex align-items-center rounded-4 shadow-sm" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
+          <div>
+            {{ errorMessage() }}
+            <button class="btn btn-link btn-sm text-danger fw-bold p-0 ms-2" (click)="loadServices()">Retry</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (!isLoading() && !errorMessage()) {
+      @for (svc of filteredServices(); track svc.id) {
       <div class="col-12 col-md-6 col-xl-4">
-        <div class="svc-card-premium" [class.is-paused]="!svc.isActive">
+        <div class="svc-card-premium" [class.is-paused]="!svc.isActive" (click)="openPreview(svc)">
           <div class="svc-image-wrap">
-            <img [src]="svc.images && svc.images.length > 0 ? svc.images[0] : 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=800'" [alt]="svc.name" loading="lazy">
+            <img [src]="svc.images && svc.images.length > 0 ? svc.images[0] : 'https://placehold.co/800x600/6b21a8/ffffff?text=Service+Logo'" [alt]="svc.name" loading="lazy">
             <div class="image-overlay"></div>
             
             <!-- Category Chip -->
@@ -59,8 +94,8 @@
             <div class="svc-actions-trigger dropdown">
               <button class="btn-action-glass" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
               <ul class="dropdown-menu dropdown-menu-end shadow-xl border-0 rounded-4">
-                <li><a class="dropdown-item py-2 px-3 fw-600" (click)="editService(svc.id)"><i class="bi bi-pencil-square me-2 text-primary"></i> Edit Details</a></li>
-                <li><a class="dropdown-item py-2 px-3 fw-600" (click)="manageGallery(svc.id)"><i class="bi bi-images me-2 text-info"></i> Manage Photos</a></li>
+                <li><a class="dropdown-item py-2 px-3 fw-600" (click)="openPreview(svc); $event.stopPropagation()"><i class="bi bi-eye me-2 text-primary"></i> Preview Listing</a></li>
+                <li><a class="dropdown-item py-2 px-3 fw-600" (click)="manageGallery(svc.id); $event.stopPropagation()"><i class="bi bi-images me-2 text-info"></i> Manage Photos</a></li>
                 <li><hr class="dropdown-divider opacity-50"></li>
                 <li><a class="dropdown-item py-2 px-3 fw-600 text-danger" (click)="deleteService(svc.id)"><i class="bi bi-trash3 me-2"></i> Delete Listing</a></li>
               </ul>
@@ -87,10 +122,10 @@
               </div>
               
               <!-- Active Toggle -->
-              <div class="status-toggle-premium">
-                <span class="toggle-text">{{ svc.isActive ? 'Live' : 'Paused' }}</span>
-                <label class="ee-switch-sm">
-                  <input type="checkbox" [checked]="svc.isActive" (change)="toggleServiceStatus(svc)">
+              <div class="status-toggle-premium" [attr.title]="!svc.isVerified ? 'Your service is currently under review. It will become live automatically once verified by our team.' : null">
+                <span class="toggle-text">{{ !svc.isVerified ? 'Pending' : (svc.isActive ? 'Live' : 'Paused') }}</span>
+                <label class="ee-switch-sm" [style.opacity]="!svc.isVerified ? '0.5' : '1'" [style.cursor]="!svc.isVerified ? 'not-allowed' : 'pointer'">
+                  <input type="checkbox" [checked]="svc.isActive && svc.isVerified" [disabled]="!svc.isVerified" (change)="toggleServiceStatus(svc)">
                   <span class="slider-sm"></span>
                 </label>
               </div>
@@ -112,27 +147,94 @@
             </div>
           </div>
 
-          <div class="svc-card-footer-premium">
-            <button class="btn-edit-full" (click)="editService(svc.id)">
-              <i class="bi bi-pencil-square me-2"></i> Edit Service Listing
-            </button>
+          <div class="svc-card-footer-premium text-center py-2">
+            <span class="text-primary small fw-700">Click to Preview <i class="bi bi-arrow-right ms-1"></i></span>
           </div>
         </div>
       </div>
-    }
-    @empty {
-      <div class="col-12">
-        <div class="empty-modern ee-card">
-          <div class="empty-ill">
-            <i class="bi bi-shop-window text-primary-ee"></i>
+      }
+      @empty {
+        <div class="col-12">
+          <div class="empty-modern ee-card">
+            <div class="empty-ill">
+              <i class="bi bi-shop-window text-primary-ee"></i>
+            </div>
+            <h3>Your Business is Silent</h3>
+            <p class="text-muted">You haven't listed any services yet. Start adding your offerings to get discovered by thousands of customers planning their big day.</p>
+            <a routerLink="/vendor/add-service" class="btn-ee-primary px-5 mt-3">
+              <i class="bi bi-plus-lg me-2"></i> Create Your First Listing
+            </a>
           </div>
-          <h3>Your Business is Silent</h3>
-          <p class="text-muted">You haven't listed any services yet. Start adding your offerings to get discovered by thousands of customers planning their big day.</p>
-          <a routerLink="/vendor/add-service" class="btn-ee-primary px-5 mt-3">
-            <i class="bi bi-plus-lg me-2"></i> Create Your First Listing
-          </a>
         </div>
-      </div>
+      }
     }
   </div>
+
+  <!-- Preview Modal -->
+  @if (selectedPreview()) {
+    <div class="preview-overlay" (click)="closePreview()">
+      <div class="preview-modal" (click)="$event.stopPropagation()">
+        <button class="btn-close-preview" (click)="closePreview()"><i class="bi bi-x-lg"></i></button>
+        
+        <div class="preview-grid">
+          <!-- Left: Images -->
+          <div class="preview-gallery">
+            <div class="main-img-wrap">
+              <img [src]="selectedPreview()?.images?.[0] || 'https://placehold.co/800x600/6b21a8/ffffff?text=Service+Logo'" alt="Preview">
+            </div>
+            @if ((selectedPreview()?.images?.length ?? 0) > 1) {
+              <div class="thumb-grid mt-2">
+                @for (img of selectedPreview()?.images?.slice(1, 5); track img) {
+                  <img [src]="img" class="thumb-preview" alt="Thumb">
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Right: Info -->
+          <div class="preview-info">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge bg-purple-soft text-purple">{{ selectedPreview()?.category }}</span>
+              <div class="preview-rating">
+                <i class="bi bi-star-fill text-warning me-1"></i>
+                {{ selectedPreview()?.rating || 'New' }}
+              </div>
+            </div>
+            
+            <h2 class="h3 fw-800 mb-1">{{ selectedPreview()?.name }}</h2>
+            <p class="text-muted small mb-4"><i class="bi bi-geo-alt me-1"></i> {{ selectedPreview()?.city }}</p>
+
+            <div class="preview-price-card mb-4">
+              <div class="label">Starting Price</div>
+              <div class="price">₹{{ (selectedPreview()?.pricePerUnit || 0).toLocaleString('en-IN') }} <span class="unit">/ {{ selectedPreview()?.unit || 'Event' }}</span></div>
+            </div>
+
+            <div class="preview-section mb-4">
+              <h5 class="fw-700 small text-uppercase ls-1 mb-2">Description</h5>
+              <p class="text-muted small">{{ selectedPreview()?.description }}</p>
+            </div>
+
+            <div class="preview-amenities mb-4">
+               <h5 class="fw-700 small text-uppercase ls-1 mb-2">Key Highlights</h5>
+               <div class="d-flex flex-wrap gap-2">
+                 @if (selectedPreview()?.isVerified) { <span class="badge-amenity"><i class="bi bi-patch-check-fill text-success me-1"></i> Verified</span> }
+                 <span class="badge-amenity"><i class="bi bi-people me-1"></i> {{ selectedPreview()?.maxGuests }} Guests</span>
+                 <span class="badge-amenity"><i class="bi bi-clock me-1"></i> Quick Response</span>
+               </div>
+            </div>
+
+            <div class="preview-actions mt-auto pt-4 border-top">
+              <button class="btn btn-primary-ee w-100 py-3 rounded-4 fw-700 shadow-lg" (click)="editService(selectedPreview()!.id)">
+                <i class="bi bi-pencil-square me-2"></i> Edit This Listing
+              </button>
+              <p class="text-center mt-3 text-muted small">
+                This is how your service appears to customers. 
+                <br>Updates will be visible after saving.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 </div>
