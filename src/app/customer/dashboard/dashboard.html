@@ -14,10 +14,10 @@
         }
       </p>
       <div class="hero-actions mt-4">
-        <button class="btn btn-white-glass" routerLink="/customer/planner">
+        <button class="btn btn-white-glass" routerLink="/planner">
           <i class="bi bi-plus-lg me-2"></i> Plan New Event
         </button>
-        <button class="btn btn-link text-decoration-none" routerLink="/customer/events" style="color: var(--text-hero); opacity: 0.9;">
+        <button class="btn btn-link text-decoration-none" routerLink="/events" style="color: var(--text-hero); opacity: 0.9;">
           Browse Catalogs <i class="bi bi-arrow-right ms-1"></i>
         </button>
       </div>
@@ -62,11 +62,11 @@
               <i class="bi bi-journal-text me-2 text-primary-ee"></i>
               <span>Active Event Timeline</span>
             </div>
-            <a routerLink="/customer/bookings" class="header-action-link">View All Bookings</a>
+            <a routerLink="/bookings" class="header-action-link">View All Bookings</a>
           </div>
           <div class="modern-booking-list p-4">
             @for (b of bookings().slice(0,3); track b.id) {
-              <div class="modern-booking-item" [routerLink]="['/customer/bookings']" [queryParams]="{ bookingId: b.id }" style="cursor: pointer;">
+              <div class="modern-booking-item" [routerLink]="['/bookings']" [queryParams]="{ bookingId: b.id }" style="cursor: pointer;">
                 <div class="booking-date-badge">
                   <div class="day">{{ b.eventDate?.split('-')?.[2] || '' }}</div>
                   <div class="month">{{ b.eventDate?.split('-')?.[1] || '' }}</div>
@@ -103,13 +103,13 @@
         <div class="p-4 pt-0">
           <div class="modern-category-grid">
             @for (et of eventTypes().slice(0,6); track et.id) {
-              <a [routerLink]="['/customer/vendors', et.id]" class="category-card" [style.--accent-color]="et.gradient">
+              <a [routerLink]="['/vendors', et.id]" class="category-card" [style.--accent-color]="et.gradient">
                 <div class="category-icon" [style.background]="et.gradient">
                   <i class="bi {{ et.icon }}"></i>
                 </div>
                 <div class="category-info">
                   <div class="cat-name">{{ et.name }}</div>
-                  <div class="cat-sub">From ₹{{ (et.startingPrice/1000) }}k</div>
+                  <div class="cat-sub">From ₹{{ ((et.startingPrice || 0) / 1000) }}k</div>
                 </div>
               </a>
             }
@@ -129,7 +129,7 @@
           <div class="p-4">
             <div class="message-preview-list">
               @for (msg of recentMessages(); track msg.id) {
-                <div class="msg-preview-item" [routerLink]="['/customer/messages']" [queryParams]="{ threadId: msg.id }" style="cursor: pointer;">
+                <div class="msg-preview-item" [routerLink]="['/messages']" [queryParams]="{ threadId: msg.id }" style="cursor: pointer;">
                   <div class="msg-avatar" [ngClass]="msg.unreadCount > 0 ? 'bg-primary-ee text-white' : 'bg-light text-dark'">
                     {{ msg.participants?.[1]?.name?.charAt(0) || 'U' }}
                   </div>
@@ -151,7 +151,7 @@
                 </div>
               }
             </div>
-            <button class="btn-ee-primary w-100 mt-4 py-3 shadow-sm" routerLink="/customer/messages">
+            <button class="btn-ee-primary w-100 mt-4 py-3 shadow-sm" routerLink="/messages">
               Open Messenger
             </button>
           </div>
@@ -159,7 +159,7 @@
       }
 
       <!-- Loyalty Card -->
-      <div class="loyalty-premium-card mb-4" routerLink="/customer/profile" style="cursor: pointer;">
+      <div class="loyalty-premium-card mb-4" routerLink="/profile" style="cursor: pointer;">
         <div class="loyalty-icon-circle"><i class="bi bi-gem"></i></div>
         <div class="loyalty-info text-center mt-3">
           <div class="loyalty-label">Loyalty Tier</div>
@@ -186,7 +186,7 @@
       </div>
 
       <!-- Support Card -->
-      <div class="modern-support-card" routerLink="/customer/support" style="cursor: pointer;">
+      <div class="modern-support-card" routerLink="/support" style="cursor: pointer;">
         <div class="support-bg-art"></div>
         <div class="d-flex align-items-center gap-3">
           <div class="support-icon"><i class="bi bi-headset"></i></div>

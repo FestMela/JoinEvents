@@ -375,9 +375,34 @@
     bottom: 0;
     right: 0;
     border-radius: 0;
+    z-index: 10001;
   }
+  
   .ai-fab {
-    bottom: 95px; /* Elevate on mobile to prevent overlapping sticky bottom bars */
-    right: 20px;
+    bottom: 85px; 
+    right: 15px;
+    width: 48px;
+    height: 48px;
+    font-size: 1.3rem;
+    opacity: 0.85;
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+  }
+  
+  .ai-fab-glow {
+    filter: blur(8px);
+    opacity: 0.4;
+  }
+  
+  .tooltip-text {
+    display: none; /* Hide tooltip on mobile */
+  }
+
+  /* Adjust chat body for mobile to give more space */
+  .chat-body {
+    padding: 15px;
+  }
+  
+  .msg-bubble {
+    max-width: 90%;
   }
 }

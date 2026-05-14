@@ -1,28 +1,59 @@
 <div class="booking-page">
 
+  <!-- Vendor Preview Toolbar -->
+  @if (userRole() === 'vendor') {
+    <div class="vendor-preview-bar">
+      <div class="preview-status">
+        <i class="bi bi-eye-fill"></i>
+        <span>Vendor Preview Mode</span>
+      </div>
+      <div class="preview-actions">
+        <a [routerLink]="['/vendor/edit-service', selectedPackage()?.id]" class="btn-preview-edit">
+          <i class="bi bi-pencil-square"></i> Edit Listing
+        </a>
+        <a routerLink="/vendor/my-services" class="btn-preview-back">
+          <i class="bi bi-grid-1x2"></i> My Services
+        </a>
+      </div>
+    </div>
+  }
+
   <!-- Breadcrumb Navigation -->
   <nav class="booking-breadcrumb">
-    <a [routerLink]="['/customer/vendors', selectedPackage()?.eventTypeId]" class="breadcrumb-back">
+    <a [routerLink]="['/vendors', selectedPackage()?.eventTypeId]" class="breadcrumb-back">
       <i class="bi bi-arrow-left"></i>
     </a>
     <div class="breadcrumb-trail">
-      <a routerLink="/customer/events" class="crumb">Events</a>
+      <a routerLink="/events" class="crumb">Events</a>
       <i class="bi bi-chevron-right crumb-sep"></i>
-      <a [routerLink]="['/customer/vendors', selectedPackage()?.eventTypeId]" class="crumb">Vendors</a>
+      <a [routerLink]="['/vendors', selectedPackage()?.eventTypeId]" class="crumb">Vendors</a>
       <i class="bi bi-chevron-right crumb-sep"></i>
       <span class="crumb active">{{ selectedPackage()?.name || 'Package' }}</span>
     </div>
   </nav>
 
-  <!-- Package Hero Card -->
+  <!-- Package Hero Card with Gallery -->
   <div class="hero-banner">
-    <div class="hero-img-wrapper">
-      <img [src]="selectedPackage()?.image" [alt]="selectedPackage()?.name" class="hero-img"
-        (error)="handleImageFallback($event, 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=2000')">
-      <div class="hero-overlay"></div>
-      <div class="hero-badges">
-        <span class="tier-badge">{{ selectedPackage()?.tier }}</span>
+    <div class="hero-gallery-layout" (mouseenter)="stopSlideshow()" (mouseleave)="startSlideshow()">
+      <div class="hero-img-main">
+        <img [src]="selectedImage() || selectedPackage()?.image" [alt]="selectedPackage()?.name" class="hero-img"
+          (error)="handleImageFallback($event, 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=2000')">
+        <div class="hero-overlay"></div>
+        <div class="hero-badges">
+          <span class="tier-badge">{{ selectedPackage()?.tier }}</span>
+        </div>
       </div>
+      
+      @if (selectedPackage()?.images?.length > 1) {
+        <div class="hero-thumbnails">
+          @for (img of selectedPackage()?.images; track img) {
+            <div class="thumb-item" [class.active]="selectedImage() === img" (click)="selectGalleryImage(img)">
+              <img [src]="img" alt="Thumbnail"
+                (error)="handleImageFallback($event, 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=200')">
+            </div>
+          }
+        </div>
+      }
     </div>
     <div class="hero-info">
       <h1 class="hero-title">{{ selectedPackage()?.name }}</h1>
@@ -132,13 +163,13 @@
         <div class="detail-card similar-section">
           <div class="section-header">
             <div class="card-label">You May Also Like</div>
-            <a [routerLink]="['/customer/vendors', selectedPackage()?.eventTypeId]" class="see-all-link">
+            <a [routerLink]="['/vendors', selectedPackage()?.eventTypeId]" class="see-all-link">
               View All <i class="bi bi-arrow-right"></i>
             </a>
           </div>
           <div class="similar-grid">
             @for (pkg of similarPackages(); track pkg.id) {
-              <div class="similar-card" [routerLink]="['/customer/book', pkg.id]" (click)="loadPackage(pkg.id)">
+              <div class="similar-card" [routerLink]="['/book', pkg.id]" (click)="loadPackage(pkg.id)">
                 <div class="similar-img">
                   <img [src]="pkg.image" [alt]="pkg.name" loading="lazy"
                     (error)="handleImageFallback($event, 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800')">
@@ -318,7 +349,7 @@
           <span>Booking Ref:</span>
           <strong>#JE-{{ selectedPackage()?.id }}-{{ bookingDate }}</strong>
         </div>
-        <button class="btn-confirm" routerLink="/customer/bookings">
+        <button class="btn-confirm" routerLink="/bookings">
           View My Bookings <i class="bi bi-arrow-right ms-1"></i>
         </button>
       </div>

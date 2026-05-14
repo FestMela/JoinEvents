@@ -1,9 +1,10 @@
-import { Component, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { Component, signal, ChangeDetectionStrategy, inject, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { AiService } from '../../core/services/ai.service';
 import { AiPlanner } from '../ai-planner/ai-planner';
 
 export interface NavItem {
@@ -28,11 +29,29 @@ export class CustomerLayout {
   private router = inject(Router);
   public theme = inject(ThemeService);
   public notifService = inject(NotificationService);
+  private aiService = inject(AiService);
 
   sidebarOpen = signal(false);
+  sidebarPinned = signal(false);
   showNotifications = signal(false);
   showProfileDropdown = signal(false);
   user = this.auth.currentUser;
+
+  constructor() {
+    this.checkScreenSize();
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  private checkScreenSize() {
+    // Automatically unpin if screen width is less than 1200px (standard XL breakpoint)
+    if (window.innerWidth < 1200) {
+      this.sidebarPinned.set(false);
+    }
+  }
 
   getTypeMeta(type: string) {
     const meta: Record<string, { color: string; icon: string }> = {
@@ -60,16 +79,16 @@ export class CustomerLayout {
   unreadCount = computed(() => this.notifService.unreadCount());
 
   readonly navItems: NavItem[] = [
-    { path: '/customer/dashboard', icon: 'bi-grid-1x2',      label: 'Dashboard' },
-    { path: '/customer/events',    icon: 'bi-calendar-heart', label: 'Browse Events' },
-    { path: '/customer/packages',  icon: 'bi-gift',           label: 'Packages' },
-    { path: '/customer/planner',   icon: 'bi-pencil-square',  label: 'Event Planner', protected: true },
-    { path: '/customer/rfp',       icon: 'bi-megaphone',      label: 'RFP Board', badge: 0, protected: true },
-    { path: '/customer/bookings',  icon: 'bi-journal-check',  label: 'My Bookings', protected: true },
-    { path: '/customer/messages',  icon: 'bi-chat-dots',      label: 'Messages', badge: 2, protected: true },
-    { path: '/customer/payments',  icon: 'bi-credit-card',    label: 'Payments', protected: true },
-    { path: '/customer/support',   icon: 'bi-ticket-detailed', label: 'Support', protected: true },
-    { path: '/customer/notifications', icon: 'bi-bell',       label: 'Notifications', protected: true }
+    { path: '/dashboard', icon: 'bi-grid-1x2',      label: 'Dashboard' },
+    { path: '/events',    icon: 'bi-calendar-heart', label: 'Browse Events' },
+    { path: '/packages',  icon: 'bi-gift',           label: 'Packages' },
+    { path: '/planner',   icon: 'bi-pencil-square',  label: 'Event Planner', protected: true },
+    { path: '/rfp',       icon: 'bi-megaphone',      label: 'RFP Board', badge: 0, protected: true },
+    { path: '/bookings',  icon: 'bi-journal-check',  label: 'My Bookings', protected: true },
+    { path: '/messages',  icon: 'bi-chat-dots',      label: 'Messages', badge: 2, protected: true },
+    { path: '/payments',  icon: 'bi-credit-card',    label: 'Payments', protected: true },
+    { path: '/support',   icon: 'bi-ticket-detailed', label: 'Support', protected: true },
+    { path: '/notifications', icon: 'bi-bell',       label: 'Notifications', protected: true }
   ];
 
   get filteredNavItems(): NavItem[] {
@@ -86,6 +105,8 @@ export class CustomerLayout {
 
   logout() { this.auth.logout(); }
   toggleSidebar() { this.sidebarOpen.update(v => !v); }
+  togglePin() { this.sidebarPinned.update(v => !v); }
+  toggleAiPlanner() { this.aiService.toggle(); }
   toggleNotifications() { 
     this.showNotifications.update(v => !v); 
     if (this.showNotifications()) this.showProfileDropdown.set(false);

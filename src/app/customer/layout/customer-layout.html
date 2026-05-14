@@ -1,21 +1,24 @@
-<div class="app-shell" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+<div class="app-shell" [class.sidebar-pinned]="sidebarPinned()" [class.sidebar-collapsed]="!sidebarPinned() && !sidebarOpen()" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
   <a href="#main-content" class="skip-to-content-link">Skip to main content</a>
-  <!-- Sidebar Overlay (mobile) -->
-  @if (sidebarOpen()) {
+  <!-- Sidebar Overlay (desktop drawer or mobile) -->
+  @if (sidebarOpen() && !sidebarPinned()) {
   <div class="sidebar-overlay" (click)="toggleSidebar()"></div>
   }
 
   <!-- Sidebar -->
-  <aside class="sidebar" [class.open]="sidebarOpen()">
+  <aside class="sidebar" [class.open]="sidebarOpen()" [class.pinned]="sidebarPinned()">
     <div class="sidebar-brand">
       <div class="brand-logo">
         <img src="src/img/JoinEvents.png" alt="Logo" style="width:100%; height:100%; object-fit:contain;" (error)="handleImageError($event)">
         <i class="bi bi-stars" style="display:none"></i>
       </div>
-      <div>
+      <div class="brand-info">
         <div class="brand-name"><span class="brand-join">Join</span><span class="brand-events">Events</span></div>
         <div class="brand-tagline">Customer Portal</div>
       </div>
+      <button class="pin-btn d-none d-xl-flex" (click)="togglePin()" [class.active]="sidebarPinned()" [title]="sidebarPinned() ? 'Unpin Sidebar' : 'Pin Sidebar'">
+        <i class="bi" [class.bi-pin-fill]="sidebarPinned()" [class.bi-pin]="!sidebarPinned()"></i>
+      </button>
     </div>
 
     <nav class="sidebar-nav">
@@ -35,10 +38,10 @@
   <!-- Topbar -->
   <header class="topbar">
     <div class="d-flex align-items-center gap-3">
-      <button class="topbar-icon-btn d-xl-none" (click)="toggleSidebar()">
+      <button class="topbar-icon-btn" [class.d-xl-none]="sidebarPinned()" (click)="toggleSidebar()">
         <i class="bi bi-list"></i>
       </button>
-      <div class="topbar-brand-mobile d-xl-none">
+      <div class="topbar-brand-mobile" [class.d-xl-none]="sidebarPinned()">
         <span style="font-family:var(--font-heading);font-weight:900;font-size:1.25rem;">
           <span class="brand-join">Join</span><span class="brand-events">Events</span>
         </span>
@@ -52,10 +55,15 @@
       </button>
 
       @if (user()) {
-      <a routerLink="/customer/messages" class="topbar-icon-btn">
+      <a routerLink="/messages" class="topbar-icon-btn">
         <i class="bi bi-chat-dots"></i>
         @if (notifications().length > 0) { <span class="notif-dot"></span> }
       </a>
+
+      <!-- Roshi AI Trigger (Mobile only) -->
+      <button class="topbar-icon-btn d-xl-none" (click)="toggleAiPlanner()" title="Roshi AI">
+        <i class="bi bi-stars" style="color: var(--primary);"></i>
+      </button>
 
       <div class="topbar-icon-btn position-relative" (click)="toggleNotifications()">
         <i class="bi bi-bell"></i>
@@ -82,7 +90,7 @@
             }
           </div>
           <div class="notif-footer">
-            <a routerLink="/customer/notifications" (click)="showNotifications.set(false)" class="text-primary-ee small fw-bold">View All Notifications</a>
+            <a routerLink="/notifications" (click)="showNotifications.set(false)" class="text-primary-ee small fw-bold">View All Notifications</a>
           </div>
         </div>
         }
@@ -103,10 +111,10 @@
             </div>
           </div>
           <div class="profile-dropdown-body">
-            <a routerLink="/customer/profile" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
+            <a routerLink="/profile" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
               <i class="bi bi-person-circle"></i> My Profile
             </a>
-            <a routerLink="/customer/bookings" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
+            <a routerLink="/bookings" class="profile-dropdown-item" (click)="showProfileDropdown.set(false)">
               <i class="bi bi-journal-check"></i> My Bookings
             </a>
             <a class="profile-dropdown-item logout-item" (click)="logout()">

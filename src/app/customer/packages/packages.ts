@@ -96,7 +96,7 @@ export class CustomerPackages implements OnInit {
   }
 
   bookPackage(pkg: EventPackage) {
-    this.router.navigate(['/customer/book', pkg.id]);
+    this.router.navigate(['/book', pkg.id]);
   }
 
   getTierGradient(tier: string) {

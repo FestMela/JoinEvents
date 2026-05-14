@@ -28,8 +28,8 @@ export class VendorMyServices implements OnInit {
   selectedPreview = signal<VendorService | null>(null);
 
   openPreview(svc: VendorService) {
-    this.selectedPreview.set(svc);
-    document.body.style.overflow = 'hidden'; // Prevent scroll
+    console.log('Opening preview for service:', svc.id, svc.name);
+    this.router.navigate(['/book', svc.id]);
   }
 
   closePreview() {

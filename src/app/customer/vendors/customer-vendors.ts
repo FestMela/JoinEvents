@@ -94,6 +94,6 @@ export class CustomerVendors implements OnInit {
   }
 
   selectVendor(packageId: string) {
-    this.router.navigate(['/customer/book', packageId]);
+    this.router.navigate(['/book', packageId]);
   }
 }

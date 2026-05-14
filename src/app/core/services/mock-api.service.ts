@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { of, Observable } from 'rxjs';
-import { delay, catchError, map } from 'rxjs/operators';
+import { delay, catchError, map, switchMap } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { EventType, EventPackage } from '../models/event.model';
@@ -18,15 +18,35 @@ export class MockApiService {
   private apiUrl = 'https://localhost:7010/api/v1';
 
   // ─── EVENT TYPES ───────────────────────────────────────────────
+  globalEventTypes = signal<EventType[]>([
+    { id: 'wedding', name: 'Wedding', nameHindi: 'Shaadi', description: 'Grand Indian weddings with all rituals, mehendi, sangeet & reception', icon: 'bi-hearts', category: 'wedding', colorClass: 'event-wedding', gradient: 'linear-gradient(135deg,#E91E8C,#FF6B6B)', startingPrice: 150000, popularServices: ['Venue','Catering','Decoration','Photography','Music','Priest'] },
+    { id: 'birthday', name: 'Birthday Party', nameHindi: 'Janmadin', description: 'Fun & vibrant birthday celebrations for all ages', icon: 'bi-balloon-heart', category: 'birthday', colorClass: 'event-birthday', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', startingPrice: 25000, popularServices: ['Venue','Catering','Decoration','Photography','Music'] },
+    { id: 'corporate', name: 'Corporate Event', nameHindi: 'Karobar', description: 'Professional corporate meets, conferences, team outings & product launches', icon: 'bi-briefcase', category: 'corporate', colorClass: 'event-corporate', gradient: 'linear-gradient(135deg,#0EA5E9,#6B21A8)', startingPrice: 80000, popularServices: ['Venue','Catering','Transport','Manpower','Photography'] },
+    { id: 'beauty', name: 'Beauty & Styling', nameHindi: 'Shringar', icon: 'bi-magic', category: 'beauty', colorClass: 'event-beauty', gradient: 'linear-gradient(135deg,#EC4899,#D946EF)', startingPrice: 5000, popularServices: ['Makeup','Hairstyle','Outfit Rental','Mehendi'] },
+    { id: 'travel', name: 'Travel & Transport', nameHindi: 'Yatra', icon: 'bi-airplane-fill', category: 'travel', colorClass: 'event-travel', gradient: 'linear-gradient(135deg,#10B981,#059669)', startingPrice: 8000, popularServices: ['Luxury Cars','Bus Hire','Honeymoon Packages'] },
+    { id: 'shopping', name: 'Event Shopping', nameHindi: 'Kharidari', icon: 'bi-bag-heart-fill', category: 'shopping', colorClass: 'event-shopping', gradient: 'linear-gradient(135deg,#F59E0B,#D97706)', startingPrice: 2000, popularServices: ['Invites','Gifts','Traditional Wear'] },
+  ]);
+
   getEventTypes(): Observable<EventType[]> {
-    return of([
-      { id: 'wedding', name: 'Wedding', nameHindi: 'Shaadi', description: 'Grand Indian weddings with all rituals, mehendi, sangeet & reception', icon: 'bi-hearts', category: 'wedding', colorClass: 'event-wedding', gradient: 'linear-gradient(135deg,#E91E8C,#FF6B6B)', startingPrice: 150000, popularServices: ['Venue','Catering','Decoration','Photography','Music','Priest'] },
-      { id: 'birthday', name: 'Birthday Party', nameHindi: 'Janmadin', description: 'Fun & vibrant birthday celebrations for all ages', icon: 'bi-balloon-heart', category: 'birthday', colorClass: 'event-birthday', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', startingPrice: 25000, popularServices: ['Venue','Catering','Decoration','Photography','Music'] },
-      { id: 'corporate', name: 'Corporate Event', nameHindi: 'Karobar', description: 'Professional corporate meets, conferences, team outings & product launches', icon: 'bi-briefcase', category: 'corporate', colorClass: 'event-corporate', gradient: 'linear-gradient(135deg,#0EA5E9,#6B21A8)', startingPrice: 80000, popularServices: ['Venue','Catering','Transport','Manpower','Photography'] },
-      { id: 'beauty', name: 'Beauty & Styling', nameHindi: 'Shringar', icon: 'bi-magic', category: 'beauty', colorClass: 'event-beauty', gradient: 'linear-gradient(135deg,#EC4899,#D946EF)', startingPrice: 5000, popularServices: ['Makeup','Hairstyle','Outfit Rental','Mehendi'] },
-      { id: 'travel', name: 'Travel & Transport', nameHindi: 'Yatra', icon: 'bi-airplane-fill', category: 'travel', colorClass: 'event-travel', gradient: 'linear-gradient(135deg,#10B981,#059669)', startingPrice: 8000, popularServices: ['Luxury Cars','Bus Hire','Honeymoon Packages'] },
-      { id: 'shopping', name: 'Event Shopping', nameHindi: 'Kharidari', icon: 'bi-bag-heart-fill', category: 'shopping', colorClass: 'event-shopping', gradient: 'linear-gradient(135deg,#F59E0B,#D97706)', startingPrice: 2000, popularServices: ['Invites','Gifts','Traditional Wear'] },
-    ] as EventType[]).pipe(delay(300));
+    return of(this.globalEventTypes()).pipe(delay(300));
+  }
+
+  addEventType(evt: Omit<EventType, 'id'>): Observable<EventType> {
+    const newEvt: EventType = { ...evt, id: 'cat_' + Date.now() } as EventType;
+    this.globalEventTypes.update(list => [...list, newEvt]);
+    return of(newEvt).pipe(delay(300));
+  }
+
+  updateEventType(id: string, updates: Partial<EventType>): Observable<boolean> {
+    this.globalEventTypes.update(list =>
+      list.map(e => e.id === id ? { ...e, ...updates } : e)
+    );
+    return of(true).pipe(delay(300));
+  }
+
+  deleteEventType(id: string): Observable<boolean> {
+    this.globalEventTypes.update(list => list.filter(e => e.id !== id));
+    return of(true).pipe(delay(300));
   }
 
   // ─── PACKAGES ──────────────────────────────────────────────────
@@ -55,7 +75,17 @@ export class MockApiService {
         vegOnly: true,
         roomCount: 2,
         sustainabilityTags: ['Zero Waste Catering', 'Local Sourced'],
-        image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800'
+        image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800',
+        images: [
+          'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1522673607200-16488321499b?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1513273159385-48995328406f?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80&w=800'
+        ]
       },
       { 
         id: 'w-prem-2', 
@@ -77,7 +107,11 @@ export class MockApiService {
         offerExpiresIn: '3 Days, 4:10:00',
         vegOnly: false,
         roomCount: 50,
-        image: 'https://images.unsplash.com/photo-1541010222019-15ad350bc51f?auto=format&fit=crop&q=80&w=800'
+        image: 'https://images.unsplash.com/photo-1541010222019-15ad350bc51f?auto=format&fit=crop&q=80&w=800',
+        images: [
+          'https://images.unsplash.com/photo-1541010222019-15ad350bc51f?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1505932794465-1475557465c9?auto=format&fit=crop&q=80&w=800'
+        ]
       },
       { 
         id: 'w-std-1', 
@@ -99,15 +133,73 @@ export class MockApiService {
         vegOnly: true,
         roomCount: 5,
         sustainabilityTags: ['Organic Menu', 'Recycled Decor'],
-        image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800'
+        image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800',
+        images: [
+          'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800'
+        ]
       },
-      { id: 'b-basic', eventTypeId: 'birthday', name: 'Fun Birthday', tier: 'basic', price: 25000, description: 'Simple & cheerful birthday party setup', services: ['Venue (50 guests)','Snacks & Cake','Balloon Decoration','Photography'], maxGuests: 50, durationHours: 4, location: 'Local Venue', image: 'https://images.unsplash.com/photo-1530103862676-fa8c9d34b3b3?auto=format&fit=crop&q=80&w=800' },
+      { id: 'b-basic', eventTypeId: 'birthday', name: 'Fun Birthday', tier: 'basic', price: 25000, description: 'Simple & cheerful birthday party setup', services: ['Venue (50 guests)','Snacks & Cake','Balloon Decoration','Photography'], maxGuests: 50, durationHours: 4, location: 'Local Venue', image: 'https://images.unsplash.com/photo-1530103862676-fa8c9d34b3b3?auto=format&fit=crop&q=80&w=800', images: ['https://images.unsplash.com/photo-1530103862676-fa8c9d34b3b3?auto=format&fit=crop&q=80&w=800'] },
     ];
     const result = eventTypeId ? packages.filter(p => p.eventTypeId === eventTypeId) : packages;
     
     // Call the real backend API, fallback to mock data on error
     return this.http.get<any[]>(`${this.apiUrl}/packages/search${eventTypeId ? '?eventTypeId=' + eventTypeId : ''}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
       catchError(() => of(result).pipe(delay(300)))
+    );
+  }
+
+  getPackageById(id: string): Observable<any> {
+    const normalizePackage = (p: any) => {
+      if (!p) return null;
+      return {
+        id: p.id || p.Id,
+        eventTypeId: p.eventTypeId || p.EventTypeId || p.category || p.Category || 'wedding',
+        name: p.name || p.Name,
+        vendorName: p.vendorName || p.VendorName || 'JoinEvents Partner',
+        location: p.location || p.Location || p.city || p.City || 'Multiple Locations',
+        tier: p.tier || p.Tier || 'premium',
+        price: p.price || p.Price || p.pricing?.basePrice || p.pricing?.BasePrice || p.pricing?.vegPrice || p.pricing?.VegPrice || p.pricing?.rent || p.pricing?.Rent || 0,
+        description: p.description || p.Description,
+        services: (p.services && p.services.length > 0 ? p.services : null) || 
+                  (p.Services && p.Services.length > 0 ? p.Services : null) || 
+                  (p.includes && p.includes.length > 0 ? p.includes : null) || 
+                  (p.Includes && p.Includes.length > 0 ? p.Includes : null) || 
+                  (p.name || p.Name ? [p.name || p.Name] : ['General Service']),
+        addons: p.addons || p.Addons || [],
+        maxGuests: p.maxGuests || p.MaxGuests || p.capacity?.maxGuests || p.capacity?.MaxGuests || 100,
+        durationHours: p.durationHours || p.DurationHours || 24,
+        image: p.image || p.Image || p.images?.[0] || p.Images?.[0],
+        images: p.images || p.Images || []
+      };
+    };
+
+    // Try public endpoint first
+    return this.http.get<any>(`${this.apiUrl}/packages/${id}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(res => normalizePackage(res.data || res.package || res.Package || res)),
+      catchError(() => {
+        // Try vendor endpoint as fallback (for unpublished services)
+        return this.http.get<any>(`${this.apiUrl}/vendor/packages/${id}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+          map(res => normalizePackage(res.data || res.package || res.Package || res)),
+          catchError(() => {
+            // Final fallback: check mock lists
+            return this.getPackages().pipe(
+              switchMap(pkgs => {
+                const pkg = pkgs.find(p => p.id === id);
+                if (pkg) return of(pkg);
+
+                return this.getVendorServices().pipe(
+                  map(services => {
+                    const svc = services.find(s => s.id === id);
+                    if (svc) return normalizePackage(svc);
+                    return null; // Not found anywhere
+                  })
+                );
+              })
+            );
+          })
+        );
+      })
     );
   }
 

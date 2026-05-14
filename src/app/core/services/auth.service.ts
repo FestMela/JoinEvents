@@ -7,11 +7,14 @@ import { tap, map, catchError } from 'rxjs/operators';
 import { AuthUser, UserRole } from '../models/user.model';
 
 const MOCK_USERS: Record<string, AuthUser & { password: string }> = {
-  'customer@demo.com': { id: 'c1', name: 'Rajesh Kumar', email: 'customer@demo.com', role: 'customer', phone: '+91 98765 43210', password: 'JoinEvents@2025', token: 'mock-jwt-token-customer-123' },
-  'meena@demo.com':    { id: 'c4', name: 'Meena Sharma', email: 'meena@demo.com', role: 'customer', phone: '+91 95432 10987', password: 'JoinEvents@2025', token: 'mock-jwt-token-customer-999' },
-  'vendor@demo.com':   { id: 'v1', name: 'Amit Sharma', email: 'vendor@demo.com', role: 'vendor', phone: '+91 91234 56789', password: 'JoinEvents@2025', token: 'mock-jwt-token-vendor-456' },
-  'admin@demo.com':    { id: 'a1', name: 'Priya Nair', email: 'admin@demo.com', role: 'admin', phone: '+91 99887 76655', password: 'JoinEvents@2025', token: 'mock-jwt-token-admin-789' },
-  'support@demo.com':  { id: 's1', name: 'Rahul Support', email: 'support@demo.com', role: 'support', phone: '+91 99000 11223', password: 'JoinEvents@2025', token: 'mock-jwt-token-support-000' },
+  'user@test.com':     { id: 'c1', name: 'Test User',     email: 'user@test.com',     role: 'customer', phone: '9999999999', password: 'JoinEvents@2025', token: '' },
+  'vendor@test.com':   { id: 'v1', name: 'Vendor Owner',  email: 'vendor@test.com',   role: 'vendor',   phone: '8888888888', password: 'JoinEvents@2025', token: '' },
+  'admin@test.com':    { id: 'a1', name: 'Priya Nair',    email: 'admin@test.com',    role: 'admin',    phone: '9988776655', password: 'JoinEvents@2025', token: '' },
+  'support@test.com':  { id: 's1', name: 'Rahul Support', email: 'support@test.com',  role: 'support',  phone: '9900011223', password: 'JoinEvents@2025', token: '' },
+  // Legacy demo aliases kept for backward compatibility
+  'customer@demo.com': { id: 'c1', name: 'Rajesh Kumar',  email: 'customer@demo.com', role: 'customer', phone: '+91 98765 43210', password: 'JoinEvents@2025', token: '' },
+  'vendor@demo.com':   { id: 'v1', name: 'Amit Sharma',   email: 'vendor@demo.com',   role: 'vendor',   phone: '+91 91234 56789', password: 'JoinEvents@2025', token: '' },
+  'admin@demo.com':    { id: 'a1', name: 'Priya Nair',    email: 'admin@demo.com',    role: 'admin',    phone: '+91 99887 76655', password: 'JoinEvents@2025', token: '' },
 };
 
 @Injectable({ providedIn: 'root' })
@@ -41,8 +44,8 @@ export class AuthService {
             id: response.user.id,
             name: response.user.name,
             email: response.user.email,
-            role: response.user.role || role,
-            token: response.token
+            role: response.user?.role || role,
+            token: response.token || response.AccessToken || response.accessToken
           };
           sessionStorage.setItem('joinevents_user', JSON.stringify(user));
           this.currentUser.set(user);
@@ -50,7 +53,8 @@ export class AuthService {
           if (returnUrl) {
             this.router.navigateByUrl(returnUrl);
           } else {
-            this.router.navigate([`/${user.role}/dashboard`]);
+            const path = user.role === 'customer' ? '/dashboard' : `/${user.role}/dashboard`;
+            this.router.navigate([path]);
           }
           return { success: true, message: 'Login successful!' };
         }
@@ -76,12 +80,13 @@ export class AuthService {
             id: response.user.id,
             name: response.user.name,
             email: response.user.email,
-            role: response.user.role || role,
-            token: response.token
+            role: response.user?.role || role,
+            token: response.token || response.AccessToken || response.accessToken
           };
           sessionStorage.setItem('joinevents_user', JSON.stringify(user));
           this.currentUser.set(user);
-          this.router.navigate([`/${user.role}/dashboard`]);
+          const path = user.role === 'customer' ? '/dashboard' : `/${user.role}/dashboard`;
+          this.router.navigate([path]);
           return { success: true, message: 'Registration successful!' };
         }
         return { success: false, message: 'Invalid response from server.' };

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MockApiService } from '../../core/services/mock-api.service';
+import { AiService } from '../../core/services/ai.service';
 
 interface ChatMessage {
   id: string;
@@ -22,10 +23,11 @@ interface ChatMessage {
 })
 export class AiPlanner implements AfterViewChecked {
   private api = inject(MockApiService);
+  private aiService = inject(AiService);
 
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
 
-  isOpen = signal(false);
+  isOpen = this.aiService.isOpen;
   isThinking = signal(false);
   userInput = signal('');
   
@@ -40,7 +42,7 @@ export class AiPlanner implements AfterViewChecked {
   ]);
 
   toggleChat() {
-    this.isOpen.set(!this.isOpen());
+    this.aiService.toggle();
     if (this.isOpen()) {
       this.scrollToBottom();
     }

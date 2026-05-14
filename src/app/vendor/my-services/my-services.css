@@ -78,6 +78,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  text-decoration: none !important;
 }
 .svc-card-premium:hover { transform: translateY(-8px); box-shadow: var(--shadow-xl); }
 

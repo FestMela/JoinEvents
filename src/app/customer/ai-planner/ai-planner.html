@@ -40,7 +40,7 @@
         <div class="msg-row ai-cards">
           <div class="ai-carousel">
             @for (pkg of msg.packages; track pkg.id) {
-              <div class="ai-pkg-card" [routerLink]="['/customer/book', pkg.id]">
+              <div class="ai-pkg-card" [routerLink]="['/book', pkg.id]">
                 <img [src]="pkg.image" alt="pkg">
                 <div class="ai-pkg-info">
                   <div class="d-flex justify-content-between align-items-center mb-1">

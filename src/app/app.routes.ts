@@ -2,19 +2,19 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-  { path: '', loadComponent: () => import('./Onboard/get-start/get-start').then(m => m.GetStart) },
+  { path: '', loadComponent: () => import('./Onboard/get-start/get-start').then(m => m.GetStart), pathMatch: 'full' },
   { path: 'login', loadComponent: () => import('./Onboard/login/login').then(m => m.Login) },
   { path: 'partner-login', loadComponent: () => import('./Onboard/portal-login/portal-login').then(m => m.PortalLogin) },
   { path: 'register', loadComponent: () => import('./Onboard/register/register').then(m => m.Register) },
   { path: 'forgot-password', loadComponent: () => import('./Onboard/forgot-password/forgot-password').then(m => m.ForgotPassword) },
 
   {
-    path: 'customer',
+    path: '',
     loadComponent: () => import('./customer/layout/customer-layout').then(m => m.CustomerLayout),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./customer/dashboard/dashboard').then(m => m.CustomerDashboard) },
-      { path: 'book/:packageId', loadComponent: () => import('./customer/booking/booking').then(m => m.CustomerBooking), canActivate: [authGuard('customer')] },
+      { path: 'book/:packageId', loadComponent: () => import('./customer/booking/booking').then(m => m.CustomerBooking), canActivate: [authGuard(['customer', 'vendor'])] },
       { path: 'events', loadComponent: () => import('./customer/events/events').then(m => m.CustomerEvents) },
       { path: 'vendors/:eventTypeId', loadComponent: () => import('./customer/vendors/customer-vendors').then(m => m.CustomerVendors) },
       { path: 'packages', loadComponent: () => import('./customer/packages/packages').then(m => m.CustomerPackages) },
@@ -67,6 +67,7 @@ export const routes: Routes = [
       { path: 'customers', loadComponent: () => import('./admin/customers/admin-customers').then(m => m.AdminCustomers) },
       { path: 'vendors', loadComponent: () => import('./admin/vendors/admin-vendors').then(m => m.AdminVendors) },
       { path: 'employees', loadComponent: () => import('./admin/employees/admin-employees').then(m => m.AdminEmployees) },
+      { path: 'categories', loadComponent: () => import('./admin/categories/admin-categories').then(m => m.AdminCategories) },
       { path: 'profile', loadComponent: () => import('./admin/profile/profile').then(m => m.AdminProfile) },
       { path: 'notifications', loadComponent: () => import('./shared/pages/notifications/notifications').then(m => m.NotificationsPage) },
       { path: 'analytics', loadComponent: () => import('./admin/analytics/admin-analytics').then(m => m.AdminAnalytics) },

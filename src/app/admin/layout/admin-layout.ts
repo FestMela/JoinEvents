@@ -59,6 +59,7 @@ export class AdminLayout {
     { path: '/admin/dashboard',     icon: 'bi-grid-1x2',       label: 'Dashboard' },
     { path: '/admin/users',         icon: 'bi-people',         label: 'Manage Users' },
     { path: '/admin/vendors',       icon: 'bi-patch-check',    label: 'Vendor Verification' },
+    { path: '/admin/categories',    icon: 'bi-tag',            label: 'Event Categories' },
     { path: '/admin/bookings',      icon: 'bi-journal-check',  label: 'Bookings' },
     { path: '/admin/disputes',      icon: 'bi-exclamation-triangle', label: 'Disputes' },
     { path: '/admin/rfp',           icon: 'bi-megaphone',      label: 'Global RFPs' },

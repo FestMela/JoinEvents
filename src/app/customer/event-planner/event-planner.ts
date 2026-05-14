@@ -85,11 +85,11 @@ export class EventPlanner implements OnInit {
 
   goToRfp() {
     this.showSuccessModal.set(false);
-    this.router.navigate(['/customer/rfp']);
+    this.router.navigate(['/rfp']);
   }
 
   goToDashboard() {
     this.showSuccessModal.set(false);
-    this.router.navigate(['/customer/dashboard']);
+    this.router.navigate(['/dashboard']);
   }
 }

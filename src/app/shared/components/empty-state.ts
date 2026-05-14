@@ -9,7 +9,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
  *     title="No bookings yet"
  *     message="Browse events and create your first booking."
  *     actionLabel="Browse Events"
- *     (action)="router.navigate(['/customer/events'])" />
+ *     (action)="router.navigate(['/events'])" />
  */
 @Component({
   selector: 'app-empty-state',

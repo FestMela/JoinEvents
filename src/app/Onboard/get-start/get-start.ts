@@ -113,7 +113,9 @@ export class GetStart implements OnInit {
 
   ngOnInit() {
     if (this.auth.isAuthenticated()) {
-      this.router.navigate([`/${this.auth.getRole()}/dashboard`]);
+      const role = this.auth.getRole();
+      const path = role === 'customer' ? '/dashboard' : `/${role}/dashboard`;
+      this.router.navigate([path]);
     }
     this.api.getEventTypes().subscribe(types => this.eventTypes.set(types));
     setInterval(() => {
