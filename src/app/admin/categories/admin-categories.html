@@ -53,12 +53,16 @@
   @if (!isLoading()) {
   <div class="categories-grid">
     @for (cat of categories(); track cat.id) {
-    <div class="category-card">
+    <div class="category-card" [class.inactive]="!cat.isActive">
       <div class="card-gradient-header" [style.background]="cat.gradient">
         <div class="card-icon-wrap">
           <i class="bi {{ cat.icon }}"></i>
         </div>
         <div class="card-actions">
+          <label class="toggle-switch" title="Toggle Visibility">
+            <input type="checkbox" [checked]="cat.isActive" (change)="toggleCategoryActive(cat, $any($event.target).checked)">
+            <span class="slider"></span>
+          </label>
           <button class="action-btn edit-btn" (click)="openEditModal(cat)" title="Edit">
             <i class="bi bi-pencil-fill"></i>
           </button>

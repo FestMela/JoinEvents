@@ -25,4 +25,5 @@ export interface VendorService {
   totalReviews: number;
   isActive: boolean;
   isVerified: boolean;
+  activeImageIndex?: number;
 }

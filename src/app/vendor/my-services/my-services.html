@@ -76,10 +76,18 @@
     @if (!isLoading() && !errorMessage()) {
       @for (svc of filteredServices(); track svc.id) {
       <div class="col-12 col-md-6 col-xl-4">
-        <div class="svc-card-premium" [class.is-paused]="!svc.isActive" (click)="openPreview(svc)">
+        <div class="svc-card-premium" [class.is-paused]="!svc.isActive">
           <div class="svc-image-wrap">
-            <img [src]="svc.images && svc.images.length > 0 ? svc.images[0] : 'https://placehold.co/800x600/6b21a8/ffffff?text=Service+Logo'" [alt]="svc.name" loading="lazy">
+            <img [src]="svc.images && svc.images.length > 0 ? svc.images[svc.activeImageIndex || 0] : 'https://placehold.co/800x600/6b21a8/ffffff?text=Service+Logo'" [alt]="svc.name" loading="lazy" style="transition: opacity 0.4s ease-in-out;">
             <div class="image-overlay"></div>
+            
+            @if (svc.images && svc.images.length > 1) {
+              <div class="carousel-indicators-mini">
+                @for (img of svc.images; track img; let i = $index) {
+                  <span class="dot-mini" [class.active]="i === (svc.activeImageIndex || 0)"></span>
+                }
+              </div>
+            }
             
             <!-- Category Chip -->
             <div class="svc-category-badge">{{ svc.category }}</div>
@@ -147,8 +155,8 @@
             </div>
           </div>
 
-          <div class="svc-card-footer-premium text-center py-2">
-            <span class="text-primary small fw-700">Click to Preview <i class="bi bi-arrow-right ms-1"></i></span>
+          <div class="svc-card-footer-premium text-center py-3 border-top" style="cursor: pointer; transition: all 0.2s;" (click)="openPreview(svc)" onmouseover="this.style.background='rgba(255,107,53,0.05)'" onmouseout="this.style.background='transparent'">
+            <span class="text-primary small fw-700"><i class="bi bi-eye me-2"></i> Preview Listing</span>
           </div>
         </div>
       </div>

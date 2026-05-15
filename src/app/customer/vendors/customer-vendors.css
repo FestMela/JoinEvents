@@ -421,4 +421,131 @@
 :host-context(.dark-theme) .feat-item i {
     color: var(--primary-light);
 }
+/* Sleek Unified Tooltip Inclusions Design (matching catalog styles) */
+.service-pill { 
+  padding: 4px 12px; 
+  font-size: 0.72rem; 
+  font-weight: 600; 
+  background: rgba(0,0,0,0.03); 
+  color: var(--text-muted); 
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+.service-pill:hover {
+  background: rgba(var(--primary-ee-rgb), 0.03);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.service-pill.more-pill {
+  background: rgba(255,107,53,0.1);
+  color: var(--primary);
+  border-color: rgba(255,107,53,0.2);
+  cursor: help;
+}
 
+.custom-tooltip-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.custom-tooltip-content {
+  position: absolute;
+  bottom: 140%; 
+  left: 50%;
+  transform: translateX(-50%) translateY(10px) scale(0.95);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  padding: 14px 18px;
+  min-width: 220px;
+  max-width: 260px;
+  width: max-content;
+  box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.15), 
+              0 4px 15px -3px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1); 
+  z-index: 1000;
+  text-align: left;
+}
+
+.custom-tooltip-content::before {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: inherit;
+  border-right: 1.5px solid var(--border-color);
+  border-bottom: 1.5px solid var(--border-color);
+  z-index: -1;
+}
+
+.custom-tooltip-wrapper:hover .custom-tooltip-content {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.tooltip-header {
+  font-family: var(--font-heading);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1.5px dashed var(--border-color);
+}
+
+.tooltip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tooltip-list li {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.2s ease;
+}
+
+.tooltip-list li:hover {
+  transform: translateX(3px);
+  color: var(--primary);
+}
+
+.tooltip-list li i {
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, var(--primary) 0%, #ff8447 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+/* Theme compatibility for tooltip */
+:host-context(.dark-theme) .service-pill {
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.8);
+  border-color: rgba(255,255,255,0.08);
+}
+:host-context(.dark-theme) .custom-tooltip-content {
+  background: rgba(30, 41, 59, 0.98);
+  border-color: rgba(255, 255, 255, 0.1);
+}

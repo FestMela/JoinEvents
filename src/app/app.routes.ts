@@ -16,7 +16,7 @@ export const routes: Routes = [
       { path: 'dashboard', loadComponent: () => import('./customer/dashboard/dashboard').then(m => m.CustomerDashboard) },
       { path: 'book/:packageId', loadComponent: () => import('./customer/booking/booking').then(m => m.CustomerBooking), canActivate: [authGuard(['customer', 'vendor'])] },
       { path: 'events', loadComponent: () => import('./customer/events/events').then(m => m.CustomerEvents) },
-      { path: 'vendors/:eventTypeId', loadComponent: () => import('./customer/vendors/customer-vendors').then(m => m.CustomerVendors) },
+      { path: 'vendors/:eventTypeId', loadComponent: () => import('./customer/vendors/customer-vendors').then(m => m.CustomerVendors), canActivate: [authGuard(['customer', 'vendor'])] },
       { path: 'packages', loadComponent: () => import('./customer/packages/packages').then(m => m.CustomerPackages) },
       { path: 'planner', loadComponent: () => import('./customer/event-planner/event-planner').then(m => m.EventPlanner), canActivate: [authGuard('customer')] },
       { path: 'rfp', loadComponent: () => import('./customer/rfp/customer-rfp').then(m => m.CustomerRfp), canActivate: [authGuard('customer')] },

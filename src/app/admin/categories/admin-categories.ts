@@ -97,7 +97,15 @@ export class AdminCategories implements OnInit {
     const id = this.editing()?.id;
     const op$ = id ? this.svc.update(id, this.formData) : this.svc.create(this.formData);
     op$.subscribe({
-      next: () => { this.loadCategories(); this.closeModal(); this.isSubmitting.set(false); },
+      next: (res) => { 
+        if (id) {
+          this.categories.update(arr => arr.map(c => c.id === id ? res : c));
+        } else {
+          this.categories.update(arr => [...arr, res]);
+        }
+        this.closeModal(); 
+        this.isSubmitting.set(false); 
+      },
       error: err => {
         const status = err?.status;
         if (status === 401 || status === 403) {
@@ -113,7 +121,9 @@ export class AdminCategories implements OnInit {
   deleteCategory(cat: EventCategory) {
     if (!confirm(`Delete "${cat.name}"? Vendors listing under this category may be affected.`)) return;
     this.svc.delete(cat.id).subscribe({
-      next: () => this.loadCategories(),
+      next: () => {
+        this.categories.update(arr => arr.filter(c => c.id !== cat.id));
+      },
       error: err => {
         const status = err?.status;
         if (status === 401 || status === 403) {
@@ -121,6 +131,18 @@ export class AdminCategories implements OnInit {
         } else {
           this.error.set(err?.error?.message || 'Delete failed.');
         }
+      }
+    });
+  }
+
+  toggleCategoryActive(cat: EventCategory, isActive: boolean) {
+    this.svc.toggleActive(cat.id, isActive).subscribe({
+      next: (res) => {
+        this.categories.update(arr => arr.map(c => c.id === cat.id ? res : c));
+      },
+      error: err => {
+        this.error.set('Failed to toggle active state.');
+        this.loadCategories();
       }
     });
   }

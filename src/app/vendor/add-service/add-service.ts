@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { VendorPackageService } from '../../core/services/vendor-package.service';
-import { PackageService } from '../../core/services/package.service';
+import { EventCategoryService } from '../../core/services/event-category.service';
 import { ServiceCategoryDef } from '../../core/models/service.model';
 
 declare var google: any;
@@ -17,7 +17,7 @@ declare var google: any;
 })
 export class VendorAddService implements OnInit {
   private api = inject(VendorPackageService);
-  private packageService = inject(PackageService);
+  private eventCategoryService = inject(EventCategoryService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private ngZone = inject(NgZone);
@@ -25,13 +25,13 @@ export class VendorAddService implements OnInit {
   @ViewChild('addressSearch') set addressSearch(content: ElementRef) {
     if (content) {
       this.addressSearchElement = content;
-      setTimeout(() => this.initAutocomplete(), 0);
+      setTimeout(() => this.initAutocomplete(), 150); // Provide 150ms to guarantee browser attachment and paint
     }
   }
   @ViewChild('mapContainer') set mapContainer(content: ElementRef) {
     if (content) {
       this.mapElement = content;
-      setTimeout(() => this.initMap(), 0);
+      setTimeout(() => this.initMap(), 150); // Provide 150ms to guarantee browser attachment and paint
     }
   }
 
@@ -112,28 +112,23 @@ export class VendorAddService implements OnInit {
   streets = ['Main Road', '2nd Cross', 'Sector 5', 'Ring Road', 'MG Road'];
   landmarks = ['Near Metro Station', 'Opposite Mall', 'Behind Hospital', 'Near City Center'];
 
-  availableInclusions = [
-    'Venue', 'Catering', 'Anchor', 'Dhol', 'LED Wall', 'Dance Troupe', 
-    'Live Music Band', 'Decoration', 'Pre Rituals Decoration', 'Entertainment', 
-    'Photographer', 'DJ', 'Choreographer', 'Entry Theme', 'Makeup Artist', 
-    'Mehndi Artist', 'Magician', 'Pandit Ji', 'Brass Band', 'Single Troup DJ', 
-    'Vintage Car', 'Bagghi', 'Fireworks', 'Return Gifts', 'Event Planner', 
-    'Transportation'
-  ];
+  availableInclusions = signal<string[]>([]);
 
   availableThemes = [
-    'Western Style / Christian Wedding',
-    'Indian Traditional / Hindu Wedding',
-    'Muslim / Nikah Wedding',
-    'Spiritual Wedding',
-    'Sikh / Anand Karaj Wedding',
-    'Jain Wedding',
-    'Buddhist Wedding'
+    'Standard',
+    'Premium',
+    'Luxury',
+    'Elite',
+    'Budget',
+    'Custom'
   ];
 
   ngOnInit() {
-    this.packageService.getEventTypes().subscribe((res: any) => {
+    this.eventCategoryService.getAll().subscribe((res: any) => {
       this.categories.set(res);
+      if (this.formData.category) {
+        this.updateInclusionsForCategory(this.formData.category);
+      }
     });
 
     // Check for edit mode
@@ -148,50 +143,66 @@ export class VendorAddService implements OnInit {
 
 
   initAutocomplete() {
-    this.autocomplete = new google.maps.places.Autocomplete(this.addressSearchElement.nativeElement, {
-      componentRestrictions: { country: 'in' },
-      fields: ['address_components', 'geometry']
-    });
-
-    this.autocomplete.addListener('place_changed', () => {
-      this.ngZone.run(() => {
-        const place = this.autocomplete.getPlace();
-        if (!place.geometry || !place.geometry.location) return;
-
-        this.updateAddressFromPlace(place);
-        this.updateMapLocation(place.geometry.location);
+    if (!this.addressSearchElement || !this.addressSearchElement.nativeElement) {
+      console.warn('Skipping Google Autocomplete: Element not found in DOM.');
+      return;
+    }
+    try {
+      this.autocomplete = new google.maps.places.Autocomplete(this.addressSearchElement.nativeElement, {
+        componentRestrictions: { country: 'in' },
+        fields: ['address_components', 'geometry']
       });
-    });
+
+      this.autocomplete.addListener('place_changed', () => {
+        this.ngZone.run(() => {
+          const place = this.autocomplete.getPlace();
+          if (!place.geometry || !place.geometry.location) return;
+
+          this.updateAddressFromPlace(place);
+          this.updateMapLocation(place.geometry.location);
+        });
+      });
+    } catch (err) {
+      console.error('Failed to initialize Google Autocomplete:', err);
+    }
   }
 
   initMap() {
-    const defaultLoc = { lat: 17.3850, lng: 78.4867 }; // Hyderabad
-    this.map = new google.maps.Map(this.mapElement.nativeElement, {
-      center: defaultLoc,
-      zoom: 13,
-      mapTypeControl: false,
-      streetViewControl: false
-    });
+    if (!this.mapElement || !this.mapElement.nativeElement) {
+      console.warn('Skipping Google Map: Map container element not found in DOM.');
+      return;
+    }
+    try {
+      const defaultLoc = { lat: 17.3850, lng: 78.4867 }; // Hyderabad
+      this.map = new google.maps.Map(this.mapElement.nativeElement, {
+        center: defaultLoc,
+        zoom: 13,
+        mapTypeControl: false,
+        streetViewControl: false
+      });
 
-    this.marker = new google.maps.Marker({
-      position: defaultLoc,
-      map: this.map,
-      draggable: true
-    });
+      this.marker = new google.maps.Marker({
+        position: defaultLoc,
+        map: this.map,
+        draggable: true
+      });
 
-    this.marker.addListener('dragend', () => {
-      const pos = this.marker.getPosition();
-      if (pos) {
-        this.reverseGeocode(pos);
-      }
-    });
+      this.marker.addListener('dragend', () => {
+        const pos = this.marker.getPosition();
+        if (pos) {
+          this.reverseGeocode(pos);
+        }
+      });
 
-    this.map.addListener('click', (event: any) => {
-      if (event.latLng) {
-        this.updateMapLocation(event.latLng);
-        this.reverseGeocode(event.latLng);
-      }
-    });
+      this.map.addListener('click', (event: any) => {
+        if (event.latLng) {
+          this.updateMapLocation(event.latLng);
+          this.reverseGeocode(event.latLng);
+        }
+      });
+    } catch (err) {
+      console.error('Failed to initialize Google Map:', err);
+    }
   }
 
   updateMapLocation(location: any) {
@@ -239,6 +250,10 @@ export class VendorAddService implements OnInit {
         // Hydrate form thoroughly - handle both PascalCase and camelCase
         this.formData.name = svc.name || svc.Name || '';
         this.formData.category = svc.category || svc.Category || '';
+        
+        // Trigger reactive updates for category
+        this.updateInclusionsForCategory(this.formData.category);
+        
         this.formData.description = svc.description || svc.Description || '';
         this.formData.theme = svc.theme || svc.Theme || '';
         this.formData.experience = (svc.experience || svc.Experience)?.toString() || '';
@@ -340,16 +355,43 @@ export class VendorAddService implements OnInit {
     this.formData.spaces.splice(index, 1);
   }
 
-  addInclude(item: string) {
-    const val = item.trim();
-    if (val && !this.formData.includes.includes(val)) {
-      this.formData.includes.push(val);
-    }
-    // Reset dropdown if needed (not strictly necessary with the current UI)
+  addInclude(element: any) {
+    const item = element?.value;
+    if (!item) return;
+
+    // Use setTimeout to defer the array update and dropdown reset.
+    // This prevents browser event locks and ensures UI responsiveness for subsequent selections.
+    setTimeout(() => {
+      if (item === 'SELECT_ALL') {
+        this.formData.includes = [...this.availableInclusions()];
+      } else {
+        const val = item.trim();
+        if (val && !this.formData.includes.includes(val)) {
+          this.formData.includes.push(val);
+        }
+      }
+      // Safely reset dropdown visual state
+      if (element) element.value = '';
+    }, 10);
   }
 
   removeInclude(index: number) {
     this.formData.includes.splice(index, 1);
+  }
+
+  onCategoryChange(categoryKey: string) {
+    this.updateInclusionsForCategory(categoryKey);
+    // Completely clear selected inclusions when the category changes
+    this.formData.includes = [];
+  }
+
+  updateInclusionsForCategory(categoryKey: string) {
+    if (!categoryKey || !this.categories().length) {
+      this.availableInclusions.set([]);
+      return;
+    }
+    const cat = this.categories().find((c: any) => c.category === categoryKey);
+    this.availableInclusions.set(cat ? cat.popularServices || [] : []);
   }
 
   triggerFileUpload() {

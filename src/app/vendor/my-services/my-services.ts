@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, inject, computed } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -12,7 +12,7 @@ import { VendorService, ServiceCategoryDef } from '../../core/models/service.mod
   templateUrl: './my-services.html',
   styleUrl: './my-services.css'
 })
-export class VendorMyServices implements OnInit {
+export class VendorMyServices implements OnInit, OnDestroy {
   private api = inject(VendorPackageService);
   private router = inject(Router);
   
@@ -26,6 +26,7 @@ export class VendorMyServices implements OnInit {
   isLoading = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
   selectedPreview = signal<VendorService | null>(null);
+  private carouselInterval: any;
 
   openPreview(svc: VendorService) {
     console.log('Opening preview for service:', svc.id, svc.name);
@@ -80,6 +81,22 @@ export class VendorMyServices implements OnInit {
         this.categories.set([]);
       }
     });
+
+    // Start auto-scrolling image carousel for all cards
+    this.carouselInterval = setInterval(() => {
+      this.services.update(list => list.map(svc => {
+        if (svc.images && svc.images.length > 1) {
+          return { ...svc, activeImageIndex: ((svc.activeImageIndex || 0) + 1) % svc.images.length };
+        }
+        return svc;
+      }));
+    }, 3500);
+  }
+
+  ngOnDestroy() {
+    if (this.carouselInterval) {
+      clearInterval(this.carouselInterval);
+    }
   }
 
   loadServices() {
@@ -120,7 +137,8 @@ export class VendorMyServices implements OnInit {
           rating: p.rating || p.Rating || 0,
           totalReviews: p.totalReviews || p.TotalReviews || 0,
           isActive: p.isActive !== undefined ? p.isActive : p.IsActive,
-          isVerified: p.isVerified !== undefined ? p.isVerified : p.IsVerified
+          isVerified: p.isVerified !== undefined ? p.isVerified : p.IsVerified,
+          activeImageIndex: 0
         }));
         
         this.services.set(mappedServices);

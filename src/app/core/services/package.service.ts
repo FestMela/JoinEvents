@@ -20,12 +20,102 @@ export class PackageService extends BaseApiService {
     return of(fallback).pipe(delay(300));
   }
 
-  getPackages(eventTypeId?: string): Observable<EventPackage[]> {
-    const params: any = {};
-    if (eventTypeId) params.eventTypeId = eventTypeId;
+  getPackages(categoryKey?: string, page: number = 1, pageSize: number = 20): Observable<any[]> {
+    const params: any = { page, pageSize };
+    // Pass category query parameter to query packages by Event Category in backend controller
+    if (categoryKey) params.category = categoryKey;
 
-    return this.get<any[]>(API_ROUTES.PACKAGES.SEARCH, params).pipe(
-      catchError(() => of([] as EventPackage[]))
+    return this.get<any>(API_ROUTES.PACKAGES.SEARCH, params, false).pipe(
+      map((res: any) => {
+        let list: any[] = [];
+        if (res && res.packages && Array.isArray(res.packages)) {
+          list = res.packages;
+        } else if (res && res.Packages && Array.isArray(res.Packages)) {
+          list = res.Packages;
+        } else if (res && Array.isArray(res.data)) {
+          list = res.data;
+        } else if (Array.isArray(res)) {
+          list = res;
+        }
+
+        // Map each resulting raw object through the central normalization hub
+        return list.map((p: any) => this.normalizePackage(p));
+      }),
+      catchError(() => of([] as any[]))
     );
+  }
+
+  getPackageById(id: string): Observable<any> {
+    // Perform precise public API call to retrieve specific backend package details
+    return this.get<any>(`/packages/${id}`, undefined, false).pipe(
+      map(res => this.normalizePackage(res.data || res.package || res.Package || res)),
+      catchError(() => {
+        // Dynamic fallback: check authorized vendor path in case of unpublished preview scenarios
+        return this.get<any>(`/vendor/packages/${id}`, undefined, false).pipe(
+          map(res => this.normalizePackage(res.data || res.package || res.Package || res)),
+          catchError(() => of(null))
+        );
+      })
+    );
+  }
+
+  /**
+   * Centralized Normalization Engine:
+   * Consolidates and flattens backend database models (handles casing & nesting variations)
+   */
+  private normalizePackage(p: any): any {
+    if (!p) return null;
+
+    // Resolve nested/flat pricing configurations
+    const pr = p.Pricing || p.pricing || {};
+    const priceValue = p.price || p.Price || pr.BasePrice || pr.basePrice || pr.VegPrice || pr.vegPrice || 0;
+
+    // Resolve nested/flat capacity data
+    const cp = p.Capacity || p.capacity || {};
+    const guests = p.MaxGuests || p.maxGuests || cp.MaxGuests || cp.maxGuests || 100;
+    const rooms = p.RoomCount || p.roomCount || cp.TotalRooms || cp.totalRooms || 0;
+
+    // Resolve food dietary settings
+    const isVegOnly = p.VegOnly !== undefined ? p.VegOnly : (p.vegOnly !== undefined ? p.vegOnly : (pr.VegPrice && !pr.NonVegPrice ? true : false));
+
+    // Resolve included features arrays
+    const inc = p.Includes || p.includes || p.Services || p.services || [];
+    const finalInclusions = Array.isArray(inc) && inc.length > 0 ? inc : (p.Name || p.name ? [p.Name || p.name] : ['Professional Service']);
+
+    // Resolve primary locations
+    const addr = p.Address || p.address || {};
+    const cityLoc = p.City || p.city || addr.City || addr.city || p.Location || p.location || 'Multiple Locations';
+
+    // Resolve visual attachments list
+    const imgs = p.Images || p.images || [];
+    const primaryImg = p.Image || p.image || imgs[0] || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800';
+
+    // Resolve Amenities
+    const am = p.Amenities || p.amenities || {};
+
+    return {
+      id: p.id || p.Id,
+      eventTypeId: p.EventTypeId || p.eventTypeId || p.Category || p.category || 'wedding',
+      name: p.Name || p.name,
+      vendorName: p.VendorName || p.vendorName || 'JoinEvents Partner',
+      location: cityLoc,
+      tier: p.Tier || p.tier || 'premium',
+      price: priceValue,
+      description: p.Description || p.description,
+      maxGuests: guests,
+      roomCount: rooms,
+      vegOnly: isVegOnly,
+      services: Array.isArray(finalInclusions) ? finalInclusions : [],
+      addons: p.Addons || p.addons || [],
+      image: primaryImg,
+      images: imgs,
+      sustainabilityTags: p.SustainabilityTags || p.sustainabilityTags || [],
+      amenities: {
+        hasAc: am.HasAc || am.hasAc || false,
+        hasPowerBackup: am.HasPowerBackup || am.hasPowerBackup || false,
+        hasChangingRooms: am.HasChangingRooms || am.hasChangingRooms || false,
+        hasParking: am.HasParking || am.hasParking || false
+      }
+    };
   }
 }

@@ -126,15 +126,22 @@ export class CustomerLayout {
   }
 
   touchStartX = 0;
+  touchStartY = 0;
   onTouchStart(e: TouchEvent) {
     this.touchStartX = e.changedTouches[0].clientX;
+    this.touchStartY = e.changedTouches[0].clientY;
   }
   onTouchEnd(e: TouchEvent) {
     const diffX = e.changedTouches[0].clientX - this.touchStartX;
-    if (diffX > 60) {
-      this.sidebarOpen.set(true);
-    } else if (diffX < -60) {
-      this.sidebarOpen.set(false);
+    const diffY = e.changedTouches[0].clientY - this.touchStartY;
+    
+    // Only trigger swipe if horizontal movement is significantly greater than vertical movement
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 60) {
+      if (diffX > 0) {
+        this.sidebarOpen.set(true);
+      } else {
+        this.sidebarOpen.set(false);
+      }
     }
   }
 

@@ -144,7 +144,34 @@ export class MockApiService {
     const result = eventTypeId ? packages.filter(p => p.eventTypeId === eventTypeId) : packages;
     
     // Call the real backend API, fallback to mock data on error
-    return this.http.get<any[]>(`${this.apiUrl}/packages/search${eventTypeId ? '?eventTypeId=' + eventTypeId : ''}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+    // Pass category query parameter to target live category filter in backend search controller
+    return this.http.get<any>(`${this.apiUrl}/packages/search${eventTypeId ? '?category=' + eventTypeId : ''}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map((res: any) => {
+        let list: any[] = [];
+        if (res && res.packages && Array.isArray(res.packages)) {
+          list = res.packages;
+        } else if (Array.isArray(res)) {
+          list = res;
+        }
+
+        // Thoroughly normalize incoming API package shapes into front-end readable objects
+        return list.map((p: any) => ({
+          id: p.id || p.Id,
+          eventTypeId: p.eventTypeId || p.EventTypeId || p.category || p.Category || 'wedding',
+          name: p.name || p.Name,
+          vendorName: p.vendorName || p.VendorName || 'JoinEvents Partner',
+          location: p.location || p.Location || p.city || p.City || p.address?.city || p.Address?.City || 'Multiple Locations',
+          tier: p.tier || p.Tier || 'premium',
+          price: p.price || p.Price || p.pricing?.basePrice || p.pricing?.BasePrice || p.pricing?.vegPrice || p.pricing?.VegPrice || 0,
+          description: p.description || p.Description,
+          maxGuests: p.maxGuests || p.MaxGuests || p.capacity?.maxGuests || p.capacity?.MaxGuests || 100,
+          roomCount: p.roomCount || p.RoomCount || p.capacity?.totalRooms || p.capacity?.TotalRooms || 0,
+          vegOnly: p.vegOnly !== undefined ? p.vegOnly : (p.pricing?.vegPrice && !p.pricing?.nonVegPrice ? true : false),
+          image: p.image || p.Image || p.images?.[0] || p.Images?.[0] || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800',
+          images: p.images || p.Images || [],
+          sustainabilityTags: p.sustainabilityTags || p.SustainabilityTags || []
+        }));
+      }),
       catchError(() => of(result).pipe(delay(300)))
     );
   }
@@ -213,9 +240,8 @@ export class MockApiService {
     ];
     const fallbackResult = customerId ? bookings.filter(b => b.customerId === customerId) : bookings;
     
-    return this.http.get<Booking[]>(`${this.apiUrl}/bookings${customerId ? '?customerId=' + customerId : ''}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
-      catchError(() => of(fallbackResult).pipe(delay(300)))
-    );
+    // Returning mock data directly since the backend /bookings endpoint does not exist yet
+    return of(fallbackResult).pipe(delay(300));
   }
 
   getAdminBookings(): Observable<Booking[]> {
@@ -340,9 +366,8 @@ export class MockApiService {
   ]);
 
   getCustomers(): Observable<CustomerProfile[]> {
-    return this.http.get<CustomerProfile[]>(`${this.apiUrl}/admin/customers`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
-      catchError(() => of(this.globalCustomers()).pipe(delay(300)))
-    );
+    // Returning mock data directly since the backend /admin/customers endpoint does not exist yet
+    return of(this.globalCustomers()).pipe(delay(300));
   }
 
   moderateCustomer(customerId: string, action: 'warn' | 'restrict' | 'suspend' | 'ban' | 'reactivate', reason?: string, duration?: string): Observable<boolean> {

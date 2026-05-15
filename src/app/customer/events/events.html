@@ -46,6 +46,21 @@
             @for (svc of (event.popularServices || []).slice(0,3); track svc) {
               <span class="service-pill">{{ svc }}</span>
             }
+            @if ((event.popularServices?.length || 0) > 3) {
+              <div class="custom-tooltip-wrapper">
+                <span class="service-pill more-pill">
+                  +{{ (event.popularServices?.length || 0) - 3 }} more
+                </span>
+                <div class="custom-tooltip-content">
+                  <div class="tooltip-header">Other Services</div>
+                  <ul class="tooltip-list">
+                    @for (extraSvc of (event.popularServices || []).slice(3); track extraSvc) {
+                      <li><i class="bi bi-check2-circle"></i> {{ extraSvc }}</li>
+                    }
+                  </ul>
+                </div>
+              </div>
+            }
           </div>
 
           <div class="vendor-stats-row">

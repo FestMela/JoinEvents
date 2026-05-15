@@ -39,10 +39,10 @@
       <div class="row g-4">
         <div class="col-md-6">
           <label class="ee-form-label">Event Categories *</label>
-          <select class="ee-form-control" [(ngModel)]="formData.category">
+          <select class="ee-form-control" [(ngModel)]="formData.category" (ngModelChange)="onCategoryChange($event)">
             <option value="">Select Category</option>
             @for (cat of categories(); track cat.id) {
-            <option [value]="cat.id">{{ cat.name }}</option>
+            <option [value]="cat.category">{{ cat.name }}</option>
             }
           </select>
         </div>
@@ -62,11 +62,11 @@
           <input type="number" class="ee-form-control" [(ngModel)]="formData.experience" placeholder="e.g. 5">
         </div>
         <div class="col-md-6">
-          <label class="ee-form-label">Package Theme *</label>
+          <label class="ee-form-label">Service Tier *</label>
           <div class="input-group-modern">
-            <i class="bi bi-palette-fill text-primary"></i>
+            <i class="bi bi-star-fill text-primary"></i>
             <select class="border-0 bg-transparent w-100 outline-none fw-600" [(ngModel)]="formData.theme">
-              <option value="">Select Package Theme</option>
+              <option value="">Select Service Tier</option>
               @for (theme of availableThemes; track theme) {
               <option [value]="theme">{{ theme }}</option>
               }
@@ -82,9 +82,13 @@
             <div class="input-group-modern dropdown-only">
               <i class="bi bi-plus-circle-fill text-primary"></i>
               <select #inclusionSelect class="border-0 bg-transparent w-100 outline-none fw-600"
-                (change)="addInclude(inclusionSelect.value); inclusionSelect.value = ''">
+                (change)="addInclude(inclusionSelect)">
                 <option value="">Select an Item to Add...</option>
-                @for (item of availableInclusions; track item) {
+                @if (availableInclusions().length > 0) {
+                <option value="SELECT_ALL" [disabled]="formData.includes.length === availableInclusions().length"
+                  class="fw-700 text-primary"> Select All Options</option>
+                }
+                @for (item of availableInclusions(); track item) {
                 <option [value]="item" [disabled]="formData.includes.includes(item)">{{ item }}</option>
                 }
               </select>
@@ -183,7 +187,38 @@
       <h4 class="step-title">Pricing & Capacity</h4>
       <p class="step-subtitle">Set your rates and guest limits</p>
 
-      <div class="section-divider">Standard Pricing</div>
+      <div class="section-divider">Event & Base Pricing</div>
+      <div class="row g-4 mb-4">
+        <div class="col-md-4">
+          <label class="ee-form-label">Base Price (Per Event) *</label>
+          <div class="input-group-modern">
+            <span class="prefix">₹</span>
+            <input type="number" [(ngModel)]="formData.basePrice">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="ee-form-label">Pricing Unit *</label>
+          <div class="input-group-modern">
+            <i class="bi bi-tag-fill text-primary"></i>
+            <select class="border-0 bg-transparent w-100 outline-none fw-600" [(ngModel)]="formData.unit">
+              <option value="per event">Per Event</option>
+              <option value="per day">Per Day</option>
+              <option value="per hour">Per Hour</option>
+              <option value="per plate">Per Plate</option>
+              <option value="per session">Per Session</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="ee-form-label">Rent Amount</label>
+          <div class="input-group-modern">
+            <span class="prefix">₹</span>
+            <input type="number" [(ngModel)]="formData.rent">
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider">Additional Pricing</div>
       <div class="row g-4">
         <div class="col-md-4">
           <label class="ee-form-label">Veg (Per Plate) *</label>

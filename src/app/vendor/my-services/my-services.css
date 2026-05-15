@@ -376,3 +376,26 @@ input:checked + .slider-sm:before { transform: translateX(14px); }
   .preview-gallery { height: 400px; padding: 20px; }
   .preview-info { padding: 30px; }
 }
+
+/* Carousel Dots */
+.carousel-indicators-mini {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+.dot-mini {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.dot-mini.active {
+  background: white;
+  width: 16px;
+  border-radius: 4px;
+}

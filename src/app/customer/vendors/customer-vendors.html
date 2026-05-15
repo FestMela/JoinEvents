@@ -94,19 +94,48 @@
               </div>
               
               <h3 class="pkg-title-v2">{{ pkg.name }}</h3>
-              <div class="pkg-loc-v2">
+              <div class="pkg-loc-v2 mb-2">
                 <i class="bi bi-geo-alt"></i> {{ pkg.location }}
               </div>
 
+              <!-- Visual Package Service Inclusions List -->
+              @if (pkg.services && pkg.services.length) {
+                <div class="d-flex flex-wrap gap-1 mb-3" style="min-height: 22px;">
+                  @for (svc of pkg.services.slice(0, 3); track svc) {
+                    <span class="service-pill">
+                      <i class="bi bi-check2 text-success me-1"></i>{{ svc }}
+                    </span>
+                  }
+                  @if (pkg.services.length > 3) {
+                    <div class="custom-tooltip-wrapper">
+                      <span class="service-pill more-pill">
+                        +{{ pkg.services.length - 3 }} more
+                      </span>
+                      <div class="custom-tooltip-content">
+                        <div class="tooltip-header">Included Extras</div>
+                        <ul class="tooltip-list">
+                          @for (extraSvc of pkg.services.slice(3); track extraSvc) {
+                            <li><i class="bi bi-check2-circle"></i> {{ extraSvc }}</li>
+                          }
+                        </ul>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+
+              <!-- Enhanced Capability Grid -->
               <div class="pkg-features">
-                <div class="feat-item">
-                  <i class="bi bi-people"></i> {{ pkg.maxGuests }}
+                <div class="feat-item" title="Capacity">
+                  <i class="bi bi-people-fill text-primary"></i> <span>{{ pkg.maxGuests }} Pax</span>
                 </div>
-                <div class="feat-item">
-                  <i class="bi bi-house"></i> {{ pkg.roomCount }} Rms
-                </div>
-                <div class="feat-item">
-                  <i class="bi bi-egg"></i> {{ pkg.vegOnly ? 'Veg' : 'Mix' }}
+                @if (pkg.roomCount > 0) {
+                  <div class="feat-item" title="Accommodation">
+                    <i class="bi bi-door-closed-fill text-success"></i> <span>{{ pkg.roomCount }} Rms</span>
+                  </div>
+                }
+                <div class="feat-item" title="Cuisine">
+                  <i class="bi bi-egg-fried text-warning"></i> <span>{{ pkg.vegOnly ? 'Veg' : 'Mix' }}</span>
                 </div>
               </div>
             </div>

@@ -1,7 +1,7 @@
 import { Component, signal, OnInit, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MockApiService } from '../../core/services/mock-api.service';
+import { EventCategoryService } from '../../core/services/event-category.service';
 import { EventType } from '../../core/models/event.model';
 
 @Component({
@@ -12,7 +12,7 @@ import { EventType } from '../../core/models/event.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomerEvents implements OnInit {
-  private api = inject(MockApiService);
+  private api = inject(EventCategoryService);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
   events = signal<EventType[]>([]);
@@ -41,7 +41,7 @@ export class CustomerEvents implements OnInit {
       }
     });
 
-    this.api.getEventTypes().subscribe(e => {
+    this.api.getAll().subscribe(e => {
       this.events.set(e);
       this.filterEvents();
       this.cdr.markForCheck();

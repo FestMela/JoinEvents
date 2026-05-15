@@ -1,8 +1,8 @@
-import { Component, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject, effect } from '@angular/core';
 import { CommonModule, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MockApiService } from '../../core/services/mock-api.service';
+import { PackageService } from '../../core/services/package.service';
 import { EventPackage } from '../../core/models/event.model';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -16,7 +16,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class CustomerBooking implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private api = inject(MockApiService);
+  private api = inject(PackageService);
   private auth = inject(AuthService);
 
   userRole = computed(() => this.auth.currentUser()?.role);
@@ -32,11 +32,23 @@ export class CustomerBooking implements OnInit, OnDestroy {
   discountAmount = signal(0);
   bookingSuccess = signal(false);
   isLoading = signal(false);
+  minDate = new Date().toISOString().split('T')[0];
   showMobileBooking = signal(false);
   selectedServiceDetail = signal<any | null>(null);
   selectedImage = signal<string | null>(null);
   
   private slideshowInterval: any;
+
+  constructor() {
+    effect(() => {
+      const isModalOpen = !!this.selectedServiceDetail();
+      if (isModalOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'auto';
+      }
+    });
+  }
 
   ngOnInit() {
     const pkgId = this.route.snapshot.paramMap.get('packageId');
@@ -47,6 +59,7 @@ export class CustomerBooking implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.stopSlideshow();
+    document.body.style.overflow = 'auto'; // Ensure scroll is restored when leaving page
   }
 
   loadPackage(pkgId: string) {
