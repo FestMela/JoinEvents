@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://localhost:7010/api/v1'
+  apiUrl: 'https://joinevents-api-347123938976.europe-west1.run.app/api/v1'
 };

@@ -53,16 +53,12 @@
   @if (!isLoading()) {
   <div class="categories-grid">
     @for (cat of categories(); track cat.id) {
-    <div class="category-card" [class.inactive]="!cat.isActive">
+    <div class="category-card">
       <div class="card-gradient-header" [style.background]="cat.gradient">
         <div class="card-icon-wrap">
           <i class="bi {{ cat.icon }}"></i>
         </div>
         <div class="card-actions">
-          <label class="toggle-switch" title="Toggle Visibility">
-            <input type="checkbox" [checked]="cat.isActive" (change)="toggleCategoryActive(cat, $any($event.target).checked)">
-            <span class="slider"></span>
-          </label>
           <button class="action-btn edit-btn" (click)="openEditModal(cat)" title="Edit">
             <i class="bi bi-pencil-fill"></i>
           </button>
@@ -144,16 +140,14 @@
     <div class="modal-body-scroll">
       <form #catForm="ngForm">
 
-        <!-- Row 1: Name + Auto Key (Full Width) -->
-        <div class="form-group full">
-          <label class="form-lbl">
-            Category Name <span class="req">*</span>
-            @if (autoSlug()) {
-              <span class="badge-auto">{{ autoSlug() }}</span>
-            }
-          </label>
-          <input id="cat-name" type="text" class="form-inp" [(ngModel)]="formData.name"
-            (input)="onNameInput($any($event.target).value)" name="name" placeholder="e.g. Wedding Photography" required>
+        <!-- Row 1: Name -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-lbl">Category Name <span class="req">*</span></label>
+            <input id="cat-name" type="text" class="form-inp" [(ngModel)]="formData.name"
+              (input)="onNameInput($any($event.target).value)" name="name" placeholder="e.g. Wedding Photography"
+              required>
+          </div>
         </div>
 
         <!-- Row 2: Hindi Name + Starting Price -->
@@ -170,7 +164,7 @@
           </div>
         </div>
 
-        <!-- Row 3: Icon Class + Popular Services -->
+        <!-- Row 3: Icon + Gradient -->
         <div class="form-row">
           <div class="form-group">
             <label class="form-lbl">Icon Class <span class="req">*</span></label>
@@ -186,93 +180,13 @@
               <a href="https://icons.getbootstrap.com" target="_blank" rel="noopener">Browse icons →</a>
             </span>
           </div>
-
           <div class="form-group">
-            <label class="form-lbl">
-              Popular Services
-              <span class="form-hint">(comma-separated)</span>
-            </label>
-            <input type="text" class="form-inp" [value]="popularServicesString"
-              (input)="onPopularServicesChange($any($event.target).value)" name="popularServices"
-              placeholder="e.g. Venue, Catering, Decoration">
-            @if (formData.popularServices && formData.popularServices.length > 0) {
-            <div class="popular-services mt-2">
-              @for (svc of formData.popularServices.slice(0, 3); track svc) {
-              <span class="svc-tag">{{ svc }}</span>
-              }
-              @if (formData.popularServices.length > 3) {
-              <span class="svc-tag more-tag">+{{ formData.popularServices.length - 3 }}</span>
-              }
-            </div>
-            }
+            <label class="form-lbl">Card Gradient</label>
+            <input type="text" class="form-inp" [(ngModel)]="formData.gradient" name="gradient"
+              placeholder="linear-gradient(135deg,#E91E8C,#FF6B6B)">
+            <div class="gradient-preview" [style.background]="formData.gradient"></div>
           </div>
         </div>
-
-        <!-- ── Gradient Picker (Full Width) ── -->
-        <div class="form-group full">
-          <label class="form-lbl">
-            Card Gradient
-            <a class="form-hint ms-1" href="https://uigradients.com" target="_blank" rel="noopener">uigradients.com →</a>
-          </label>
-
-          <!-- Live Preview Bar -->
-          <div class="gradient-live-preview" [style.background]="formData.gradient"></div>
-
-          <!-- Preset Swatches -->
-          <div class="gradient-presets-grid">
-            @for (p of gradientPresets; track p.name) {
-              <div
-                class="gradient-swatch"
-                [class.active]="isPresetActive(p)"
-                [style.background]="p.gradient"
-                [title]="p.name"
-                (click)="applyPreset(p)">
-                @if (isPresetActive(p)) {
-                  <i class="bi bi-check2 swatch-check"></i>
-                }
-              </div>
-            }
-          </div>
-
-          <!-- Custom Builder -->
-          <div class="custom-gradient-builder">
-            <span class="builder-label">Custom</span>
-
-            <!-- Color 1 -->
-            <div class="color-picker-wrap">
-              <label class="color-picker-lbl">Start</label>
-              <div class="color-swatch-input" [style.background]="pickerColor1">
-                <input type="color" [value]="pickerColor1"
-                  (input)="pickerColor1 = $any($event.target).value; buildGradient()">
-              </div>
-              <span class="color-hex">{{ pickerColor1 }}</span>
-            </div>
-
-            <!-- Direction -->
-            <div class="direction-selector">
-              @for (d of directions; track d.value) {
-                <button type="button"
-                  class="dir-btn"
-                  [class.active]="pickerDirection === d.value"
-                  (click)="pickerDirection = d.value; buildGradient()"
-                  [title]="d.value">
-                  {{ d.label }}
-                </button>
-              }
-            </div>
-
-            <!-- Color 2 -->
-            <div class="color-picker-wrap">
-              <label class="color-picker-lbl">End</label>
-              <div class="color-swatch-input" [style.background]="pickerColor2">
-                <input type="color" [value]="pickerColor2"
-                  (input)="pickerColor2 = $any($event.target).value; buildGradient()">
-              </div>
-              <span class="color-hex">{{ pickerColor2 }}</span>
-            </div>
-          </div>
-        </div>
-
 
         <!-- Description -->
         <div class="form-group full mb-3">
@@ -281,7 +195,23 @@
             placeholder="Briefly describe what this category covers…"></textarea>
         </div>
 
-
+        <!-- Popular Services -->
+        <div class="form-group full">
+          <label class="form-lbl">
+            Popular Services
+            <span class="form-hint">(comma-separated)</span>
+          </label>
+          <input type="text" class="form-inp" [value]="popularServicesString"
+            (input)="onPopularServicesChange($any($event.target).value)" name="popularServices"
+            placeholder="e.g. Venue, Catering, Decoration, Photography">
+          @if (formData.popularServices && formData.popularServices.length > 0) {
+          <div class="popular-services mt-2">
+            @for (svc of formData.popularServices; track svc) {
+            <span class="svc-tag">{{ svc }}</span>
+            }
+          </div>
+          }
+        </div>
 
         <!-- Save Error inside modal -->
         @if (error() && isModalOpen()) {
