@@ -43,12 +43,14 @@ export interface ApiResponse<T> {
 
 // ── Service ───────────────────────────────────────────────────────────────────
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({ providedIn: 'root' })
 export class AdminCategoryService {
   private http = inject(HttpClient);
 
   /** Base URL for admin event-category endpoints */
-  private readonly base = 'https://localhost:7010/api/v1/admin/event-categories';
+  private readonly base = `${environment.apiUrl}/admin/event-categories`;
 
   // ── READ ──────────────────────────────────────────────────────────────────
 

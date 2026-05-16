@@ -17,11 +17,13 @@ const MOCK_USERS: Record<string, AuthUser & { password: string }> = {
   'admin@demo.com':    { id: 'a1', name: 'Priya Nair',    email: 'admin@demo.com',    role: 'admin',    phone: '+91 99887 76655', password: 'JoinEvents@2025', token: '' },
 };
 
+import { environment } from '../../../environments/environment';
+ 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private router = inject(Router);
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7010/api/v1';
+  private apiUrl = environment.apiUrl;
 
   currentUser = signal<AuthUser | null>(this.loadFromStorage());
 

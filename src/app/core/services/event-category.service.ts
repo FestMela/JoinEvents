@@ -15,7 +15,7 @@ export class EventCategoryService {
   private http = inject(HttpClient);
 
   /** Base URL for public event-category endpoints */
-  private readonly base = 'https://localhost:7010/api/v1/event-categories';
+  private readonly base = `${environment.apiUrl}/event-categories`;
 
   getAll(): Observable<EventType[]> {
     return this.http

@@ -12,10 +12,12 @@ import { CustomerProfile } from '../models/user.model';
 import { BookingStatus } from '../models/booking.model';
 import { Employee, EmployeeRole, EmployeeStatus } from '../models/employee.model';
 
+import { environment } from '../../../environments/environment';
+ 
 @Injectable({ providedIn: 'root' })
 export class MockApiService {
   private http = inject(HttpClient);
-  private apiUrl = 'https://localhost:7010/api/v1';
+  private apiUrl = environment.apiUrl;
 
   // ─── EVENT TYPES ───────────────────────────────────────────────
   globalEventTypes = signal<EventType[]>([
@@ -415,7 +417,7 @@ export class MockApiService {
     const result = vendorId ? services.filter(s => s.vendorId === vendorId) : services;
     
     if (vendorId) {
-      return this.http.get<any>(`https://localhost:7010/services/getAll?VendorId=${vendorId}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      return this.http.get<any>(`${this.apiUrl}/services/getAll?VendorId=${vendorId}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
         map(res => res.Services || res.services || result),
         catchError(() => of(result).pipe(delay(300)))
       );
