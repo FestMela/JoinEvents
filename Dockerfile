@@ -12,17 +12,17 @@ COPY . .
 # Build the Angular application
 RUN npm run build
 
-# Stage 2: Serve the application using sirv-cli (robust and non-root compatible)
-FROM node:20-alpine
-WORKDIR /app
+# Stage 2: Serve the application using Nginx
+FROM nginx:alpine
 
-# Install sirv-cli for lightweight and robust static file serving
-RUN npm install -g sirv-cli
+# Copy the custom nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built files from the build stage
-COPY --from=build /app/dist/JoinEvents/browser /app/public
+COPY --from=build /app/dist/JoinEvents/browser /usr/share/nginx/html
 
+# Cloud Run requires port 8080
 EXPOSE 8080
 
-# sirv-cli respects the PORT env variable and handles SPA routing perfectly with --single
-CMD ["sh", "-c", "sirv /app/public --single --port ${PORT:-8080} --host 0.0.0.0"]
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]
