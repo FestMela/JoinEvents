@@ -67,16 +67,14 @@
                [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"
                (click)="showPassword = !showPassword"></i>
           </div>
-          <div class="text-end mt-2">
-            <a routerLink="/forgot-password" class="link-primary-ee small" style="font-size:0.8rem;font-weight:500;">Forgot Password?</a>
+          <div class="d-flex justify-content-between align-items-start mt-3">
+            <label class="d-flex align-items-start gap-2" style="cursor:pointer; user-select:none;">
+              <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" style="margin-top:3px">
+              <span style="font-size:0.82rem;color:var(--text-muted);font-weight:500;">Remember Me</span>
+            </label>
+            <a routerLink="/forgot-password" class="link-primary-ee small" style="font-size:0.8rem;font-weight:500;margin-top:1px;">Forgot Password?</a>
           </div>
         </div>
-
-        @if (errorMsg) {
-          <div class="alert-error mb-3">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMsg }}
-          </div>
-        }
 
         <button type="submit" class="btn-ee-primary w-100 justify-content-center py-3" [disabled]="isLoading">
           @if (isLoading) {

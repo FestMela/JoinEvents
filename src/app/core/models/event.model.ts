@@ -3,14 +3,14 @@ export type EventCategory = 'wedding' | 'birthday' | 'corporate' | 'religious' |
 export interface EventType {
   id: string;
   name: string;
-  nameHindi: string;
-  description: string;
+  nameHindi?: string;
+  description?: string;
   icon: string;
   category: EventCategory;
-  colorClass: string;
-  gradient: string;
-  startingPrice: number;
-  popularServices: string[];
+  colorClass?: string;
+  gradient?: string;
+  startingPrice?: number;
+  popularServices?: string[];
 }
 
 export interface EventPackage {
@@ -26,6 +26,8 @@ export interface EventPackage {
   isPopular?: boolean;
   offerExpiresIn?: string;
   insurancePrice?: number;
+  image?: string;
+  images?: string[];
   addons?: { id: string, name: string, price: number }[];
   sustainabilityTags?: string[];
 }

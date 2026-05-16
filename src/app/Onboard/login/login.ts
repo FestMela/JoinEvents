@@ -3,6 +3,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { inject } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -13,39 +14,59 @@ import { AuthService } from '../../core/services/auth.service';
 export class Login implements OnInit {
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
+  private toast = inject(ToastService);
 
   email = '';
   password = '';
   showPassword = false;
   isLoading = false;
-  errorMsg = '';
   returnUrl = '';
+  rememberMe = false;
 
   ngOnInit() {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
-    this.email = 'customer@demo.com';
-    this.password = 'JoinEvents@2025';
+    const rememberedEmail = localStorage.getItem('joinevents_remember_email');
+    const isRemembered = localStorage.getItem('joinevents_remember_me') === 'true';
+    if (isRemembered && rememberedEmail) {
+      this.email = rememberedEmail;
+      this.rememberMe = true;
+    } else {
+      this.email = '';
+    }
+    this.password = '';
   }
 
   onSubmit() {
-    if (!this.email || !this.password) { this.errorMsg = 'Please fill all fields.'; return; }
+    if (!this.email || !this.password) {
+      this.toast.error('Please fill all fields.');
+      return;
+    }
     this.isLoading = true;
-    this.errorMsg = '';
-    setTimeout(() => {
-      const result = this.auth.login(this.email, this.password, 'customer', this.returnUrl);
-      if (!result.success) { this.errorMsg = result.message; }
-      this.isLoading = false;
-    }, 800);
+    this.auth.login(this.email, this.password, 'customer', this.returnUrl).subscribe({
+      next: (result) => {
+        if (!result.success) {
+          this.toast.error(result.message);
+        } else {
+          this.toast.success('Login successful!');
+          if (this.rememberMe) {
+            localStorage.setItem('joinevents_remember_email', this.email);
+            localStorage.setItem('joinevents_remember_me', 'true');
+          } else {
+            localStorage.removeItem('joinevents_remember_email');
+            localStorage.removeItem('joinevents_remember_me');
+          }
+        }
+        this.isLoading = false;
+      },
+      error: () => {
+        this.toast.error('An error occurred during login.');
+        this.isLoading = false;
+      }
+    });
   }
 
   loginWithSocial(provider: string) {
-    this.isLoading = true;
-    this.errorMsg = '';
-    setTimeout(() => {
-      const result = this.auth.login('customer@demo.com', 'JoinEvents@2025', 'customer', this.returnUrl);
-      if (!result.success) { this.errorMsg = result.message; }
-      this.isLoading = false;
-    }, 1000);
+    this.toast.warning(`${provider} login is currently unavailable. Please sign in with your email and password.`);
   }
 
   handleImageError(event: Event) {

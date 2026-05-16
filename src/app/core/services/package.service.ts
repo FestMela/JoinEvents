@@ -1,0 +1,121 @@
+import { Injectable } from '@angular/core';
+import { BaseApiService } from './base-api.service';
+import { API_ROUTES } from '../constants/api.constants';
+import { EventPackage, EventType } from '../models/event.model';
+import { Observable, of } from 'rxjs';
+import { catchError, map, delay } from 'rxjs/operators';
+
+@Injectable({ providedIn: 'root' })
+export class PackageService extends BaseApiService {
+
+  getEventTypes(): Observable<EventType[]> {
+    const fallback: EventType[] = [
+      { id: 'wedding', name: 'Wedding', nameHindi: 'Shaadi', description: 'Grand Indian weddings with all rituals', icon: 'bi-hearts', category: 'wedding', colorClass: 'event-wedding', gradient: 'linear-gradient(135deg,#E91E8C,#FF6B6B)', startingPrice: 150000, popularServices: ['Venue', 'Catering', 'Decoration'] },
+      { id: 'birthday', name: 'Birthday Party', nameHindi: 'Janmadin', description: 'Fun & vibrant birthday celebrations', icon: 'bi-balloon-heart', category: 'birthday', colorClass: 'event-birthday', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', startingPrice: 25000, popularServices: ['Venue', 'Catering', 'Decoration'] },
+      { id: 'corporate', name: 'Corporate Event', nameHindi: 'Karobar', description: 'Professional corporate meets', icon: 'bi-briefcase', category: 'corporate', colorClass: 'event-corporate', gradient: 'linear-gradient(135deg,#0EA5E9,#6B21A8)', startingPrice: 80000, popularServices: ['Venue', 'Catering', 'Transport'] },
+      { id: 'beauty-styling', name: 'Beauty & Styling', nameHindi: 'Saundarya', description: 'Bridal makeup, styling, and mehendi', icon: 'bi-stars', category: 'beauty', colorClass: 'event-beauty', gradient: 'linear-gradient(135deg,#D946EF,#8B5CF6)', startingPrice: 15000, popularServices: ['Makeup Artist', 'Mehendi Artist', 'Styling'] },
+      { id: 'travel-transport', name: 'Travel & Transport', nameHindi: 'Yatra', description: 'Luxury cars, buses, and travel logistics', icon: 'bi-car-front-fill', category: 'travel', colorClass: 'event-travel', gradient: 'linear-gradient(135deg,#10B981,#3B82F6)', startingPrice: 10000, popularServices: ['Vintage Car', 'Transportation', 'Logistics'] },
+      { id: 'event-shopping', name: 'Event Shopping', nameHindi: 'Kharidari', description: 'Wedding attire, jewelry, and return gifts', icon: 'bi-bag-heart-fill', category: 'shopping', colorClass: 'event-shopping', gradient: 'linear-gradient(135deg,#F43F5E,#F97316)', startingPrice: 50000, popularServices: ['Bridal Wear', 'Jewelry', 'Return Gifts'] },
+    ];
+    return of(fallback).pipe(delay(300));
+  }
+
+  getPackages(categoryKey?: string, page: number = 1, pageSize: number = 20): Observable<any[]> {
+    const params: any = { page, pageSize };
+    // Pass category query parameter to query packages by Event Category in backend controller
+    if (categoryKey) params.category = categoryKey;
+
+    return this.get<any>(API_ROUTES.PACKAGES.SEARCH, params, false).pipe(
+      map((res: any) => {
+        let list: any[] = [];
+        if (res && res.packages && Array.isArray(res.packages)) {
+          list = res.packages;
+        } else if (res && res.Packages && Array.isArray(res.Packages)) {
+          list = res.Packages;
+        } else if (res && Array.isArray(res.data)) {
+          list = res.data;
+        } else if (Array.isArray(res)) {
+          list = res;
+        }
+
+        // Map each resulting raw object through the central normalization hub
+        return list.map((p: any) => this.normalizePackage(p));
+      }),
+      catchError(() => of([] as any[]))
+    );
+  }
+
+  getPackageById(id: string): Observable<any> {
+    // Perform precise public API call to retrieve specific backend package details
+    return this.get<any>(`/packages/${id}`, undefined, false).pipe(
+      map(res => this.normalizePackage(res.data || res.package || res.Package || res)),
+      catchError(() => {
+        // Dynamic fallback: check authorized vendor path in case of unpublished preview scenarios
+        return this.get<any>(`/vendor/packages/${id}`, undefined, false).pipe(
+          map(res => this.normalizePackage(res.data || res.package || res.Package || res)),
+          catchError(() => of(null))
+        );
+      })
+    );
+  }
+
+  /**
+   * Centralized Normalization Engine:
+   * Consolidates and flattens backend database models (handles casing & nesting variations)
+   */
+  private normalizePackage(p: any): any {
+    if (!p) return null;
+
+    // Resolve nested/flat pricing configurations
+    const pr = p.Pricing || p.pricing || {};
+    const priceValue = p.price || p.Price || pr.BasePrice || pr.basePrice || pr.VegPrice || pr.vegPrice || 0;
+
+    // Resolve nested/flat capacity data
+    const cp = p.Capacity || p.capacity || {};
+    const guests = p.MaxGuests || p.maxGuests || cp.MaxGuests || cp.maxGuests || 100;
+    const rooms = p.RoomCount || p.roomCount || cp.TotalRooms || cp.totalRooms || 0;
+
+    // Resolve food dietary settings
+    const isVegOnly = p.VegOnly !== undefined ? p.VegOnly : (p.vegOnly !== undefined ? p.vegOnly : (pr.VegPrice && !pr.NonVegPrice ? true : false));
+
+    // Resolve included features arrays
+    const inc = p.Includes || p.includes || p.Services || p.services || [];
+    const finalInclusions = Array.isArray(inc) && inc.length > 0 ? inc : (p.Name || p.name ? [p.Name || p.name] : ['Professional Service']);
+
+    // Resolve primary locations
+    const addr = p.Address || p.address || {};
+    const cityLoc = p.City || p.city || addr.City || addr.city || p.Location || p.location || 'Multiple Locations';
+
+    // Resolve visual attachments list
+    const imgs = p.Images || p.images || [];
+    const primaryImg = p.Image || p.image || imgs[0] || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800';
+
+    // Resolve Amenities
+    const am = p.Amenities || p.amenities || {};
+
+    return {
+      id: p.id || p.Id,
+      eventTypeId: p.EventTypeId || p.eventTypeId || p.Category || p.category || 'wedding',
+      name: p.Name || p.name,
+      vendorName: p.VendorName || p.vendorName || 'JoinEvents Partner',
+      location: cityLoc,
+      tier: p.Tier || p.tier || 'premium',
+      price: priceValue,
+      description: p.Description || p.description,
+      maxGuests: guests,
+      roomCount: rooms,
+      vegOnly: isVegOnly,
+      services: Array.isArray(finalInclusions) ? finalInclusions : [],
+      addons: p.Addons || p.addons || [],
+      image: primaryImg,
+      images: imgs,
+      sustainabilityTags: p.SustainabilityTags || p.sustainabilityTags || [],
+      amenities: {
+        hasAc: am.HasAc || am.hasAc || false,
+        hasPowerBackup: am.HasPowerBackup || am.hasPowerBackup || false,
+        hasChangingRooms: am.HasChangingRooms || am.hasChangingRooms || false,
+        hasParking: am.HasParking || am.hasParking || false
+      }
+    };
+  }
+}

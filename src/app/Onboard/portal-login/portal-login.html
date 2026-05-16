@@ -16,17 +16,6 @@
       </div>
       <h2 style="color:white;font-family:var(--font-heading);font-size:1.8rem;font-weight:700;margin-top:24px;">Partner Portal</h2>
       <p style="color:rgba(255,255,255,0.65);font-size:0.9rem;margin-top:8px;">Sign in to manage your services, support tickets, or operations.</p>
-      <div class="demo-creds-box">
-        <div class="demo-label">🔑 Demo Credentials</div>
-        @for (r of roles; track r.role) {
-          <div class="demo-row" (click)="selectRole(r.role)" [class.active-demo]="selectedRole() === r.role">
-            <i class="bi {{ r.icon }}" [style.color]="r.color"></i>
-            <span>{{ r.label }}</span>
-            <code>{{ demoCredentials[r.role] }}</code>
-          </div>
-        }
-        <div style="font-size:0.72rem;color:rgba(255,255,255,0.45);margin-top:8px;">Password: <code style="color:var(--accent)">JoinEvents@2025</code></div>
-      </div>
     </div>
   </div>
 
@@ -74,12 +63,6 @@
             <a routerLink="/forgot-password" class="link-primary-ee small" style="font-size:0.8rem;font-weight:500;">Forgot Password?</a>
           </div>
         </div>
-
-        @if (errorMsg) {
-          <div class="alert-error mb-3">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ errorMsg }}
-          </div>
-        }
 
         <button type="submit" class="btn-ee-primary w-100 justify-content-center py-3" [disabled]="isLoading">
           @if (isLoading) {

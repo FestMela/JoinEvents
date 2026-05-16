@@ -15,7 +15,8 @@ export function authGuard(requiredRole: UserRole | UserRole[]): CanActivateFn {
     const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
     
     if (userRole && !roles.includes(userRole)) {
-      router.navigate([`/${userRole}/dashboard`]);
+      const target = userRole === 'customer' ? '/dashboard' : `/${userRole}/dashboard`;
+      router.navigate([target]);
       return false;
     }
     return true;

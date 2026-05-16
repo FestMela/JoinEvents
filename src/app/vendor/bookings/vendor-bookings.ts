@@ -2,12 +2,16 @@ import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { TitleCasePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MockApiService } from '../../core/services/mock-api.service';
+import { BookingStatus } from '../../core/models/booking.model';
+import { ToastService } from '../../core/services/toast.service';
+import { FormsModule } from '@angular/forms';
 
-interface VendorBookingReq { id: string; bookingId: string; customerName: string; eventDate: string; eventName: string; amount: number; status: string; review?: any; customerPhone?: string; }
+interface VendorBookingReq { id: string; bookingId: string; customerName: string; eventDate: string; eventName: string; amount: number; status: BookingStatus; review?: any; customerPhone?: string; }
 
-@Component({ selector: 'app-vendor-bookings', imports: [TitleCasePipe, RouterLink], templateUrl: './vendor-bookings.html', styleUrl: './vendor-bookings.css' })
+@Component({ selector: 'app-vendor-bookings', standalone: true, imports: [TitleCasePipe, RouterLink, FormsModule], templateUrl: './vendor-bookings.html', styleUrl: './vendor-bookings.css' })
 export class VendorBookings implements OnInit {
   private api = inject(MockApiService);
+  private toast = inject(ToastService);
   requestsData = signal<VendorBookingReq[]>([]);
   filter = signal('all');
 
@@ -22,9 +26,9 @@ export class VendorBookings implements OnInit {
   ngOnInit() {
     this.api.getVendorDashboard('v1').subscribe(d => {
       const allReqs: VendorBookingReq[] = [...d.recentRequests, 
-        { id: 'br3', bookingId: 'bk005', customerName: 'Anand Reddy', eventDate: '2026-07-15', eventName: 'Upanayanam Ceremony', amount: 35000, status: 'accepted' }, 
+        { id: 'br3', bookingId: 'bk005', customerName: 'Anand Reddy', eventDate: '2026-07-15', eventName: 'Upanayanam Ceremony', amount: 35000, status: 'in_progress' }, 
         { id: 'br4', bookingId: 'bk002', customerName: 'Rajesh Kumar', eventDate: '2025-11-20', eventName: "Daughter's Birthday", amount: 18000, status: 'completed' },
-        { id: 'br5', bookingId: 'bk009', customerName: 'Anita Singh', eventDate: '2026-02-14', eventName: "Corporate Gala", amount: 50000, status: 'completed' }
+        { id: 'br6', bookingId: 'bk001', customerName: 'Rajesh Kumar', eventDate: '2025-12-15', eventName: "Wedding Reception", amount: 250000, status: 'confirmed' }
       ];
       this.requestsData.set(allReqs);
     });
@@ -33,13 +37,63 @@ export class VendorBookings implements OnInit {
   get filtered() { const f = this.filter(); return f === 'all' ? this.requests() : this.requests().filter(r => r.status === f); }
 
   selectedBookingId = signal<string | null>(null);
+  cancelPrompt = signal<string | null>(null);
 
   toggleBookingDetails(id: string) {
     this.selectedBookingId.update(curr => curr === id ? null : id);
   }
 
-  acceptRequest(id: string) { this.requestsData.update(rs => rs.map(r => r.id === id ? { ...r, status: 'accepted' } : r)); }
-  declineRequest(id: string) { this.requestsData.update(rs => rs.map(r => r.id === id ? { ...r, status: 'declined' } : r)); }
+  acceptRequest(id: string) { 
+    this.api.updateBookingStatus(id, 'advance_paid').subscribe(() => {
+      this.requestsData.update(rs => rs.map(r => r.id === id ? { ...r, status: 'advance_paid' as any } : r));
+      this.toast.success('Request accepted! Waiting for customer advance payment.');
+    });
+  }
+  declineRequest(id: string) { 
+    this.api.updateBookingStatus(id, 'rejected').subscribe(() => {
+      this.requestsData.update(rs => rs.map(r => r.id === id ? { ...r, status: 'rejected' as any } : r));
+      this.toast.info('Request declined.');
+    });
+  }
+
+  cancelBooking(id: string, reason: string) {
+    if (!reason.trim()) {
+      this.toast.error('Please provide a reason for cancellation.');
+      return;
+    }
+    this.api.cancelBooking(id, reason, 'vendor').subscribe(() => {
+      this.requestsData.update(rs => rs.map(r => r.id === id ? { ...r, status: 'cancelled' as any } : r));
+      this.toast.warning('Booking cancelled.');
+    });
+  }
+
+  startExecution(id: string) {
+    this.api.updateBookingStatus(id, 'in_progress').subscribe(() => {
+      this.requestsData.update(rs => rs.map(r => r.id === id ? { ...r, status: 'in_progress' as any } : r));
+      this.toast.success('Event execution started!');
+    });
+  }
+
+  completeBooking(id: string) {
+    this.api.updateBookingStatus(id, 'completed').subscribe(() => {
+      this.requestsData.update(rs => rs.map(r => r.id === id ? { ...r, status: 'completed' as any } : r));
+      this.toast.success('Event marked as completed.');
+    });
+  }
+
+  showDamageModal = signal<string | null>(null);
+  damageForm = { amount: 0, notes: '' };
+
+  submitDamage(id: string) {
+    if (this.damageForm.amount <= 0) {
+      this.toast.error('Please enter a valid damage amount.');
+      return;
+    }
+    this.api.addDamageCharges(id, this.damageForm.amount, this.damageForm.notes).subscribe(() => {
+      this.showDamageModal.set(null);
+      this.toast.success('Damage charges reported to customer for approval.');
+    });
+  }
 
   disputingReviewId = signal<string | null>(null);
   isSubmittingDispute = signal(false);
@@ -56,6 +110,30 @@ export class VendorBookings implements OnInit {
     });
   }
 
-  statusColor(s: string): string { const m: Record<string,string> = { pending:'ee-badge-warning', accepted:'ee-badge-success', declined:'ee-badge-danger', completed:'ee-badge-info' }; return m[s] || 'ee-badge-primary'; }
-  statusLabel(s: string): string { const m: Record<string,string> = { pending:'Pending', accepted:'Accepted', declined:'Declined', completed:'Completed' }; return m[s] || s; }
+  statusColor(s: string): string { 
+    const m: Record<string,string> = { 
+      pending:'ee-badge-warning', 
+      advance_paid:'ee-badge-info',
+      confirmed:'ee-badge-primary', 
+      in_progress:'ee-badge-primary', 
+      rejected:'ee-badge-danger', 
+      cancelled:'ee-badge-danger', 
+      completed:'ee-badge-success',
+      settled: 'ee-badge-success'
+    }; 
+    return m[s] || 'ee-badge-primary'; 
+  }
+  statusLabel(s: string): string { 
+    const m: Record<string,string> = { 
+      pending:'Pending Request', 
+      advance_paid:'Waiting for Payment',
+      confirmed:'Confirmed', 
+      in_progress:'In Progress', 
+      rejected:'Declined', 
+      cancelled:'Cancelled', 
+      completed:'Completed',
+      settled: 'Fully Settled'
+    }; 
+    return m[s] || s; 
+  }
 }

@@ -16,7 +16,7 @@
       @for (thread of threads(); track thread.id) {
         <div class="thread-item" [class.active]="selectedThread()?.id === thread.id" (click)="openThread(thread)">
           <div class="thread-avatar-wrap">
-            <div class="thread-avatar">{{ thread.subject.charAt(0) }}</div>
+            <div class="thread-avatar">{{ thread.subject?.charAt(0) || '?' }}</div>
             <span class="online-indicator"></span>
           </div>
           <div class="thread-content">

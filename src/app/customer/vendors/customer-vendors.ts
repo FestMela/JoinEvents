@@ -1,7 +1,8 @@
 import { Component, OnInit, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink, Router } from '@angular/router';
-import { MockApiService } from '../../core/services/mock-api.service';
+import { PackageService } from '../../core/services/package.service';
+import { EventCategoryService } from '../../core/services/event-category.service';
 import { Vendor } from '../../core/models/vendor.model';
 import { EventType } from '../../core/models/event.model';
 
@@ -16,7 +17,8 @@ import { EventType } from '../../core/models/event.model';
 export class CustomerVendors implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private api = inject(MockApiService);
+  private packageService = inject(PackageService);
+  private eventCategoryService = inject(EventCategoryService);
 
   eventTypeId = signal<string | null>(null);
   eventType = signal<EventType | null>(null);
@@ -41,17 +43,26 @@ export class CustomerVendors implements OnInit {
 
   loadData() {
     this.loading.set(true);
-    // Load event type details
-    this.api.getEventTypes().subscribe(types => {
-      const type = types.find(t => t.id === this.eventTypeId());
-      this.eventType.set(type || null);
-    });
+    const routeId = this.eventTypeId();
 
-    // Load packages for this event type
-    this.api.getPackages(this.eventTypeId() || undefined).subscribe(p => {
-      this.allPackages.set(p);
-      this.applyFilters();
-      this.loading.set(false);
+    // Load live event type details from API instead of Mock
+    this.eventCategoryService.getAll().subscribe(types => {
+      // Match either by GUID Id OR by semantic category name (e.g. 'wedding')
+      let type = types.find(t => t.id === routeId);
+      if (!type && routeId) {
+        type = types.find(t => t.category?.toLowerCase() === routeId.toLowerCase());
+      }
+      this.eventType.set(type || null);
+
+      // Extract canonical category identifier, falling back directly to routeId if no match
+      const categoryKey = type ? type.category : routeId;
+
+      // Load packages by the category key to properly query real backend controller via PackageService
+      this.packageService.getPackages(categoryKey as string).subscribe(p => {
+        this.allPackages.set(p);
+        this.applyFilters();
+        this.loading.set(false);
+      });
     });
   }
 
@@ -94,6 +105,6 @@ export class CustomerVendors implements OnInit {
   }
 
   selectVendor(packageId: string) {
-    this.router.navigate(['/customer/book', packageId]);
+    this.router.navigate(['/book', packageId]);
   }
 }

@@ -1,27 +1,52 @@
 import { Injectable, signal } from '@angular/core';
 import { of, Observable } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, catchError, map, switchMap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { inject } from '@angular/core';
 import { EventType, EventPackage } from '../models/event.model';
 import { Booking } from '../models/booking.model';
 import { Vendor, CalendarDay } from '../models/vendor.model';
 import { VendorService, ServiceCategoryDef } from '../models/service.model';
 import { ChatThread, ChatMessage, SupportTicket } from '../models/message.model';
 import { CustomerProfile } from '../models/user.model';
+import { BookingStatus } from '../models/booking.model';
 import { Employee, EmployeeRole, EmployeeStatus } from '../models/employee.model';
 
 @Injectable({ providedIn: 'root' })
 export class MockApiService {
+  private http = inject(HttpClient);
+  private apiUrl = 'https://localhost:7010/api/v1';
 
   // ─── EVENT TYPES ───────────────────────────────────────────────
+  globalEventTypes = signal<EventType[]>([
+    { id: 'wedding', name: 'Wedding', nameHindi: 'Shaadi', description: 'Grand Indian weddings with all rituals, mehendi, sangeet & reception', icon: 'bi-hearts', category: 'wedding', colorClass: 'event-wedding', gradient: 'linear-gradient(135deg,#E91E8C,#FF6B6B)', startingPrice: 150000, popularServices: ['Venue','Catering','Decoration','Photography','Music','Priest'] },
+    { id: 'birthday', name: 'Birthday Party', nameHindi: 'Janmadin', description: 'Fun & vibrant birthday celebrations for all ages', icon: 'bi-balloon-heart', category: 'birthday', colorClass: 'event-birthday', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', startingPrice: 25000, popularServices: ['Venue','Catering','Decoration','Photography','Music'] },
+    { id: 'corporate', name: 'Corporate Event', nameHindi: 'Karobar', description: 'Professional corporate meets, conferences, team outings & product launches', icon: 'bi-briefcase', category: 'corporate', colorClass: 'event-corporate', gradient: 'linear-gradient(135deg,#0EA5E9,#6B21A8)', startingPrice: 80000, popularServices: ['Venue','Catering','Transport','Manpower','Photography'] },
+    { id: 'beauty', name: 'Beauty & Styling', nameHindi: 'Shringar', icon: 'bi-magic', category: 'beauty', colorClass: 'event-beauty', gradient: 'linear-gradient(135deg,#EC4899,#D946EF)', startingPrice: 5000, popularServices: ['Makeup','Hairstyle','Outfit Rental','Mehendi'] },
+    { id: 'travel', name: 'Travel & Transport', nameHindi: 'Yatra', icon: 'bi-airplane-fill', category: 'travel', colorClass: 'event-travel', gradient: 'linear-gradient(135deg,#10B981,#059669)', startingPrice: 8000, popularServices: ['Luxury Cars','Bus Hire','Honeymoon Packages'] },
+    { id: 'shopping', name: 'Event Shopping', nameHindi: 'Kharidari', icon: 'bi-bag-heart-fill', category: 'shopping', colorClass: 'event-shopping', gradient: 'linear-gradient(135deg,#F59E0B,#D97706)', startingPrice: 2000, popularServices: ['Invites','Gifts','Traditional Wear'] },
+  ]);
+
   getEventTypes(): Observable<EventType[]> {
-    return of([
-      { id: 'wedding', name: 'Wedding', nameHindi: 'Shaadi', description: 'Grand Indian weddings with all rituals, mehendi, sangeet & reception', icon: 'bi-hearts', category: 'wedding', colorClass: 'event-wedding', gradient: 'linear-gradient(135deg,#E91E8C,#FF6B6B)', startingPrice: 150000, popularServices: ['Venue','Catering','Decoration','Photography','Music','Priest'] },
-      { id: 'birthday', name: 'Birthday Party', nameHindi: 'Janmadin', description: 'Fun & vibrant birthday celebrations for all ages', icon: 'bi-balloon-heart', category: 'birthday', colorClass: 'event-birthday', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', startingPrice: 25000, popularServices: ['Venue','Catering','Decoration','Photography','Music'] },
-      { id: 'corporate', name: 'Corporate Event', nameHindi: 'Karobar', description: 'Professional corporate meets, conferences, team outings & product launches', icon: 'bi-briefcase', category: 'corporate', colorClass: 'event-corporate', gradient: 'linear-gradient(135deg,#0EA5E9,#6B21A8)', startingPrice: 80000, popularServices: ['Venue','Catering','Transport','Manpower','Photography'] },
-      { id: 'beauty', name: 'Beauty & Styling', nameHindi: 'Shringar', icon: 'bi-magic', category: 'beauty', colorClass: 'event-beauty', gradient: 'linear-gradient(135deg,#EC4899,#D946EF)', startingPrice: 5000, popularServices: ['Makeup','Hairstyle','Outfit Rental','Mehendi'] },
-      { id: 'travel', name: 'Travel & Transport', nameHindi: 'Yatra', icon: 'bi-airplane-fill', category: 'travel', colorClass: 'event-travel', gradient: 'linear-gradient(135deg,#10B981,#059669)', startingPrice: 8000, popularServices: ['Luxury Cars','Bus Hire','Honeymoon Packages'] },
-      { id: 'shopping', name: 'Event Shopping', nameHindi: 'Kharidari', icon: 'bi-bag-heart-fill', category: 'shopping', colorClass: 'event-shopping', gradient: 'linear-gradient(135deg,#F59E0B,#D97706)', startingPrice: 2000, popularServices: ['Invites','Gifts','Traditional Wear'] },
-    ] as EventType[]).pipe(delay(300));
+    return of(this.globalEventTypes()).pipe(delay(300));
+  }
+
+  addEventType(evt: Omit<EventType, 'id'>): Observable<EventType> {
+    const newEvt: EventType = { ...evt, id: 'cat_' + Date.now() } as EventType;
+    this.globalEventTypes.update(list => [...list, newEvt]);
+    return of(newEvt).pipe(delay(300));
+  }
+
+  updateEventType(id: string, updates: Partial<EventType>): Observable<boolean> {
+    this.globalEventTypes.update(list =>
+      list.map(e => e.id === id ? { ...e, ...updates } : e)
+    );
+    return of(true).pipe(delay(300));
+  }
+
+  deleteEventType(id: string): Observable<boolean> {
+    this.globalEventTypes.update(list => list.filter(e => e.id !== id));
+    return of(true).pipe(delay(300));
   }
 
   // ─── PACKAGES ──────────────────────────────────────────────────
@@ -50,7 +75,17 @@ export class MockApiService {
         vegOnly: true,
         roomCount: 2,
         sustainabilityTags: ['Zero Waste Catering', 'Local Sourced'],
-        image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800'
+        image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800',
+        images: [
+          'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1522673607200-16488321499b?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1513273159385-48995328406f?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&q=80&w=800'
+        ]
       },
       { 
         id: 'w-prem-2', 
@@ -72,7 +107,11 @@ export class MockApiService {
         offerExpiresIn: '3 Days, 4:10:00',
         vegOnly: false,
         roomCount: 50,
-        image: 'https://images.unsplash.com/photo-1541010222019-15ad350bc51f?auto=format&fit=crop&q=80&w=800'
+        image: 'https://images.unsplash.com/photo-1541010222019-15ad350bc51f?auto=format&fit=crop&q=80&w=800',
+        images: [
+          'https://images.unsplash.com/photo-1541010222019-15ad350bc51f?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1505932794465-1475557465c9?auto=format&fit=crop&q=80&w=800'
+        ]
       },
       { 
         id: 'w-std-1', 
@@ -94,23 +133,115 @@ export class MockApiService {
         vegOnly: true,
         roomCount: 5,
         sustainabilityTags: ['Organic Menu', 'Recycled Decor'],
-        image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800'
+        image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800',
+        images: [
+          'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800',
+          'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800'
+        ]
       },
-      { id: 'b-basic', eventTypeId: 'birthday', name: 'Fun Birthday', tier: 'basic', price: 25000, description: 'Simple & cheerful birthday party setup', services: ['Venue (50 guests)','Snacks & Cake','Balloon Decoration','Photography'], maxGuests: 50, durationHours: 4, location: 'Local Venue', image: 'https://images.unsplash.com/photo-1530103862676-fa8c9d34b3b3?auto=format&fit=crop&q=80&w=800' },
+      { id: 'b-basic', eventTypeId: 'birthday', name: 'Fun Birthday', tier: 'basic', price: 25000, description: 'Simple & cheerful birthday party setup', services: ['Venue (50 guests)','Snacks & Cake','Balloon Decoration','Photography'], maxGuests: 50, durationHours: 4, location: 'Local Venue', image: 'https://images.unsplash.com/photo-1530103862676-fa8c9d34b3b3?auto=format&fit=crop&q=80&w=800', images: ['https://images.unsplash.com/photo-1530103862676-fa8c9d34b3b3?auto=format&fit=crop&q=80&w=800'] },
     ];
     const result = eventTypeId ? packages.filter(p => p.eventTypeId === eventTypeId) : packages;
-    return of(result).pipe(delay(300));
+    
+    // Call the real backend API, fallback to mock data on error
+    // Pass category query parameter to target live category filter in backend search controller
+    return this.http.get<any>(`${this.apiUrl}/packages/search${eventTypeId ? '?category=' + eventTypeId : ''}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map((res: any) => {
+        let list: any[] = [];
+        if (res && res.packages && Array.isArray(res.packages)) {
+          list = res.packages;
+        } else if (Array.isArray(res)) {
+          list = res;
+        }
+
+        // Thoroughly normalize incoming API package shapes into front-end readable objects
+        return list.map((p: any) => ({
+          id: p.id || p.Id,
+          eventTypeId: p.eventTypeId || p.EventTypeId || p.category || p.Category || 'wedding',
+          name: p.name || p.Name,
+          vendorName: p.vendorName || p.VendorName || 'JoinEvents Partner',
+          location: p.location || p.Location || p.city || p.City || p.address?.city || p.Address?.City || 'Multiple Locations',
+          tier: p.tier || p.Tier || 'premium',
+          price: p.price || p.Price || p.pricing?.basePrice || p.pricing?.BasePrice || p.pricing?.vegPrice || p.pricing?.VegPrice || 0,
+          description: p.description || p.Description,
+          maxGuests: p.maxGuests || p.MaxGuests || p.capacity?.maxGuests || p.capacity?.MaxGuests || 100,
+          roomCount: p.roomCount || p.RoomCount || p.capacity?.totalRooms || p.capacity?.TotalRooms || 0,
+          vegOnly: p.vegOnly !== undefined ? p.vegOnly : (p.pricing?.vegPrice && !p.pricing?.nonVegPrice ? true : false),
+          image: p.image || p.Image || p.images?.[0] || p.Images?.[0] || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800',
+          images: p.images || p.Images || [],
+          sustainabilityTags: p.sustainabilityTags || p.SustainabilityTags || []
+        }));
+      }),
+      catchError(() => of(result).pipe(delay(300)))
+    );
+  }
+
+  getPackageById(id: string): Observable<any> {
+    const normalizePackage = (p: any) => {
+      if (!p) return null;
+      return {
+        id: p.id || p.Id,
+        eventTypeId: p.eventTypeId || p.EventTypeId || p.category || p.Category || 'wedding',
+        name: p.name || p.Name,
+        vendorName: p.vendorName || p.VendorName || 'JoinEvents Partner',
+        location: p.location || p.Location || p.city || p.City || 'Multiple Locations',
+        tier: p.tier || p.Tier || 'premium',
+        price: p.price || p.Price || p.pricing?.basePrice || p.pricing?.BasePrice || p.pricing?.vegPrice || p.pricing?.VegPrice || p.pricing?.rent || p.pricing?.Rent || 0,
+        description: p.description || p.Description,
+        services: (p.services && p.services.length > 0 ? p.services : null) || 
+                  (p.Services && p.Services.length > 0 ? p.Services : null) || 
+                  (p.includes && p.includes.length > 0 ? p.includes : null) || 
+                  (p.Includes && p.Includes.length > 0 ? p.Includes : null) || 
+                  (p.name || p.Name ? [p.name || p.Name] : ['General Service']),
+        addons: p.addons || p.Addons || [],
+        maxGuests: p.maxGuests || p.MaxGuests || p.capacity?.maxGuests || p.capacity?.MaxGuests || 100,
+        durationHours: p.durationHours || p.DurationHours || 24,
+        image: p.image || p.Image || p.images?.[0] || p.Images?.[0],
+        images: p.images || p.Images || []
+      };
+    };
+
+    // Try public endpoint first
+    return this.http.get<any>(`${this.apiUrl}/packages/${id}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(res => normalizePackage(res.data || res.package || res.Package || res)),
+      catchError(() => {
+        // Try vendor endpoint as fallback (for unpublished services)
+        return this.http.get<any>(`${this.apiUrl}/vendor/packages/${id}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+          map(res => normalizePackage(res.data || res.package || res.Package || res)),
+          catchError(() => {
+            // Final fallback: check mock lists
+            return this.getPackages().pipe(
+              switchMap(pkgs => {
+                const pkg = pkgs.find(p => p.id === id);
+                if (pkg) return of(pkg);
+
+                return this.getVendorServices().pipe(
+                  map(services => {
+                    const svc = services.find(s => s.id === id);
+                    if (svc) return normalizePackage(svc);
+                    return null; // Not found anywhere
+                  })
+                );
+              })
+            );
+          })
+        );
+      })
+    );
   }
 
   // ─── BOOKINGS ──────────────────────────────────────────────────
   getBookings(customerId?: string): Observable<Booking[]> {
     const bookings: Booking[] = [
       { id: 'bk001', bookingNumber: 'EE-2025-001', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'wedding', eventName: 'Wedding Reception', packageId: 'w-std', packageName: 'Gold Wedding', eventDate: '2025-12-15', venue: 'Raj Mahal Banquet Hall', city: 'Hyderabad', guestCount: 450, status: 'confirmed', advanceAmount: 70000, baseAmount: 350000, extraServicesAmount: 45000, damageCharges: 0, gstPercent: 18, totalAmount: 464100, services: [{ serviceId: 's1', serviceName: 'Premium Catering', category: 'catering', vendorId: 'v1', vendorName: 'Spice Garden Catering', price: 25000, status: 'confirmed' },{ serviceId: 's2', serviceName: 'Floral Decoration', category: 'decoration', vendorId: 'v2', vendorName: 'Blooms & Bliss', price: 20000, status: 'confirmed' }], createdAt: '2025-10-01', notes: 'VIP table for 20 family members' },
-      { id: 'bk002', bookingNumber: 'EE-2025-002', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'birthday', eventName: "Daughter's 10th Birthday", packageId: 'b-std', packageName: 'Party Birthday', eventDate: '2025-11-20', venue: 'Fun Zone Party Hall', city: 'Hyderabad', guestCount: 80, status: 'settled', advanceAmount: 12000, baseAmount: 60000, extraServicesAmount: 8000, damageCharges: 2000, gstPercent: 18, totalAmount: 82600, finalPaidAmount: 82600, services: [], createdAt: '2025-09-15' },
+      { id: 'bk002', bookingNumber: 'EE-2025-002', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'birthday', eventName: "Daughter's 10th Birthday", packageId: 'b-std', packageName: 'Party Birthday', eventDate: '2025-11-20', venue: 'Fun Zone Party Hall', city: 'Hyderabad', guestCount: 80, status: 'settled', advanceAmount: 12000, baseAmount: 60000, extraServicesAmount: 8000, damageCharges: 2000, damageChargeNotes: 'Broken vase in hallway', isDamageChargeApproved: true, gstPercent: 18, totalAmount: 82600, finalPaidAmount: 82600, services: [], createdAt: '2025-09-15' },
       { id: 'bk003', bookingNumber: 'EE-2026-001', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'religious', eventName: 'Gruhapravesh Puja', packageId: 'r-std', packageName: 'Full Puja', eventDate: '2026-05-10', venue: 'Home', city: 'Hyderabad', guestCount: 40, status: 'pending', advanceAmount: 0, baseAmount: 40000, extraServicesAmount: 0, damageCharges: 0, gstPercent: 18, totalAmount: 47200, services: [], createdAt: '2026-04-20' },
+      { id: 'bk005', bookingNumber: 'EE-2026-003', customerId: 'c1', customerName: 'Rajesh Kumar', customerPhone: '+91 98765 43210', eventTypeId: 'wedding', eventName: 'Engagement Ceremony', eventDate: '2026-07-15', venue: 'Grand Plaza', city: 'Hyderabad', guestCount: 150, status: 'in_progress', advanceAmount: 30000, baseAmount: 150000, extraServicesAmount: 20000, damageCharges: 5000, damageChargeNotes: 'Table cloth burns', isDamageChargeApproved: false, gstPercent: 18, totalAmount: 200600, services: [], createdAt: '2026-03-20' },
     ];
-    const result = customerId ? bookings.filter(b => b.customerId === customerId) : bookings;
-    return of(result).pipe(delay(300));
+    const fallbackResult = customerId ? bookings.filter(b => b.customerId === customerId) : bookings;
+    
+    // Returning mock data directly since the backend /bookings endpoint does not exist yet
+    return of(fallbackResult).pipe(delay(300));
   }
 
   getAdminBookings(): Observable<Booking[]> {
@@ -138,12 +269,53 @@ export class MockApiService {
   }
 
   addSupportLog(bookingId: string, message: string, actor: string): Observable<boolean> {
-    // In a real app we would update the list. For mock, we just return true.
-    return of(true).pipe(delay(500));
+    return this.http.post<any>(`${this.apiUrl}/support/bookings/${bookingId}/logs`, { message, actor }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
+    );
   }
 
   remindVendor(vendorId: string, bookingId: string): Observable<boolean> {
-    return of(true).pipe(delay(1000));
+    return this.http.post<any>(`${this.apiUrl}/support/reminders/vendor`, { vendorId, bookingId }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(1000)))
+    );
+  }
+
+  // ─── BOOKING MANAGEMENT ────────────────────────────────────────
+  updateBookingStatus(bookingId: string, status: BookingStatus): Observable<boolean> {
+    return this.http.patch<any>(`${this.apiUrl}/bookings/${bookingId}/status`, { status }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(300)))
+    );
+  }
+
+  cancelBooking(bookingId: string, reason: string, cancelledBy: 'customer' | 'vendor'): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/cancel`, { reason, cancelledBy }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
+    );
+  }
+
+  addDamageCharges(bookingId: string, amount: number, notes: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/damage`, { amount, notes }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
+    );
+  }
+
+  approveDamageCharges(bookingId: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/damage/approve`, {}, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(300)))
+    );
+  }
+
+  raiseDispute(bookingId: string, reason: string): Observable<boolean> {
+    return this.http.post<any>(`${this.apiUrl}/bookings/${bookingId}/dispute`, { reason }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(500)))
+    );
   }
 
   // ─── VENDORS ───────────────────────────────────────────────────
@@ -156,10 +328,13 @@ export class MockApiService {
   ]);
 
   getVendors(): Observable<Vendor[]> {
-    return of(this.globalVendors()).pipe(delay(300));
+    return this.http.get<Vendor[]>(`${this.apiUrl}/admin/vendors`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(this.globalVendors()).pipe(delay(300)))
+    );
   }
 
   moderateVendor(vendorId: string, action: 'suspend' | 'ban' | 'reactivate', reason?: string, duration?: string): Observable<boolean> {
+    // Optimistic UI update
     this.globalVendors.update(vendors => 
       vendors.map(v => {
         if (v.id === vendorId) {
@@ -174,7 +349,12 @@ export class MockApiService {
         return v;
       })
     );
-    return of(true).pipe(delay(300));
+    
+    // API call
+    return this.http.post<any>(`${this.apiUrl}/admin/vendors/${vendorId}/moderate`, { action, reason, duration }, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      map(() => true),
+      catchError(() => of(true).pipe(delay(300)))
+    );
   }
 
   // ─── CUSTOMERS ────────────────────────────────────────────────
@@ -186,6 +366,7 @@ export class MockApiService {
   ]);
 
   getCustomers(): Observable<CustomerProfile[]> {
+    // Returning mock data directly since the backend /admin/customers endpoint does not exist yet
     return of(this.globalCustomers()).pipe(delay(300));
   }
 
@@ -232,6 +413,14 @@ export class MockApiService {
       { id: 'vs5', vendorId: 'v1', vendorName: 'Spice Garden Catering', category: 'catering', name: 'Gourmet Dessert Counter', description: 'Premium live dessert counters with international delicacies', pricePerUnit: 150, unit: 'per plate', minGuests: 100, maxGuests: 500, city: 'Hyderabad', images: [], rating: 0, totalReviews: 0, isActive: true, isVerified: false },
     ];
     const result = vendorId ? services.filter(s => s.vendorId === vendorId) : services;
+    
+    if (vendorId) {
+      return this.http.get<any>(`https://localhost:7010/services/getAll?VendorId=${vendorId}`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+        map(res => res.Services || res.services || result),
+        catchError(() => of(result).pipe(delay(300)))
+      );
+    }
+    
     return of(result).pipe(delay(300));
   }
 
@@ -267,26 +456,38 @@ export class MockApiService {
 
   // ─── MESSAGES ──────────────────────────────────────────────────
   getChatThreads(userId: string): Observable<ChatThread[]> {
-    if (userId.startsWith('v')) {
-      return of<ChatThread[]>([
-        { id: 'vth1', bookingId: 'bk001', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Thank you for the quote. Can we negotiate on the dessert counter?', lastMessageTime: new Date().toISOString(), unreadCount: 1, subject: 'Wedding Catering Inquiry' },
-        { id: 'vth2', bookingId: 'bk004', participants: [{ id: 'c2', name: 'Sunita Patel', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Is the menu finalized for the corporate event?', lastMessageTime: new Date().toISOString(), unreadCount: 0, subject: 'Annual Day Conference' },
-      ]).pipe(delay(300));
-    }
-    return of<ChatThread[]>([
+    const vendorFallback: ChatThread[] = [
+      { id: 'vth1', bookingId: 'bk001', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Thank you for the quote. Can we negotiate on the dessert counter?', lastMessageTime: new Date().toISOString(), unreadCount: 1, subject: 'Wedding Catering Inquiry' },
+      { id: 'vth2', bookingId: 'bk004', participants: [{ id: 'c2', name: 'Sunita Patel', role: 'customer' },{ id: 'v1', name: 'Amit Sharma', role: 'vendor' }], lastMessage: 'Is the menu finalized for the corporate event?', lastMessageTime: new Date().toISOString(), unreadCount: 0, subject: 'Annual Day Conference' },
+    ];
+    const customerFallback: ChatThread[] = [
       { id: 'th1', bookingId: 'bk001', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'a1', name: 'Priya Nair', role: 'admin' }], lastMessage: 'We have confirmed the decoration vendor for your wedding.', lastMessageTime: '2025-10-10T14:30:00', unreadCount: 2, subject: 'EE-2025-001 | Wedding Reception' },
       { id: 'th2', bookingId: 'bk003', participants: [{ id: 'c1', name: 'Rajesh Kumar', role: 'customer' },{ id: 'a1', name: 'Priya Nair', role: 'admin' }], lastMessage: 'Your advance payment has been received. Booking confirmed!', lastMessageTime: '2026-04-20T09:15:00', unreadCount: 0, subject: 'EE-2026-001 | Gruhapravesh Puja' },
-    ]).pipe(delay(300));
+    ];
+    
+    let fallbackData = userId.startsWith('v') ? vendorFallback : customerFallback;
+    fallbackData = fallbackData.filter(t => t.participants.some(p => p.id === userId));
+
+    return of(fallbackData).pipe(delay(300));
   }
 
   getChatMessages(threadId: string): Observable<ChatMessage[]> {
-    return of<ChatMessage[]>([
+    const fallback: ChatMessage[] = [
       { id: 'm1', threadId: 'th1', senderId: 'c1', senderName: 'Rajesh Kumar', senderRole: 'customer', content: 'Hello, I wanted to confirm about the decoration vendor for my wedding.', timestamp: '2025-10-10T10:00:00', isRead: true, type: 'text' },
       { id: 'm2', threadId: 'th1', senderId: 'a1', senderName: 'Priya Nair', senderRole: 'admin', content: 'Hi Rajesh! Sure, let me check the availability for your date.', timestamp: '2025-10-10T10:05:00', isRead: true, type: 'text' },
       { id: 'm3', threadId: 'th1', senderId: 'a1', senderName: 'Priya Nair', senderRole: 'admin', content: 'Great news! Blooms & Bliss is available on Dec 15. I\'ve assigned them to your booking.', timestamp: '2025-10-10T10:15:00', isRead: true, type: 'text' },
       { id: 'm4', threadId: 'th1', senderId: 'c1', senderName: 'Rajesh Kumar', senderRole: 'customer', content: 'Wonderful! Thank you so much for the quick response 🙏', timestamp: '2025-10-10T10:20:00', isRead: true, type: 'text' },
       { id: 'm5', threadId: 'th1', senderId: 'a1', senderName: 'Priya Nair', senderRole: 'admin', content: 'We have confirmed the decoration vendor for your wedding.', timestamp: '2025-10-10T14:30:00', isRead: false, type: 'text' },
-    ]).pipe(delay(300));
+    ];
+    return of(fallback).pipe(delay(300));
+  }
+
+  sendMessage(msg: Partial<ChatMessage>): Observable<ChatMessage> {
+    return of({ ...msg, id: 'mock-' + Date.now(), timestamp: new Date().toISOString() } as ChatMessage).pipe(delay(500));
+  }
+
+  markAsRead(threadId: string): Observable<boolean> {
+    return of(true).pipe(delay(300));
   }
 
   // ─── SUPPORT TICKETS ───────────────────────────────────────────
@@ -317,7 +518,7 @@ export class MockApiService {
 
   // ─── ADMIN DASHBOARD ───────────────────────────────────────────
   getAdminKPIs(): Observable<any> {
-    return of({
+    const fallbackData = {
       totalRevenue: 6420000,
       activeEvents: 18,
       pendingVerifications: 5,
@@ -326,7 +527,11 @@ export class MockApiService {
       completedEvents: 428,
       openTickets: 12,
       monthlyRevenue: [280000, 350000, 420000, 310000, 580000, 620000, 490000, 850000, 720000, 940000, 1150000, 1380000],
-    }).pipe(delay(300));
+    };
+    
+    return this.http.get<any>(`${this.apiUrl}/admin/dashboard`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(fallbackData).pipe(delay(300)))
+    );
   }
 
   // ─── VENDOR DASHBOARD ──────────────────────────────────────────
@@ -339,20 +544,24 @@ export class MockApiService {
       rating: 4.8,
       thisMonthEarnings: 125000,
       recentRequests: [
-        { id: 'br1', bookingId: 'bk001', customerName: 'Rajesh Kumar', eventDate: '2025-12-15', eventName: 'Wedding Reception', amount: 25000, status: 'pending' },
-        { id: 'br2', bookingId: 'bk004', customerName: 'Sunita Patel', eventDate: '2026-06-05', eventName: 'Annual Day Conference', amount: 40000, status: 'pending' },
+        { id: 'br1', bookingId: 'bk003', customerName: 'Rajesh Kumar', eventDate: '2026-05-10', eventName: 'Gruhapravesh Puja', amount: 47200, status: 'pending' },
+        { id: 'br2', bookingId: 'bk001', customerName: 'Rajesh Kumar', eventDate: '2025-12-15', eventName: 'Wedding Reception', amount: 464100, status: 'confirmed' },
       ]
     }).pipe(delay(300));
   }
   // ─── NOTIFICATIONS ─────────────────────────────────────────────
   getNotifications(): Observable<any[]> {
-    return of([
+    const fallbackData = [
       { id: 'n1', title: 'Booking Confirmed', message: 'Your booking for Wedding Reception has been confirmed.', time: '2 mins ago', icon: 'bi-check-circle', color: '#10B981', isRead: false },
       { id: 'n2', title: 'New Message', message: 'You have a new message from Priya Nair regarding your event.', time: '1 hour ago', icon: 'bi-chat-dots', color: '#3B82F6', isRead: false },
       { id: 'n3', title: 'Payment Received', message: 'Advance payment for Gruhapravesh Puja received successfully.', time: '5 hours ago', icon: 'bi-credit-card', color: '#F59E0B', isRead: true },
       { id: 'n4', title: 'Verification Update', message: 'Your vendor verification is now in progress.', time: '1 day ago', icon: 'bi-shield-check', color: '#8B5CF6', isRead: true },
       { id: 'n5', title: 'New Customer Review', message: 'Rajesh Kumar left a 5-star review for Daughter\'s Birthday.', time: 'Just now', icon: 'bi-star-fill', color: '#F59E0B', isRead: false },
-    ]).pipe(delay(300));
+    ];
+    
+    return this.http.get<any[]>(`${this.apiUrl}/notifications`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(fallbackData).pipe(delay(300)))
+    );
   }
   
   // ─── REVIEWS & MODERATION ──────────────────────────────────────────
@@ -446,7 +655,9 @@ export class MockApiService {
   ]);
 
   getEmployees(): Observable<Employee[]> {
-    return of(this.globalEmployees()).pipe(delay(300));
+    return this.http.get<Employee[]>(`${this.apiUrl}/admin/employees`, { headers: { 'X-Suppress-Errors': 'true' } }).pipe(
+      catchError(() => of(this.globalEmployees()).pipe(delay(300)))
+    );
   }
 
   addEmployee(emp: Omit<Employee, 'id'>): Observable<Employee> {

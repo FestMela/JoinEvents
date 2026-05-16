@@ -1,4 +1,4 @@
-export type BookingStatus = 'pending' | 'advance_paid' | 'confirmed' | 'in_progress' | 'completed' | 'settled' | 'cancelled';
+export type BookingStatus = 'pending' | 'advance_paid' | 'confirmed' | 'in_progress' | 'completed' | 'settled' | 'cancelled' | 'rejected' | 'disputed';
 
 export interface BookingService {
   serviceId: string;
@@ -29,9 +29,18 @@ export interface Booking {
   baseAmount: number;
   extraServicesAmount: number;
   damageCharges: number;
+  damageChargeNotes?: string;
+  isDamageChargeApproved?: boolean;
   gstPercent: number;
   totalAmount: number;
   finalPaidAmount?: number;
+  cancellationReason?: string;
+  cancelledBy?: 'customer' | 'vendor' | 'system';
+  disputeInfo?: {
+    reason: string;
+    status: 'open' | 'resolved';
+    resolution?: string;
+  };
   services: BookingService[];
   createdAt: string;
   notes?: string;

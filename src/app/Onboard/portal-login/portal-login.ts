@@ -3,6 +3,7 @@ import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { inject } from '@angular/core';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 import { UserRole } from '../../core/models/user.model';
 
 @Component({
@@ -14,13 +15,13 @@ import { UserRole } from '../../core/models/user.model';
 export class PortalLogin implements OnInit {
   private auth = inject(AuthService);
   private route = inject(ActivatedRoute);
+  private toast = inject(ToastService);
 
   selectedRole = signal<UserRole>('vendor');
   email = '';
   password = '';
   showPassword = false;
   isLoading = false;
-  errorMsg = '';
   returnUrl = '';
 
   readonly roles: { role: UserRole; label: string; icon: string; color: string }[] = [
@@ -29,36 +30,38 @@ export class PortalLogin implements OnInit {
     { role: 'support',  label: 'Support',  icon: 'bi-headset',       color: '#F59E0B' },
   ];
 
-  readonly demoCredentials: Record<UserRole, string> = {
-    customer: 'customer@demo.com', // keep just for TS type completeness if needed
-    vendor: 'vendor@demo.com',
-    admin: 'admin@demo.com',
-    support: 'support@demo.com',
-  };
-
   selectRole(role: UserRole) {
     this.selectedRole.set(role);
-    this.email = this.demoCredentials[role];
-    this.password = 'JoinEvents@2025';
-    this.errorMsg = '';
+    this.email = '';
+    this.password = '';
   }
 
   ngOnInit() {
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '';
-    // Init demo creds for default vendor role
-    this.email = this.demoCredentials['vendor'];
-    this.password = 'JoinEvents@2025';
+    this.email = '';
+    this.password = '';
   }
 
   onSubmit() {
-    if (!this.email || !this.password) { this.errorMsg = 'Please fill all fields.'; return; }
+    if (!this.email || !this.password) {
+      this.toast.error('Please fill all fields.');
+      return;
+    }
     this.isLoading = true;
-    this.errorMsg = '';
-    setTimeout(() => {
-      const result = this.auth.login(this.email, this.password, this.selectedRole(), this.returnUrl);
-      if (!result.success) { this.errorMsg = result.message; }
-      this.isLoading = false;
-    }, 800);
+    this.auth.login(this.email, this.password, this.selectedRole(), this.returnUrl).subscribe({
+      next: (result) => {
+        if (!result.success) {
+          this.toast.error(result.message);
+        } else {
+          this.toast.success('Login successful!');
+        }
+        this.isLoading = false;
+      },
+      error: () => {
+        this.toast.error('An error occurred during login.');
+        this.isLoading = false;
+      }
+    });
   }
 
   handleImageError(event: Event) {

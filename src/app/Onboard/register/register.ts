@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { inject } from '@angular/core';
 import { UserRole } from '../../core/models/user.model';
+import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-register',
@@ -11,10 +13,13 @@ import { UserRole } from '../../core/models/user.model';
   styleUrl: './register.css'
 })
 export class Register {
-  private router = inject(Router);
+  private auth = inject(AuthService);
+  private toast = inject(ToastService);
   step = signal(1);
   role = signal<UserRole>('customer');
   isLoading = false;
+  showPassword = false;
+  showConfirmPassword = false;
 
   form = { name: '', email: '', phone: '', password: '', confirmPassword: '', businessName: '', city: '', agreeTerms: false };
 
@@ -23,11 +28,30 @@ export class Register {
   prevStep() { this.step.update(s => s - 1); }
 
   onSubmit() {
+    if (!this.form.name || !this.form.email || !this.form.phone || !this.form.password) {
+      this.toast.error('Please fill all required fields.');
+      return;
+    }
+    if (this.form.password !== this.form.confirmPassword) {
+      this.toast.error('Passwords do not match.');
+      return;
+    }
+
     this.isLoading = true;
-    setTimeout(() => {
-      this.isLoading = false;
-      this.router.navigate(['/login']);
-    }, 1200);
+    this.auth.register(this.form.name, this.form.email, this.form.phone, this.form.password, this.role()).subscribe({
+      next: (result) => {
+        if (!result.success) {
+          this.toast.error(result.message);
+        } else {
+          this.toast.success('Registration successful!');
+        }
+        this.isLoading = false;
+      },
+      error: () => {
+        this.toast.error('An error occurred during registration.');
+        this.isLoading = false;
+      }
+    });
   }
 
   handleImageError(event: Event) {

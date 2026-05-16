@@ -1,13 +1,12 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AnalyticsService, AdminAnalyticsData } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-admin-analytics',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, DecimalPipe],
+  imports: [CommonModule, FormsModule, DecimalPipe],
   templateUrl: './admin-analytics.html',
   styleUrl: './admin-analytics.css'
 })

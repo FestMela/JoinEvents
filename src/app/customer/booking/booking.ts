@@ -1,9 +1,10 @@
-import { Component, signal, OnInit, inject } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, inject, effect } from '@angular/core';
 import { CommonModule, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MockApiService } from '../../core/services/mock-api.service';
+import { PackageService } from '../../core/services/package.service';
 import { EventPackage } from '../../core/models/event.model';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-customer-booking',
@@ -12,10 +13,13 @@ import { EventPackage } from '../../core/models/event.model';
   templateUrl: './booking.html',
   styleUrl: './booking.css'
 })
-export class CustomerBooking implements OnInit {
+export class CustomerBooking implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private api = inject(MockApiService);
+  private api = inject(PackageService);
+  private auth = inject(AuthService);
+
+  userRole = computed(() => this.auth.currentUser()?.role);
 
   selectedPackage = signal<any | null>(null);
   similarPackages = signal<any[]>([]);
@@ -28,8 +32,23 @@ export class CustomerBooking implements OnInit {
   discountAmount = signal(0);
   bookingSuccess = signal(false);
   isLoading = signal(false);
+  minDate = new Date().toISOString().split('T')[0];
   showMobileBooking = signal(false);
   selectedServiceDetail = signal<any | null>(null);
+  selectedImage = signal<string | null>(null);
+  
+  private slideshowInterval: any;
+
+  constructor() {
+    effect(() => {
+      const isModalOpen = !!this.selectedServiceDetail();
+      if (isModalOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.overflow = 'auto';
+      }
+    });
+  }
 
   ngOnInit() {
     const pkgId = this.route.snapshot.paramMap.get('packageId');
@@ -38,18 +57,67 @@ export class CustomerBooking implements OnInit {
     }
   }
 
+  ngOnDestroy() {
+    this.stopSlideshow();
+    document.body.style.overflow = 'auto'; // Ensure scroll is restored when leaving page
+  }
+
   loadPackage(pkgId: string) {
-    this.api.getPackages().subscribe(pkgs => {
-      const pkg = pkgs.find(p => p.id === pkgId);
-      if (pkg) {
-        this.selectedPackage.set(pkg);
-        // Load similar packages (exclude current one)
-        const similar = pkgs.filter(p => p.eventTypeId === pkg.eventTypeId && p.id !== pkgId);
-        this.similarPackages.set(similar.slice(0, 3));
-      } else {
-        this.router.navigate(['/customer/dashboard']);
+    this.isLoading.set(true);
+    this.api.getPackageById(pkgId).subscribe({
+      next: (pkg) => {
+        this.isLoading.set(false);
+        if (pkg) {
+          this.selectedPackage.set(pkg);
+          this.selectedImage.set(pkg.image || pkg.images?.[0]);
+          
+          // Load similar packages (exclude current one)
+          this.api.getPackages(pkg.eventTypeId).subscribe(pkgs => {
+            const similar = pkgs.filter(p => p.id !== pkgId);
+            this.similarPackages.set(similar.slice(0, 3));
+          });
+          
+          // Start slideshow if multiple images exist
+          if (pkg.images?.length > 1) {
+            this.startSlideshow();
+          }
+        } else {
+          const role = this.userRole();
+          const target = role === 'customer' ? '/dashboard' : `/${role}/dashboard`;
+          this.router.navigate([target]);
+        }
+      },
+      error: (err) => {
+        this.isLoading.set(false);
+        console.error('Error loading package:', err);
+        const role = this.userRole();
+        const target = role === 'customer' ? '/dashboard' : `/${role}/dashboard`;
+        this.router.navigate([target]);
       }
     });
+  }
+
+  startSlideshow() {
+    this.stopSlideshow();
+    this.slideshowInterval = setInterval(() => {
+      const pkg = this.selectedPackage();
+      if (!pkg || !pkg.images || pkg.images.length <= 1) return;
+
+      const currentIdx = pkg.images.indexOf(this.selectedImage());
+      const nextIdx = (currentIdx + 1) % pkg.images.length;
+      this.selectedImage.set(pkg.images[nextIdx]);
+    }, 4000); // Change every 4 seconds
+  }
+
+  stopSlideshow() {
+    if (this.slideshowInterval) {
+      clearInterval(this.slideshowInterval);
+    }
+  }
+
+  selectGalleryImage(img: string) {
+    this.selectedImage.set(img);
+    this.startSlideshow(); // Reset timer when manually clicked
   }
 
   openServiceDetail(serviceName: string) {

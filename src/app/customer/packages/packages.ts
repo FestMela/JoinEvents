@@ -1,20 +1,20 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
-import { CommonModule, UpperCasePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { MockApiService } from '../../core/services/mock-api.service';
+import { PackageService } from '../../core/services/package.service';
 import { SearchService } from '../../core/services/search.service';
 import { EventPackage } from '../../core/models/event.model';
 
 @Component({
   selector: 'app-customer-packages',
   standalone: true,
-  imports: [CommonModule, FormsModule, UpperCasePipe, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './packages.html',
   styleUrl: './packages.css'
 })
 export class CustomerPackages implements OnInit {
-  private api = inject(MockApiService);
+  private packageService = inject(PackageService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   public search = inject(SearchService);
@@ -58,7 +58,7 @@ export class CustomerPackages implements OnInit {
       if (params['eventTypeId']) this.selectedEvent.set(params['eventTypeId']);
       if (params['vendorId']) this.vendorId.set(params['vendorId']);
       
-      this.api.getPackages().subscribe(p => {
+      this.packageService.getPackages(params['eventTypeId']).subscribe(p => {
         this.packages.set(p);
       });
     });
@@ -96,7 +96,7 @@ export class CustomerPackages implements OnInit {
   }
 
   bookPackage(pkg: EventPackage) {
-    this.router.navigate(['/customer/book', pkg.id]);
+    this.router.navigate(['/book', pkg.id]);
   }
 
   getTierGradient(tier: string) {

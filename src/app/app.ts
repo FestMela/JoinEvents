@@ -12,7 +12,10 @@ import { ErrorHandler } from '@angular/core';
   imports: [RouterOutlet, GlobalToast, GlobalConfirmComponent, ServerErrorPage],
   template: `
     @if (errorHandler.hasFatalError()) {
-      <app-server-error (retry)="errorHandler.clearError()" />
+      <app-server-error 
+        [errorTitle]="errorHandler.lastError()?.title ?? 'Something Went Wrong'"
+        [errorMessage]="errorHandler.lastError()?.message ?? 'An unexpected error occurred. Our team has been notified. Please try again or refresh the page.'"
+        (retry)="errorHandler.clearError()" />
     } @else {
       <router-outlet />
     }

@@ -42,7 +42,7 @@
       
       <div class="quick-chips-container">
         @for (cat of quickCategories; track cat.id) {
-          <a routerLink="/customer/packages" class="category-chip" [style.--cc]="cat.color">
+          <a routerLink="/packages" class="category-chip" [style.--cc]="cat.color">
             <i class="bi {{ cat.icon }}"></i>
             {{ cat.name }}
           </a>
@@ -95,7 +95,7 @@
         <span class="section-tag">Explore Top Cities</span>
         <h2 class="discovery-title">Handpicked Premium Venues</h2>
       </div>
-      <a routerLink="/customer/packages" class="btn-ee-primary d-none d-md-flex">View All Venues</a>
+      <a routerLink="/packages" class="btn-ee-primary d-none d-md-flex">View All Venues</a>
     </div>
     
     <div class="scroll-snap-container">
@@ -151,7 +151,7 @@
               <div class="attr-item"><i class="bi bi-patch-check"></i> All Inclusions</div>
             </div>
             
-            <button class="btn-pkg-book" [routerLink]="['/customer/book', pkg.id]">Check Availability</button>
+            <button class="btn-pkg-book" [routerLink]="['/book', pkg.id]">Check Availability</button>
           </div>
         </div>
       }
@@ -167,7 +167,7 @@
         <span class="section-tag">Experts On Board</span>
         <h2 class="discovery-title">Top Rated Planners</h2>
       </div>
-      <a routerLink="/customer/packages" class="btn-ee-primary d-none d-md-flex">View All Planners</a>
+      <a routerLink="/packages" class="btn-ee-primary d-none d-md-flex">View All Planners</a>
     </div>
     
     <div class="scroll-snap-container">

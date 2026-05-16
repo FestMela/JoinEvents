@@ -5,10 +5,14 @@ import { MockApiService } from '../../core/services/mock-api.service';
 import { RfpService } from '../../core/services/rfp.service';
 import { EventType } from '../../core/models/event.model';
 import { Booking } from '../../core/models/booking.model';
+import { ChatThread } from '../../core/models/message.model';
+import { ToastService } from '../../core/services/toast.service';
+
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-customer-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -22,12 +26,14 @@ export class CustomerDashboard implements OnInit {
   eventTypes = signal<EventType[]>([]);
   bookings = signal<Booking[]>([]);
   customerProfile = signal<any>(null);
+  recentMessages = signal<ChatThread[]>([]);
+  private toast = inject(ToastService);
 
   readonly stats = signal([
-    { label: 'Upcoming Events', value: '0', icon: 'bi-calendar-event', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', iconBg: 'rgba(255,107,53,0.12)', iconColor: 'var(--primary)', route: '/customer/bookings' },
-    { label: 'Active Bookings', value: '0', icon: 'bi-journal-check', gradient: 'linear-gradient(135deg,#6B21A8,#9333EA)', iconBg: 'rgba(107,33,168,0.12)', iconColor: 'var(--secondary)', route: '/customer/bookings' },
-    { label: 'RFP Requests', value: '0', icon: 'bi-file-earmark-text', gradient: 'linear-gradient(135deg,#16A34A,#0EA5E9)', iconBg: 'rgba(22,163,74,0.12)', iconColor: 'var(--success)', route: '/customer/rfp' },
-    { label: 'Loyalty Points', value: '0', icon: 'bi-star-half', gradient: 'linear-gradient(135deg,#F59E0B,#FF6B35)', iconBg: 'rgba(245,158,11,0.12)', iconColor: 'var(--accent)', route: '/customer/profile' },
+    { label: 'Upcoming Events', value: '0', icon: 'bi-calendar-event', gradient: 'linear-gradient(135deg,#FF6B35,#F59E0B)', iconBg: 'rgba(255,107,53,0.12)', iconColor: 'var(--primary)', route: '/bookings' },
+    { label: 'Active Bookings', value: '0', icon: 'bi-journal-check', gradient: 'linear-gradient(135deg,#6B21A8,#9333EA)', iconBg: 'rgba(107,33,168,0.12)', iconColor: 'var(--secondary)', route: '/bookings' },
+    { label: 'RFP Requests', value: '0', icon: 'bi-file-earmark-text', gradient: 'linear-gradient(135deg,#16A34A,#0EA5E9)', iconBg: 'rgba(22,163,74,0.12)', iconColor: 'var(--success)', route: '/rfp' },
+    { label: 'Loyalty Points', value: '0', icon: 'bi-star-half', gradient: 'linear-gradient(135deg,#F59E0B,#FF6B35)', iconBg: 'rgba(245,158,11,0.12)', iconColor: 'var(--accent)', route: '/profile' },
   ]);
 
   ngOnInit() {
@@ -66,6 +72,15 @@ export class CustomerDashboard implements OnInit {
           updated[3].value = customer.loyaltyPoints.toLocaleString();
           return updated;
         });
+      }
+    });
+
+    this.api.getChatThreads(userId).subscribe(threads => {
+      const validThreads = (threads || []).filter(t => t && t.lastMessage && t.participants && t.participants.length > 1);
+      this.recentMessages.set(validThreads.slice(0, 3));
+      const unread = validThreads.filter(t => t.unreadCount > 0).length;
+      if (unread > 0) {
+        this.toast.info(`You have ${unread} unread message(s) waiting!`);
       }
     });
   }

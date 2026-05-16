@@ -112,7 +112,7 @@
           @if (dashboard()) {
           @for (req of dashboard().recentRequests; track req.id) {
           <div class="request-item-modern">
-            <div class="req-avatar">{{ req.customerName.charAt(0) }}</div>
+            <div class="req-avatar">{{ req.customerName?.charAt(0) || '?' }}</div>
             <div class="req-details">
               <div class="req-title">{{ req.eventName }}</div>
               <div class="req-subtitle">{{ req.customerName }} · <span class="text-primary">{{ req.eventDate }}</span></div>
@@ -156,7 +156,7 @@
         <div class="collab-list">
           @for (collab of pendingCollaborations(); track collab.id) {
           <div class="collab-item d-flex align-items-center gap-3 mb-3 pb-3 border-bottom-dashed">
-            <div class="collab-avatar">{{ collab.partner.charAt(0) }}</div>
+            <div class="collab-avatar">{{ collab.partner?.charAt(0) || '?' }}</div>
             <div class="collab-info flex-grow-1">
               <div class="fw-bold small">{{ collab.partner }}</div>
               <div class="text-muted" style="font-size: 0.7rem;">{{ collab.category }} · {{ collab.time }}</div>
